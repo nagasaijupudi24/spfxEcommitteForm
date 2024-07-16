@@ -14,6 +14,7 @@ import GetForm from './spListGet/spListGet';
 interface IMainFormState {
   noteTypeValue?: IDropdownOption;
   isNoteType: boolean;
+  new:string;
 }
 
 export default class Form extends React.Component<IFormProps, IMainFormState> {
@@ -22,6 +23,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.state = {
       isNoteType: false,
       noteTypeValue: undefined,
+      new:"",
     };
   }
 
