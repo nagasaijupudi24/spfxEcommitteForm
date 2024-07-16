@@ -1,0 +1,180 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
+.form {
+  // overflow: hidden;
+  // padding: 1em;
+  // color: "[theme:bodyText, default: #323130]";
+  // color: var(--bodyText);
+  // &.teams {
+  //   font-family: $ms-font-family-fallbacks;
+  // }
+  // border:3px solid yellow;
+  padding:6px;
+  min-height: 100vh;
+}
+
+.welcome {
+  text-align: center;
+}
+
+.welcomeImage {
+  width: 100%;
+  max-width: 420px;
+}
+
+.links {
+  a {
+    text-decoration: none;
+    color: "[theme:link, default:#03787c]";
+    color: var(--link); // note: CSS Custom Properties support is limited to modern browsers only
+
+    &:hover {
+      text-decoration: underline;
+      color: "[theme:linkHovered, default: #014446]";
+      color: var(--linkHovered); // note: CSS Custom Properties support is limited to modern browsers only
+    }
+  }
+}
+
+
+.generalSectionMainContainer{
+  border:1px solid green;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 16px;
+  border-radius: 8px;
+  color:white;
+  background-color: #034ea1;
+  font-weight: 300;
+  
+  
+}
+
+.generalSection{
+  border:1px solid rgb(211, 211, 211);
+  display: "flex";
+  justify-content: space-around;
+  margin-top: 5px;
+  border-radius: 9px;
+  padding:10px;
+  min-height: 100px;
+
+  
+  
+}
+
+.generalSectionContainer1 {
+  width:250px;
+}
+
+.generalSectionApproverDetails{
+  border:1px solid rgb(211, 211, 211);
+  // display: "flex";
+  
+  // justify-content: space-between;
+  margin-top: 5px;
+  border-radius: 9px;
+  padding:10px;
+  min-height: 100px;
+
+  
+  
+}
+
+
+.approverDetailsSection{
+  border:1px solid pink
+}
+
+.headerContainer{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #034ea1;
+  color:white;
+
+}
+
+.headers{
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.commonProperties{
+  padding:5px;
+  margin-top: 5px;
+}
+
+.noteHeader{
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  // border:1px solid red;
+  
+}
+
+
+.noteTitle{
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  // border:1px solid red;
+  
+}
+
+.commonBtn{
+  border-radius: 8px;
+  border:none;
+  padding:8px;
+}
+
+.commonBtn1{
+  background-color: #034ea1;
+  color:white;
+  font-weight: 400;
+  margin:8px;
+}
+
+.commonBtn2{
+  background-color: rgb(211, 211, 211);
+  color:black;
+  font-weight: 400;
+  margin:8px;
+  
+}
+
+
+.addBtn{
+  border:1px solid green;
+  margin: 0px;
+  height: 30px;
+  border-radius: 8px;
+  border:none;
+  margin-left: 10px;
+  
+}
+
+
+.message{
+  color: green;
+  text-align: right;
+  font-size: 10px;
+}
+
+.warning{
+  color:red;
+  margin-left: 6px;
+}
+
+.label{
+  font-weight: 400;
+}
+
+
+.tableContainer{
+  border:1px solid rgb(211, 211, 211);
+  padding:4px;
+  border-radius: 8px;
+  margin-top: 6px;
+  
+}
