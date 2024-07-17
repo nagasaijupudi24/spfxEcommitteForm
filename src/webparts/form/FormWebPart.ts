@@ -12,7 +12,7 @@ import * as strings from 'FormWebPartStrings';
 import Form from './components/Form';
 import { IFormProps } from './components/IFormProps';
 
-import { spfi, SPFx } from "@pnp/sp";
+// import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs"; // Import webs functionality
 import "@pnp/sp/lists"; // Import lists functionality
 import "@pnp/sp/items"; // Import items functionality
@@ -25,11 +25,11 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
-  private sp: ReturnType<typeof spfi>;
+  // private sp: ReturnType<typeof spfi>;
 
   protected async onInit(): Promise<void> {
     await super.onInit();
-    this.sp = spfi().using(SPFx(this.context));
+    // this.sp = spfi().using(SPFx(this.context));
 
     this._environmentMessage = await this._getEnvironmentMessage();
   }
@@ -43,7 +43,8 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
-        sp: this.sp // Pass the configured sp object
+        context:this.context
+        // sp: this.sp // Pass the configured sp object
       }
     );
 
