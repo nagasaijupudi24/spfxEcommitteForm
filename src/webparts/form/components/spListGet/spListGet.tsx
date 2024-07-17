@@ -40,7 +40,7 @@ export default class GetForm extends React.Component<IFormProps, IFormState> {
         <ul>
           {this.state.items.map(item => (
             <li key={item.Id}>
-              {item.Title}
+            {item.Title} {item.Id}
             </li>
           ))}
         </ul>
