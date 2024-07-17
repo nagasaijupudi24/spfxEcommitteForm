@@ -1,16 +1,15 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from 'react';
 import styles from './Form.module.scss';
-// import { WebPartContext } from "@microsoft/sp-webpart-base";
+// import { SPFI } from "@pnp/sp";
 import { IFormProps } from './IFormProps';
-import spService from './services/spServices'; // Adjust the path accordingly
-import { TextField, Dropdown, IDropdownOption } from '@fluentui/react';
+import { TextField } from '@fluentui/react';
+import { Dropdown, IDropdownOption } from 'office-ui-fabric-react'; 
 import TableComponent from './uiComponents/tableSwap';
 import UploadFileComponent from './uiComponents/uploadFile';
 import Header from './uiComponents/Header/header';
 import Title from './uiComponents/titleSectionComponent/title';
 import SpanComponent from './uiComponents/spanComponent/spanComponent';
-
+import GetForm from './spListGet/spListGet';
 
 interface IMainFormState {
   noteTypeValue?: IDropdownOption;
@@ -19,8 +18,6 @@ interface IMainFormState {
 }
 
 export default class Form extends React.Component<IFormProps, IMainFormState> {
-  private service: spService;
-
   constructor(props: IFormProps) {
     super(props);
     this.state = {
@@ -28,30 +25,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       noteTypeValue: undefined,
       new: "",
     };
-
-    this.service = new spService(props.context); // Initialize spService with WebPartContext
-   this.fetch()
-  }
-  
-
-
-   public fetch= async ():Promise<void>=> {
-    // Example usage of getfieldDetails
-    const listName = "UserDetails"; // Replace with your actual list name
-    try {
-      const fieldDetails = await this.service.getfieldDetails(listName);
-      console.log("Field Details:", fieldDetails);
-      // Update state or perform other logic with fieldDetails
-    } catch (error) {
-      console.error("Error fetching field details:", error);
-    }
   }
 
   private handleDropdownChange = (event: React.FormEvent<HTMLDivElement>, item?: IDropdownOption): void => {
-    this.setState({ noteTypeValue: item });
+    console.log(typeof item);
+    // const {text} = item 
+    // console.log(text)
+    this.setState({ noteTypeValue: item }); // Update state with selected item
   };
-
-  
 
   public render(): React.ReactElement<IFormProps> {
     const options = [
@@ -78,7 +59,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       <div className={styles.form}>
         <Header />
         <Title />
-        {/* <GetForm description={''} isDarkTheme={false} environmentMessage={''} hasTeamsContext={false} userDisplayName={''} sp={new SPFI}/> */}
+        <GetForm
+          description={this.props.description}
+          isDarkTheme={this.props.isDarkTheme}
+          environmentMessage={this.props.environmentMessage}
+          hasTeamsContext={this.props.hasTeamsContext}
+          userDisplayName={this.props.userDisplayName}
+          sp={this.props.sp}
+          context={this.props.context} // Make sure to pass the context prop
+        />
         <div className={`${styles.generalSectionMainContainer}`}>
           <h1 style={{ textAlign: 'center', fontSize: '16px' }}>General Section</h1>
         </div>

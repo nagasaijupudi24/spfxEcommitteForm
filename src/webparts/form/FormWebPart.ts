@@ -1,10 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
-import {
-  IPropertyPaneConfiguration,
-  PropertyPaneTextField
-} from '@microsoft/sp-property-pane';
+import { IPropertyPaneConfiguration, PropertyPaneTextField } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
@@ -12,7 +9,7 @@ import * as strings from 'FormWebPartStrings';
 import Form from './components/Form';
 import { IFormProps } from './components/IFormProps';
 
-// import { spfi, SPFx } from "@pnp/sp";
+import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs"; // Import webs functionality
 import "@pnp/sp/lists"; // Import lists functionality
 import "@pnp/sp/items"; // Import items functionality
@@ -25,11 +22,11 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
-  // private sp: ReturnType<typeof spfi>;
+  private sp: ReturnType<typeof spfi>;
 
   protected async onInit(): Promise<void> {
     await super.onInit();
-    // this.sp = spfi().using(SPFx(this.context));
+    this.sp = spfi().using(SPFx(this.context));
 
     this._environmentMessage = await this._getEnvironmentMessage();
   }
@@ -43,8 +40,8 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
-        context:this.context
-        // sp: this.sp // Pass the configured sp object
+        sp: this.sp, // Pass the configured sp object
+        context: this.context // Pass the WebPartContext
       }
     );
 
