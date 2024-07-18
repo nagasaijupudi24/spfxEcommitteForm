@@ -19,7 +19,11 @@ interface IMainFormState {
   isNoteType: boolean;
   new: string;
   itemsFromSpList: any[];
-  getAllDropDownOptions:any
+  getAllDropDownOptions:any;
+  natureOfNote:IDropdownOption[];
+  committename:IDropdownOption[];
+  typeOfFinancialNote:IDropdownOption[];
+  noteType:IDropdownOption[];
 }
 
 export const FormContext = React.createContext<any>(null);
@@ -32,7 +36,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       noteTypeValue: undefined,
       new: "",
       itemsFromSpList: [],
-      getAllDropDownOptions:null
+      getAllDropDownOptions:{},
+      natureOfNote:[],
+      committename:[],
+      typeOfFinancialNote:[],
+      noteType:[],
+      
 
     };
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -42,23 +51,77 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 private getfield = async () => {
   try {
     const fieldDetails = await this.props.sp.web.lists.getByTitle("eCommittee").fields.filter("Hidden eq false and ReadOnlyField eq false")();
-    fieldDetails.map(_x=>{
+    const filtering = fieldDetails.map(_x=>{
       if(_x.TypeDisplayName ==="Choice"){
-        console.log(_x.InternalName,":" ,_x.Choices)
-        this.updateDropdownOption(_x.InternalName,_x.Choices)
+        // console.log(_x.InternalName,":" ,_x.Choices)
+        
+        return [_x.InternalName,_x.Choices]
       }
     })
-   
+    const finalList =filtering?.filter(each => {
+      if (typeof each !== 'undefined' ) {
+        // console.log(each);
+        return each
+      }
+    });
+
+    finalList?.map(each => {
+      console.log(each)
+      if (each !== undefined && Array.isArray(each) && each.length > 1 && Array.isArray(each[1])) {
+        if (each[0] === "natureOfNote") {
+            // console.log(each[1]);
+            const natureOfNoteArray = each[1].map((item,index) => {
+              return {key:index+1,text:item}
+            });
+
+            this.setState({natureOfNote:natureOfNoteArray})
+            
+          }
+          else if (each[0] === "NoteType") {
+            // console.log(each[1]);
+            const noteTypeArray = each[1].map((item,index) => {
+              return {key:index+1,text:item}
+            });
+
+            this.setState({noteType:noteTypeArray})
+            
+          }
+          else if (each[0] === "NatuerOfApprovalSanction") {
+            // console.log(each[1]);
+            const typeOfFinancialNoteArray = each[1].map((item,index) => {
+              return {key:index+1,text:item}
+            });
+
+            this.setState({typeOfFinancialNote:typeOfFinancialNoteArray})
+            
+          }
+          else if (each[0] === "CommitteeName") {
+            // console.log(each[1]);
+            const committenameArray = each[1].map((item,index) => {
+              return {key:index+1,text:item}
+            });
+
+            this.setState({committename:committenameArray})
+            
+          }
+        // each[1].map(item => console.log(item));
+      }
+    });
+
+
+
+
+  
+    // const filterDataFieldData = fieldDetails.map(each=>({"each":each.choices})})
+
+    // Assuming fieldDetails is an array of items you want to add
+    this.setState(prevState => ({
+      itemsFromSpList: [...prevState.itemsFromSpList, ...finalList],
+      
+    }));
   } catch (error) {
     console.error("Error fetching field details: ", error);
   }
-}
-
-private updateDropdownOption=(name: any,choice: any)=>{
-  console.log(this.state.getAllDropDownOptions,"test")
-  this.setState(prevState => ({ getAllDropDownOptions: { ...prevState.getAllDropDownOptions, [name]: choice } }));
- 
-
 }
 
   public componentDidMount(): void {
@@ -84,36 +147,38 @@ private updateDropdownOption=(name: any,choice: any)=>{
       console.error("Error fetching list items: ", error);
     }
   }
-private getOption=(options: any[])=>{
-  const opt: { key: any; text: any; }[]=[];
-  options.map((obj: any)=>{
-    opt.push({
-      key:obj,text:obj
-    })
-  })
-  return opt;
 
-}
 
   private handleDropdownChange = (event: React.FormEvent<HTMLDivElement>, item?: IDropdownOption): void => {
     console.log(typeof item);
-    console.log(this.state.itemsFromSpList)
+    console.log(this.state.natureOfNote)
     // console.log(this.state.itemsFromSpList)
     // const {text} = item 
     // console.log(text)
     this.setState({ noteTypeValue: item }); // Update state with selected item
   };
 
-  public render(): React.ReactElement<IFormProps> {
-    const options = [
-      { key: '1', text: 'Financial' },
-      { key: '2', text: 'Non Financial' },
-      // Add more options as needed
-    ];
+  handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+    console.log(item.text);
+    // this.setState({ noteTypeValue: item });
+  }
 
-    // const noteTypeOptions = []
-     
-      // Add more options as need];
+
+  
+  public render(): React.ReactElement<IFormProps> {
+
+    const {natureOfNote,committename,typeOfFinancialNote,noteType} = this.state
+    // const options = [
+    //   { key: '1', text: 'Financial' },
+    //   { key: '2', text: 'Non Financial' },
+    //   // Add more options as needed
+    // ];
+
+    // const noteTypeOptions = [
+    //   { key: '1', text: 'Financial' },
+    //   { key: '2', text: 'Non Financial' },
+    //   // Add more options as needed
+    // ];
 
     const handleFileChange = (files: FileList | null) => {
       // Handle file change logic here
@@ -161,8 +226,9 @@ private getOption=(options: any[])=>{
 
                 placeholder="Select an option"
                 onChange={this.handleDropdownChange}
-                // options={[{"key":"test","text":"test1"}]}
-                options={this.getOption(this.state.getAllDropDownOptions.NoteType)}
+                // options={noteTypeOptions}
+                options={noteType}
+                // options={this.dropDownAssign("NoteType")}
                 selectedKey={this.state.noteTypeValue ? this.state.noteTypeValue.key : undefined}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
@@ -175,7 +241,7 @@ private getOption=(options: any[])=>{
               </label>
               <Dropdown
                 placeholder="Select an option"
-                options={options}
+                options={committename}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
@@ -185,7 +251,10 @@ private getOption=(options: any[])=>{
               </label>
               <Dropdown
                 placeholder="Select an option"
-                options={options}
+                // options={options}
+                options={natureOfNote}
+                onChange={this.handleNatureOfNote}
+
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
@@ -195,7 +264,7 @@ private getOption=(options: any[])=>{
               </label>
               <Dropdown
                 placeholder="Select an option"
-                options={options}
+                options={typeOfFinancialNote}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
