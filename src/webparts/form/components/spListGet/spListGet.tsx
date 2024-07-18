@@ -16,17 +16,17 @@ export default class GetForm extends React.Component<IFormProps, IFormState> {
   public componentDidMount(): void {
     this.fetchListItems()
       .then(() => {
-        console.log("List items fetched successfully.");
+        // console.log("List items fetched successfully.");
       })
       .catch((error) => {
-        console.error("Error fetching list items: ", error);
+        // console.error("Error fetching list items: ", error);
       });
   }
 
   private async fetchListItems(): Promise<void> {
     try {
       const items: any[] = await this.props.sp.web.lists.getByTitle("UserDetails").items.select("Title", "Id")();
-      console.log(items);
+    //   console.log(items);
       this.setState({ items });
     } catch (error) {
       console.error("Error fetching list items: ", error);
