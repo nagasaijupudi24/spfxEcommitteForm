@@ -168,18 +168,7 @@ private getfield = async () => {
   public render(): React.ReactElement<IFormProps> {
 
     const {natureOfNote,committename,typeOfFinancialNote,noteType} = this.state
-    // const options = [
-    //   { key: '1', text: 'Financial' },
-    //   { key: '2', text: 'Non Financial' },
-    //   // Add more options as needed
-    // ];
-
-    // const noteTypeOptions = [
-    //   { key: '1', text: 'Financial' },
-    //   { key: '2', text: 'Non Financial' },
-    //   // Add more options as needed
-    // ];
-
+   
     const handleFileChange = (files: FileList | null) => {
       // Handle file change logic here
       if (files) {
