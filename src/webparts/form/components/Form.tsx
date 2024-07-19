@@ -13,7 +13,7 @@ import Title from './uiComponents/titleSectionComponent/title';
 import SpanComponent from './uiComponents/spanComponent/spanComponent';
 import GetForm from './spListGet/spListGet';
 import "@pnp/sp/fields";
-
+import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 interface IMainFormState {
   noteTypeValue?: IDropdownOption;
   isNoteType: boolean;
@@ -28,7 +28,11 @@ interface IMainFormState {
 
 export const FormContext = React.createContext<any>(null);
 
+
+
+
 export default class Form extends React.Component<IFormProps, IMainFormState> {
+private _peopplePicker:IPeoplePickerContext;
   constructor(props: IFormProps) {
     super(props);
     this.state = {
@@ -44,6 +48,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       
 
     };
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this._peopplePicker={
+      absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
+      // msGraphClientFactory:this.props.context.msGraphClientFactory
+      // msGraphClientFactory: this.props.context.msGraphClientFactory,
+      // spHttpClient: this.props.context.spHttpClient
+    }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
   }
@@ -158,16 +169,42 @@ private getfield = async () => {
     this.setState({ noteTypeValue: item }); // Update state with selected item
   };
 
-  handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+
+  private _getPeoplePickerItems(items: any[]) {
+    console.log('Items:', items);
+  }
+
+  private handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
     console.log(item.text);
     // this.setState({ noteTypeValue: item });
   }
 
+  private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
+    event.preventDefault();
+    console.log("Event Triggered");
+    console.log("this in handleSubmit:", this); // Add this line to log 'this'
+    console.log("this.props in handleSubmit:", this.props); // Add this line to log 'this.props'
+  
+    try {
+      await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+        Title: "New Item",
+      });
+      console.log("Item added successfully");
+    } catch (error) {
+      console.error("Error adding item: ", error);
+    }
+  }
 
   
   public render(): React.ReactElement<IFormProps> {
 
     const {natureOfNote,committename,typeOfFinancialNote,noteType} = this.state
+
+    // const peoplePickerContext: IPeoplePickerContext = {
+    //   absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
+    //   msGraphClientFactory: this.props.context.msGraphClientFactory,
+    //   spHttpClient: this.props.context.spHttpClient
+    // };
    
     const handleFileChange = (files: FileList | null) => {
       // Handle file change logic here
@@ -194,20 +231,19 @@ private getfield = async () => {
           <h1 style={{ textAlign: 'center', fontSize: '16px' }}>General Section</h1>
         </div>
         <div className={`${styles.generalSection}`}>
-          <div className={`${styles.generalSectionContainer1}`}>
-            <div>
+          {/* <div className={`${styles.generalSectionContainer1}`}> */}
+            <div className={styles.halfWidth}>
               Department<span className={styles.warning}>*</span>
-            </div>
-            <div>
               <h4 style={{ marginLeft: '20px' }}>Development</h4>
             </div>
-            <div style={{ margin: '4px', marginTop: '18px' }}>
+            
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label style={{ fontWeight: '600' }}>
                 Subject<SpanComponent />
               </label>
               <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>
-            <div style={{ margin: '4px', marginTop: '18px' }}>
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Note Type<SpanComponent />
               </label>
@@ -222,9 +258,8 @@ private getfield = async () => {
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
-          </div>
-          <div className={`${styles.generalSectionContainer1}`}>
-            <div style={{ margin: '4px', marginTop: '18px' }}>
+
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Committee Name<SpanComponent />
               </label>
@@ -234,7 +269,7 @@ private getfield = async () => {
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
-            <div style={{ margin: '4px', marginTop: '18px' }}>
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Nature of Note<SpanComponent />
               </label>
@@ -247,7 +282,7 @@ private getfield = async () => {
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
-            <div style={{ margin: '4px', marginTop: '18px' }}>
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Type of Financial Note<SpanComponent />
               </label>
@@ -257,13 +292,14 @@ private getfield = async () => {
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
-            <div style={{ margin: '4px', marginTop: '18px' }}>
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label style={{ fontWeight: '600' }}>
                 Search Text<SpanComponent />
               </label>
               <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>
-          </div>
+          {/* </div> */}
+         
         </div>
         <div className={`${styles.generalSectionMainContainer}`}>
           <h1 style={{ textAlign: 'center', fontSize: '16px' }}>Approver Details</h1>
@@ -272,7 +308,19 @@ private getfield = async () => {
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', marginTop: '8px', marginBottom: '8px' }}>
               <div style={{ display: 'flex' }}>
-                <TextField placeholder="Add Reviewers" />
+              <PeoplePicker
+                context={this._peopplePicker}
+                titleText="People Picker"
+                personSelectionLimit={3}
+                groupName={""} // Leave this blank in case you want to filter from all users
+                showtooltip={true}
+                
+                disabled={false}
+                ensureUser={true}
+                onChange={this._getPeoplePickerItems}
+                // showHiddenInUI={false}
+                principalTypes={[PrincipalType.User]}
+                resolveDelay={1000} />
                 <button type="button" className={`${styles.commonBtn2} ${styles.addBtn}`}>
                   <span>+</span>Add
                 </button>
@@ -323,7 +371,7 @@ private getfield = async () => {
         </div>
         <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
           <button type="button" className={`${styles.commonBtn1} ${styles.commonBtn}`}>Save as Draft</button>
-          <button type="button" className={`${styles.commonBtn1} ${styles.commonBtn}`}>Submit</button>
+          <button type="button" className={`${styles.commonBtn1} ${styles.commonBtn}`} onClick={this.handleSubmit}>Submit</button>
           <button type="button" className={`${styles.commonBtn2} ${styles.commonBtn}`}>Exit</button>
         </div>
       </div>
