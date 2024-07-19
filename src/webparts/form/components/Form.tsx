@@ -210,30 +210,30 @@ private getfield = async () => {
   // }
 
 
-private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>):  Promise<void> {
-    event.preventDefault();
-    console.log(event);
-    console.log("Event Triggered");
-    await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
-      Title: "Title",
-      
-    });
-  }
-
-
-// private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
+// private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>):  Promise<void> {
 //     event.preventDefault();
 //     console.log(event);
 //     console.log("Event Triggered");
-//     try {
-//       await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
-//         Title: "New Item",
-//       });
-//       console.log("Item added successfully");
-//     } catch (error) {
-//       console.error("Error adding item: ", error);
-//     }
+//     await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+//       Title: "Title",
+      
+//     });
 //   }
+
+
+private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
+    event.preventDefault();
+    console.log(event);
+    console.log("Event Triggered");
+    try {
+      await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+        Title: "New Item3321",
+      });
+      console.log("Item added successfully");
+    } catch (error) {
+      console.error("Error adding item: ", error);
+    }
+  }
 
 
   
