@@ -179,21 +179,62 @@ private getfield = async () => {
     // this.setState({ noteTypeValue: item });
   }
 
+  // private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
+  //   event.preventDefault();
+  //   console.log("Event Triggered");
+  //   console.log("this in handleSubmit:", this); // Add this line to log 'this'
+  //   console.log("this.props in handleSubmit:", this.props); // Add this line to log 'this.props'
+  
+  //   try {
+  //     await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+  //       Title: "New Item",
+  //     });
+  //     console.log("Item added successfully");
+  //   } catch (error) {
+  //     console.error("Error adding item: ", error);
+  //   }
+  // }
+
   private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
     event.preventDefault();
+    console.log(event);
     console.log("Event Triggered");
-    console.log("this in handleSubmit:", this); // Add this line to log 'this'
-    console.log("this.props in handleSubmit:", this.props); // Add this line to log 'this.props'
-  
     try {
       await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
-        Title: "New Item",
+        Title: "New Item2222",
       });
       console.log("Item added successfully");
     } catch (error) {
       console.error("Error adding item: ", error);
     }
   }
+
+
+// private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>):  Promise<void> {
+//     event.preventDefault();
+//     console.log(event);
+//     console.log("Event Triggered");
+//     await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+//       Title: "Title",
+      
+//     });
+//   }
+
+
+// private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
+//     event.preventDefault();
+//     console.log(event);
+//     console.log("Event Triggered");
+//     try {
+//       await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+//         Title: "New Item",
+//       });
+//       console.log("Item added successfully");
+//     } catch (error) {
+//       console.error("Error adding item: ", error);
+//     }
+//   }
+
 
   
   public render(): React.ReactElement<IFormProps> {
