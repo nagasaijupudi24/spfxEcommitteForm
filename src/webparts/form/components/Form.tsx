@@ -14,6 +14,7 @@ import SpanComponent from './uiComponents/spanComponent/spanComponent';
 import GetForm from './spListGet/spListGet';
 import "@pnp/sp/fields";
 import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 interface IMainFormState {
   noteTypeValue?: IDropdownOption;
   isNoteType: boolean;
@@ -24,6 +25,9 @@ interface IMainFormState {
   committename:IDropdownOption[];
   typeOfFinancialNote:IDropdownOption[];
   noteType:IDropdownOption[];
+  isPuroposeVisable:boolean;
+  isAmountVisable:boolean;
+  isTypeOfFinacialNote:boolean;
 }
 
 export const FormContext = React.createContext<any>(null);
@@ -45,6 +49,10 @@ private _peopplePicker:IPeoplePickerContext;
       committename:[],
       typeOfFinancialNote:[],
       noteType:[],
+      isPuroposeVisable:false,
+      isAmountVisable:false,
+      isTypeOfFinacialNote:false
+
       
 
     };
@@ -53,7 +61,7 @@ private _peopplePicker:IPeoplePickerContext;
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
       // msGraphClientFactory:this.props.context.msGraphClientFactory
       // msGraphClientFactory: this.props.context.msGraphClientFactory,
-      // spHttpClient: this.props.context.spHttpClient
+      spHttpClient: this.props.context.spHttpClient
     }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
@@ -277,12 +285,38 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               Department<span className={styles.warning}>*</span>
               <h4 style={{ marginLeft: '20px' }}>Development</h4>
             </div>
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
+              <label>
+                Committee Name<SpanComponent />
+              </label>
+              <Dropdown
+                placeholder="Select an option"
+                options={committename}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+              />
+            </div>
             
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label style={{ fontWeight: '600' }}>
                 Subject<SpanComponent />
               </label>
               <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+            </div>
+           
+
+            
+            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
+              <label>
+                Nature of Note<SpanComponent />
+              </label>
+              <Dropdown
+                placeholder="Select an option"
+                // options={options}
+                options={natureOfNote}
+                onChange={this.handleNatureOfNote}
+
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+              />
             </div>
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
@@ -299,31 +333,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
-
-            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
-              <label>
-                Committee Name<SpanComponent />
-              </label>
-              <Dropdown
-                placeholder="Select an option"
-                options={committename}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
-              />
-            </div>
-            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
-              <label>
-                Nature of Note<SpanComponent />
-              </label>
-              <Dropdown
-                placeholder="Select an option"
-                // options={options}
-                options={natureOfNote}
-                onChange={this.handleNatureOfNote}
-
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
-              />
-            </div>
-            <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
+            {this.state.isTypeOfFinacialNote? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Type of Financial Note<SpanComponent />
               </label>
@@ -332,13 +342,33 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 options={typeOfFinancialNote}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
-            </div>
+            </div>:""}
+           
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label style={{ fontWeight: '600' }}>
                 Search Text<SpanComponent />
               </label>
               <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>
+            { 
+              this.state.isAmountVisable? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
+              <label style={{ fontWeight: '600' }}>
+                Amount<SpanComponent />
+              </label>
+              <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+            </div>:""
+            }
+            {
+              this.state.isPuroposeVisable?  <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
+              <label style={{ fontWeight: '600' }}>
+                Purpose<SpanComponent />
+              </label>
+              <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+            </div>:""
+            }
+           
+           
+          
           {/* </div> */}
          
         </div>
