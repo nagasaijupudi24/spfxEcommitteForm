@@ -14,7 +14,7 @@ import SpanComponent from './uiComponents/spanComponent/spanComponent';
 import GetForm from './spListGet/spListGet';
 import "@pnp/sp/fields";
 import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
+// import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 interface IMainFormState {
   noteTypeValue?: IDropdownOption;
   isNoteType: boolean;
@@ -28,6 +28,21 @@ interface IMainFormState {
   isPuroposeVisable:boolean;
   isAmountVisable:boolean;
   isTypeOfFinacialNote:boolean;
+  isNatureOfApprovalOrSanction:boolean;
+  //generalSection
+  committeeNameFeildValue:string;
+  subjectFeildValue:string;
+  natureOfNoteFeildValue:string;
+  noteTypeFeildValue:string;
+  natureOfApprovalOrSanctionFeildValue:string;
+  typeOfFinancialNoteFeildValue:string;
+  searchTextFeildValue:string;
+  amountFeildValue:string;
+  puroposeFeildValue:string;
+  
+
+
+
 }
 
 export const FormContext = React.createContext<any>(null);
@@ -49,19 +64,43 @@ private _peopplePicker:IPeoplePickerContext;
       committename:[],
       typeOfFinancialNote:[],
       noteType:[],
-      isPuroposeVisable:false,
-      isAmountVisable:false,
-      isTypeOfFinacialNote:false
+      isPuroposeVisable:true,
+      isAmountVisable:true,
+      isTypeOfFinacialNote:true,
+      isNatureOfApprovalOrSanction:true,
+        //generalSection
+        committeeNameFeildValue: "",
+        subjectFeildValue: "",
+        natureOfNoteFeildValue: "",
+        noteTypeFeildValue: "",
+        natureOfApprovalOrSanctionFeildValue:"",
+        typeOfFinancialNoteFeildValue: "",
+        searchTextFeildValue: "",
+        amountFeildValue: "",
+        puroposeFeildValue: ""
+
 
       
 
     };
+     // general section --------handling---------start
+    this.handleCommittename = this.handleCommittename.bind(this);
+    this.handleSubject = this.handleSubject.bind(this);
+    this.handleNatureOfNote =this.handleNatureOfNote.bind(this)
+    this.handleNoteType = this.handleNoteType.bind(this);
+    this.handleNatureOfApprovalOrSanction = this.handleNatureOfApprovalOrSanction.bind(this);
+    this.handleTypeOfFinanicalNote = this.handleTypeOfFinanicalNote.bind(this);
+    this.handleSearchText = this.handleSearchText.bind(this);
+     this.handleAmount = this.handleAmount.bind(this);
+     this.handlePurpose = this.handlePurpose.bind(this);
+     // general section --------handling---------end
     this.handleSubmit = this.handleSubmit.bind(this);
+
     this._peopplePicker={
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
       // msGraphClientFactory:this.props.context.msGraphClientFactory
       // msGraphClientFactory: this.props.context.msGraphClientFactory,
-      spHttpClient: this.props.context.spHttpClient
+      // spHttpClient: this.props.context.spHttpClient
     }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
@@ -85,7 +124,7 @@ private getfield = async () => {
     });
 
     finalList?.map(each => {
-      console.log(each)
+      // console.log(each)
       if (each !== undefined && Array.isArray(each) && each.length > 1 && Array.isArray(each[1])) {
         if (each[0] === "natureOfNote") {
             // console.log(each[1]);
@@ -168,24 +207,88 @@ private getfield = async () => {
   }
 
 
-  private handleDropdownChange = (event: React.FormEvent<HTMLDivElement>, item?: IDropdownOption): void => {
-    console.log(typeof item);
-    console.log(this.state.natureOfNote)
-    // console.log(this.state.itemsFromSpList)
-    // const {text} = item 
-    // console.log(text)
-    this.setState({ noteTypeValue: item }); // Update state with selected item
-  };
+  // private handleDropdownChange = (event: React.FormEvent<HTMLDivElement>, item?: IDropdownOption): void => {
+  //   console.log(typeof item);
+  //   console.log(this.state.natureOfNote)
+  //   // console.log(this.state.itemsFromSpList)
+  //   // const {text} = item 
+  //   // console.log(text)
+  //   this.setState({ noteTypeValue: item }); // Update state with selected item
+  // };
 
 
   private _getPeoplePickerItems(items: any[]) {
     console.log('Items:', items);
   }
 
+
+
+
+
+  // general section --------handling
+  // general section --------handling
+  // general section --------handling
+  private handleCommittename(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+    // console.log(item.text);
+    // this.setState({ noteTypeValue: item });
+    const value = item.text
+    this.setState({committeeNameFeildValue:value})
+  }
+
+  private handleSubject(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
+    console.log(newValue)
+    const value = newValue || ''; // Ensure value is a string
+    this.setState({ subjectFeildValue: value });
+  }
+
+
   private handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
     console.log(item.text);
-    // this.setState({ noteTypeValue: item });
+    this.setState({ natureOfNoteFeildValue: item.text });
   }
+
+  private handleNatureOfApprovalOrSanction(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+    console.log(item.text);
+    this.setState({ natureOfNoteFeildValue: item.text });
+  }
+
+  private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+    console.log(item.text);
+    this.setState({ natureOfApprovalOrSanctionFeildValue: item.text });
+  }
+
+  private handleTypeOfFinanicalNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+    console.log(item.text);
+    this.setState({ typeOfFinancialNoteFeildValue: item.text });
+  }
+
+  private handleSearchText(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
+    console.log(newValue)
+    const value = newValue || ''; // Ensure value is a string
+    this.setState({ searchTextFeildValue: value });
+  }
+
+  private handleAmount(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
+    console.log(newValue)
+    const value = newValue || ''; // Ensure value is a string
+    this.setState({ amountFeildValue: value });
+  }
+
+  private handlePurpose(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
+    console.log(newValue)
+    const value = newValue || ''; // Ensure value is a string
+    this.setState({ puroposeFeildValue: value });
+  }
+
+  
+  // general section --------handling---------end
+  // general section --------handling---------end
+  // general section --------handling---------end
+
+
+
+
+
 
   // private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
   //   event.preventDefault();
@@ -247,8 +350,15 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
   
   public render(): React.ReactElement<IFormProps> {
 
-    const {natureOfNote,committename,typeOfFinancialNote,noteType} = this.state
-
+    const {natureOfNote,committename,typeOfFinancialNote,noteType,committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue} = this.state
+      console.log(committeeNameFeildValue,"-----------committeeNameFeildValue")
+      console.log(subjectFeildValue,"-----------subjectFeildValue")
+      console.log(natureOfNoteFeildValue,"-----------natureOfNoteFeildValue")
+      console.log(noteTypeFeildValue,"-----------noteTypeFeildValue")
+      console.log(typeOfFinancialNoteFeildValue,"-----------typeOfFinancialNoteFeildValue")
+      console.log(searchTextFeildValue,"-----------searchTextFeildValue")
+      console.log(amountFeildValue,"-----------amountFeildValue")
+      console.log(puroposeFeildValue,"-----------puroposeFeildValue")
     // const peoplePickerContext: IPeoplePickerContext = {
     //   absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
     //   msGraphClientFactory: this.props.context.msGraphClientFactory,
@@ -292,6 +402,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <Dropdown
                 placeholder="Select an option"
                 options={committename}
+                onChange={this.handleCommittename}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
@@ -300,7 +411,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label style={{ fontWeight: '600' }}>
                 Subject<SpanComponent />
               </label>
-              <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>
            
 
@@ -318,6 +429,17 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
               />
             </div>
+            {this.state.isNatureOfApprovalOrSanction? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
+              <label>
+                Nature of Approval/Sanction<SpanComponent />
+              </label>
+              <Dropdown
+                onChange={this.handleNatureOfApprovalOrSanction}
+                placeholder="Select an option"
+                options={typeOfFinancialNote}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+              />
+            </div>:""}
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Note Type<SpanComponent />
@@ -325,7 +447,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <Dropdown
 
                 placeholder="Select an option"
-                onChange={this.handleDropdownChange}
+                onChange={this.handleNoteType}
                 // options={noteTypeOptions}
                 options={noteType}
                 // options={this.dropDownAssign("NoteType")}
@@ -338,6 +460,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 Type of Financial Note<SpanComponent />
               </label>
               <Dropdown
+                onChange={this.handleTypeOfFinanicalNote}
                 placeholder="Select an option"
                 options={typeOfFinancialNote}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
@@ -348,14 +471,14 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label style={{ fontWeight: '600' }}>
                 Search Text<SpanComponent />
               </label>
-              <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              <TextField onChange={this.handleSearchText} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>
             { 
               this.state.isAmountVisable? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label style={{ fontWeight: '600' }}>
                 Amount<SpanComponent />
               </label>
-              <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              <TextField onChange={this.handleAmount} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>:""
             }
             {
@@ -363,7 +486,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label style={{ fontWeight: '600' }}>
                 Purpose<SpanComponent />
               </label>
-              <TextField styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              <TextField onChange={this.handlePurpose} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
             </div>:""
             }
            
