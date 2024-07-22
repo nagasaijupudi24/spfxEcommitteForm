@@ -22,6 +22,7 @@ interface IMainFormState {
   itemsFromSpList: any[];
   getAllDropDownOptions:any;
   natureOfNote:IDropdownOption[];
+  natureOfApprovalSancation:IDropdownOption[];
   committename:IDropdownOption[];
   typeOfFinancialNote:IDropdownOption[];
   noteType:IDropdownOption[];
@@ -62,12 +63,13 @@ private _peopplePicker:IPeoplePickerContext;
       getAllDropDownOptions:{},
       natureOfNote:[],
       committename:[],
+      natureOfApprovalSancation:[],
       typeOfFinancialNote:[],
       noteType:[],
-      isPuroposeVisable:true,
-      isAmountVisable:true,
-      isTypeOfFinacialNote:true,
-      isNatureOfApprovalOrSanction:true,
+      isPuroposeVisable:false,
+      isAmountVisable:false,
+      isTypeOfFinacialNote:false,
+      isNatureOfApprovalOrSanction:false,
         //generalSection
         committeeNameFeildValue: "",
         subjectFeildValue: "",
@@ -111,7 +113,7 @@ private getfield = async () => {
     const fieldDetails = await this.props.sp.web.lists.getByTitle("eCommittee").fields.filter("Hidden eq false and ReadOnlyField eq false")();
     const filtering = fieldDetails.map(_x=>{
       if(_x.TypeDisplayName ==="Choice"){
-        // console.log(_x.InternalName,":" ,_x.Choices)
+        console.log(_x.InternalName,":" ,_x.Choices)
         
         return [_x.InternalName,_x.Choices]
       }
@@ -145,6 +147,15 @@ private getfield = async () => {
             
           }
           else if (each[0] === "NatuerOfApprovalSanction") {
+            // console.log(each[1]);
+            const typeOfNatureOfApprovalSancation = each[1].map((item,index) => {
+              return {key:index+1,text:item}
+            });
+
+            this.setState({natureOfApprovalSancation:typeOfNatureOfApprovalSancation})
+            
+          }
+          else if (each[0] === "TypeOfFinancialNote") {
             // console.log(each[1]);
             const typeOfFinancialNoteArray = each[1].map((item,index) => {
               return {key:index+1,text:item}
@@ -244,17 +255,32 @@ private getfield = async () => {
 
   private handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
     console.log(item.text);
-    this.setState({ natureOfNoteFeildValue: item.text });
+    
+    if (item.text === "Sanction" || item.text === "Approval"){
+      this.setState({ natureOfNoteFeildValue: item.text ,isNatureOfApprovalOrSanction:true,isPuroposeVisable:true});
+
+    }else{
+      this.setState({ natureOfNoteFeildValue: item.text,isNatureOfApprovalOrSanction:false,isPuroposeVisable:false });
+    }
+
+   
   }
 
   private handleNatureOfApprovalOrSanction(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
     console.log(item.text);
     this.setState({ natureOfNoteFeildValue: item.text });
+
+  
   }
 
   private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
     console.log(item.text);
-    this.setState({ natureOfApprovalOrSanctionFeildValue: item.text });
+    if (item.text === "Finanical" ){
+      this.setState({ natureOfNoteFeildValue: item.text ,isTypeOfFinacialNote:true,isAmountVisable:true});
+
+    }else{
+      this.setState({ natureOfNoteFeildValue: item.text,isTypeOfFinacialNote:false,isAmountVisable:false });
+    }
   }
 
   private handleTypeOfFinanicalNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
@@ -339,6 +365,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
     try {
       await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
         Title: "New Item3321",
+       
       });
       console.log("Item added successfully");
     } catch (error) {
@@ -350,10 +377,11 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
   
   public render(): React.ReactElement<IFormProps> {
 
-    const {natureOfNote,committename,typeOfFinancialNote,noteType,committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue} = this.state
+    const {natureOfNote,committename,typeOfFinancialNote,noteType,committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue} = this.state
       console.log(committeeNameFeildValue,"-----------committeeNameFeildValue")
       console.log(subjectFeildValue,"-----------subjectFeildValue")
       console.log(natureOfNoteFeildValue,"-----------natureOfNoteFeildValue")
+      console.log(natureOfApprovalOrSanctionFeildValue,"--------------natureOfApprovalOrSanctionFeildValue")
       console.log(noteTypeFeildValue,"-----------noteTypeFeildValue")
       console.log(typeOfFinancialNoteFeildValue,"-----------typeOfFinancialNoteFeildValue")
       console.log(searchTextFeildValue,"-----------searchTextFeildValue")
@@ -403,7 +431,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 placeholder="Select an option"
                 options={committename}
                 onChange={this.handleCommittename}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)' ,borderRadius:'8px'} }}
               />
             </div>
             
@@ -426,7 +454,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 options={natureOfNote}
                 onChange={this.handleNatureOfNote}
 
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
             </div>
             {this.state.isNatureOfApprovalOrSanction? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
@@ -436,8 +464,8 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <Dropdown
                 onChange={this.handleNatureOfApprovalOrSanction}
                 placeholder="Select an option"
-                options={typeOfFinancialNote}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+                options={this.state.natureOfApprovalSancation}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
             </div>:""}
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
@@ -452,7 +480,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 options={noteType}
                 // options={this.dropDownAssign("NoteType")}
                 selectedKey={this.state.noteTypeValue ? this.state.noteTypeValue.key : undefined}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
             </div>
             {this.state.isTypeOfFinacialNote? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
@@ -463,7 +491,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 onChange={this.handleTypeOfFinanicalNote}
                 placeholder="Select an option"
                 options={typeOfFinancialNote}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' } }}
+                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
             </div>:""}
            
