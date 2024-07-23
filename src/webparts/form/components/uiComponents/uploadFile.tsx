@@ -2,17 +2,18 @@ import React, { useRef } from 'react';
 // import styles from '../Form.module.scss';
 
 interface UploadFileProps {
-  onChange: (files: FileList | null) => void;
+  typeOfDoc: string;
+  onChange: (files: FileList | null, typeOfDoc: string) => void;
   accept?: string;
 }
 
-const UploadFileComponent: React.FC<UploadFileProps> = ({ onChange, accept }) => {
+const UploadFileComponent: React.FC<UploadFileProps> = ({ onChange, accept,typeOfDoc }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = () => {
     const files = fileInputRef.current?.files;
     if (files) {
-      onChange(files);
+      onChange(files,typeOfDoc);
     }
   };
 

@@ -1,19 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import * as React from 'react';
-import styles from './Form.module.scss';
+import styles from '../Form.module.scss';
 // import { SPFI } from "@pnp/sp";
-import { IFormProps } from './IFormProps';
+import { IFormProps } from '../IFormProps';
 import { TextField } from '@fluentui/react';
 import { Dropdown, IDropdownOption } from 'office-ui-fabric-react'; 
-import TableComponent from './uiComponents/tableSwap';
-import UploadFileComponent from './uiComponents/uploadFile';
-import Header from './uiComponents/Header/header';
-import Title from './uiComponents/titleSectionComponent/title';
-import SpanComponent from './uiComponents/spanComponent/spanComponent';
-import GetForm from './spListGet/spListGet';
+import TableComponent from './tableSwap';
+import UploadFileComponent from './uploadFile';
+import Header from './Header/header';
+import Title from './titleSectionComponent/title';
+import SpanComponent from './spanComponent/spanComponent';
+import GetForm from '../spListGet/spListGet';
+import PeoplePicker from './peoplePickerInKenod/peoplePickerInKendo';
 import "@pnp/sp/fields";
-import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+// import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 // import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 interface IMainFormState {
   noteTypeValue?: IDropdownOption;
@@ -40,6 +41,11 @@ interface IMainFormState {
   searchTextFeildValue:string;
   amountFeildValue:string;
   puroposeFeildValue:string;
+  // eslint-disable-next-line @rushstack/no-new-null
+  notePdfFile: File | null;
+  // eslint-disable-next-line @rushstack/no-new-null
+  supportingFile:File | null;
+  
   
 
 
@@ -52,7 +58,7 @@ export const FormContext = React.createContext<any>(null);
 
 
 export default class Form extends React.Component<IFormProps, IMainFormState> {
-private _peopplePicker:IPeoplePickerContext;
+// private _peopplePicker:IPeoplePickerContext;
   constructor(props: IFormProps) {
     super(props);
     this.state = {
@@ -79,7 +85,11 @@ private _peopplePicker:IPeoplePickerContext;
         typeOfFinancialNoteFeildValue: "",
         searchTextFeildValue: "",
         amountFeildValue: "",
-        puroposeFeildValue: ""
+        puroposeFeildValue: "",
+        notePdfFile:null,
+        supportingFile:null
+
+
 
 
       
@@ -98,12 +108,12 @@ private _peopplePicker:IPeoplePickerContext;
      // general section --------handling---------end
     this.handleSubmit = this.handleSubmit.bind(this);
 
-    this._peopplePicker={
-      absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
-      // msGraphClientFactory:this.props.context.msGraphClientFactory
-      // msGraphClientFactory: this.props.context.msGraphClientFactory,
-      // spHttpClient: this.props.context.spHttpClient
-    }
+    // this._peopplePicker={
+    //   absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
+    //   // msGraphClientFactory:this.props.context.msGraphClientFactory
+    //   // msGraphClientFactory: this.props.context.msGraphClientFactory,
+    //   // spHttpClient: this.props.context.spHttpClient
+    // }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
   }
@@ -111,6 +121,9 @@ private _peopplePicker:IPeoplePickerContext;
 private getfield = async () => {
   try {
     const fieldDetails = await this.props.sp.web.lists.getByTitle("eCommittee").fields.filter("Hidden eq false and ReadOnlyField eq false")();
+    // console.log(fieldDetails)
+
+    fieldDetails.map(each=>console.log(each.StaticName))
     const filtering = fieldDetails.map(_x=>{
       if(_x.TypeDisplayName ==="Choice"){
         console.log(_x.InternalName,":" ,_x.Choices)
@@ -228,9 +241,9 @@ private getfield = async () => {
   // };
 
 
-  private _getPeoplePickerItems(items: any[]) {
-    console.log('Items:', items);
-  }
+  // private _getPeoplePickerItems(items: any[]) {
+  //   console.log('Items:', items);
+  // }
 
 
 
@@ -247,14 +260,14 @@ private getfield = async () => {
   }
 
   private handleSubject(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
-    console.log(newValue)
+    // console.log(newValue)
     const value = newValue || ''; // Ensure value is a string
     this.setState({ subjectFeildValue: value });
   }
 
 
   private handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    console.log(item.text);
+    // console.log(item.text);
     
     if (item.text === "Sanction" || item.text === "Approval"){
       this.setState({ natureOfNoteFeildValue: item.text ,isNatureOfApprovalOrSanction:true,isPuroposeVisable:true});
@@ -266,42 +279,44 @@ private getfield = async () => {
    
   }
 
-  private handleNatureOfApprovalOrSanction(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    console.log(item.text);
-    this.setState({ natureOfNoteFeildValue: item.text });
+  private handleNatureOfApprovalOrSanction(event: React.FormEvent<HTMLDivElement>, option: IDropdownOption): void {
+    // console.log(item.text);
+    this.setState({ natureOfApprovalOrSanctionFeildValue:option.text });
 
   
   }
 
   private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    console.log(item.text);
+    // console.log(item.text);
+    
     if (item.text === "Finanical" ){
-      this.setState({ natureOfNoteFeildValue: item.text ,isTypeOfFinacialNote:true,isAmountVisable:true});
+      console.log(item.text);
+      this.setState({ noteTypeFeildValue: item.text ,isTypeOfFinacialNote:true,isAmountVisable:true});
 
     }else{
-      this.setState({ natureOfNoteFeildValue: item.text,isTypeOfFinacialNote:false,isAmountVisable:false });
+      this.setState({ noteTypeFeildValue: item.text,isTypeOfFinacialNote:false,isAmountVisable:false });
     }
   }
 
   private handleTypeOfFinanicalNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    console.log(item.text);
+    // console.log(item.text);
     this.setState({ typeOfFinancialNoteFeildValue: item.text });
   }
 
   private handleSearchText(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
-    console.log(newValue)
+    // console.log(newValue)
     const value = newValue || ''; // Ensure value is a string
     this.setState({ searchTextFeildValue: value });
   }
 
   private handleAmount(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
-    console.log(newValue)
+    // console.log(newValue)
     const value = newValue || ''; // Ensure value is a string
     this.setState({ amountFeildValue: value });
   }
 
   private handlePurpose(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
-    console.log(newValue)
+    // console.log(newValue)
     const value = newValue || ''; // Ensure value is a string
     this.setState({ puroposeFeildValue: value });
   }
@@ -362,9 +377,31 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
     event.preventDefault();
     console.log(event);
     console.log("Event Triggered");
+    // const {
+    //   committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue
+    // } = this.state
+      // console.log(committeeNameFeildValue,"-----------committeeNameFeildValue")
+      // console.log(subjectFeildValue,"-----------subjectFeildValue")
+      // console.log(natureOfNoteFeildValue,"-----------natureOfNoteFeildValue")
+      // console.log(natureOfApprovalOrSanctionFeildValue,"--------------natureOfApprovalOrSanctionFeildValue")
+      // console.log(noteTypeFeildValue,"-----------noteTypeFeildValue")
+      // console.log(typeOfFinancialNoteFeildValue,"-----------typeOfFinancialNoteFeildValue")
+      // console.log(searchTextFeildValue,"-----------searchTextFeildValue")
+      // console.log(amountFeildValue,"-----------amountFeildValue")
+      // console.log(puroposeFeildValue,"-----------puroposeFeildValue")
     try {
       await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
-        Title: "New Item3321",
+        Title: `AD/${new Date().getHours()}-${new Date().getSeconds()}`,
+        Department:"devlopment",
+        CommitteeName:this.state.committeeNameFeildValue,
+        Subject:this.state.subjectFeildValue,
+        natureOfNote:this.state.natureOfNoteFeildValue,
+        NatuerOfApprovalSanction:this.state.natureOfApprovalOrSanctionFeildValue,
+        NoteType:this.state.noteTypeFeildValue,
+        TypeOfFinancialNote:this.state.typeOfFinancialNoteFeildValue,
+        Amount:this.state.amountFeildValue,
+        Search_x0020_Keyword:this.state.searchTextFeildValue,
+        Purpose:this.state.puroposeFeildValue
        
       });
       console.log("Item added successfully");
@@ -377,24 +414,28 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
   
   public render(): React.ReactElement<IFormProps> {
 
-    const {natureOfNote,committename,typeOfFinancialNote,noteType,committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue} = this.state
-      console.log(committeeNameFeildValue,"-----------committeeNameFeildValue")
-      console.log(subjectFeildValue,"-----------subjectFeildValue")
-      console.log(natureOfNoteFeildValue,"-----------natureOfNoteFeildValue")
-      console.log(natureOfApprovalOrSanctionFeildValue,"--------------natureOfApprovalOrSanctionFeildValue")
-      console.log(noteTypeFeildValue,"-----------noteTypeFeildValue")
-      console.log(typeOfFinancialNoteFeildValue,"-----------typeOfFinancialNoteFeildValue")
-      console.log(searchTextFeildValue,"-----------searchTextFeildValue")
-      console.log(amountFeildValue,"-----------amountFeildValue")
-      console.log(puroposeFeildValue,"-----------puroposeFeildValue")
+    const {natureOfNote,committename,typeOfFinancialNote,noteType,
+      // noteTypeFeildValue
+      // committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue
+    } = this.state
+      // console.log(committeeNameFeildValue,"-----------committeeNameFeildValue")
+      // console.log(subjectFeildValue,"-----------subjectFeildValue")
+      // console.log(natureOfNoteFeildValue,"-----------natureOfNoteFeildValue")
+      // console.log(natureOfApprovalOrSanctionFeildValue,"--------------natureOfApprovalOrSanctionFeildValue")
+      // console.log(noteTypeFeildValue,"-----------noteTypeFeildValue")
+      // console.log(typeOfFinancialNoteFeildValue,"-----------typeOfFinancialNoteFeildValue")
+      // console.log(searchTextFeildValue,"-----------searchTextFeildValue")
+      // console.log(amountFeildValue,"-----------amountFeildValue")
+      // console.log(puroposeFeildValue,"-----------puroposeFeildValue")
     // const peoplePickerContext: IPeoplePickerContext = {
     //   absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
     //   msGraphClientFactory: this.props.context.msGraphClientFactory,
     //   spHttpClient: this.props.context.spHttpClient
     // };
    
-    const handleFileChange = (files: FileList | null) => {
+    const handleFileChange = (files: FileList | null,typeOfDoc:string) => {
       // Handle file change logic here
+      console.log(typeOfDoc)
       if (files) {
         console.log('Selected files:', files);
         // Example: You can perform additional logic here, such as uploading files to a server
@@ -530,7 +571,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', marginTop: '8px', marginBottom: '8px' }}>
               <div style={{ display: 'flex' }}>
-              <PeoplePicker
+              {/* <PeoplePicker
                 context={this._peopplePicker}
                 titleText="People Picker"
                 personSelectionLimit={3}
@@ -542,7 +583,8 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 onChange={this._getPeoplePickerItems}
                 // showHiddenInUI={false}
                 principalTypes={[PrincipalType.User]}
-                resolveDelay={1000} />
+                resolveDelay={1000} /> */}
+                <PeoplePicker/>
                 <button type="button" className={`${styles.commonBtn2} ${styles.addBtn}`}>
                   <span>+</span>Add
                 </button>
@@ -580,14 +622,14 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
             <p className={styles.label}>
               Note PDF<span className={styles.warning}>*</span>
             </p>
-            <UploadFileComponent onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
+            <UploadFileComponent typeOfDoc="notePdF" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
             <p className={styles.message}>Allowed only one PDF. Up to 10MB max.</p>
           </div>
           <div>
             <p className={styles.label}>
               Supporting Documents
             </p>
-            <UploadFileComponent onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
+            <UploadFileComponent typeOfDoc="supportingDocument" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
             <p className={styles.message}>Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.</p>
           </div>
         </div>

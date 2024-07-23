@@ -6,7 +6,7 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 import * as strings from 'FormWebPartStrings';
-import Form from './components/Form';
+import Form from './components/uiComponents/Form';
 import { IFormProps } from './components/IFormProps';
 
 import { spfi, SPFx } from "@pnp/sp";
