@@ -13,6 +13,7 @@ import Title from './titleSectionComponent/title';
 import SpanComponent from './spanComponent/spanComponent';
 import GetForm from '../spListGet/spListGet';
 import PeoplePicker from './peoplePickerInKenod/peoplePickerInKendo';
+import AlertComponent from './alter/alter';
 import "@pnp/sp/fields";
 // import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 // import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
@@ -45,6 +46,7 @@ interface IMainFormState {
   notePdfFile: File | null;
   // eslint-disable-next-line @rushstack/no-new-null
   supportingFile:File | null;
+  isWarning:boolean;
   
   
 
@@ -87,7 +89,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         amountFeildValue: "",
         puroposeFeildValue: "",
         notePdfFile:null,
-        supportingFile:null
+        supportingFile:null,
+        isWarning:true,
 
 
 
@@ -123,7 +126,7 @@ private getfield = async () => {
     const fieldDetails = await this.props.sp.web.lists.getByTitle("eCommittee").fields.filter("Hidden eq false and ReadOnlyField eq false")();
     // console.log(fieldDetails)
 
-    fieldDetails.map(each=>console.log(each.StaticName))
+    // fieldDetails.map(each=>console.log(each.StaticName))
     const filtering = fieldDetails.map(_x=>{
       if(_x.TypeDisplayName ==="Choice"){
         console.log(_x.InternalName,":" ,_x.Choices)
@@ -390,7 +393,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
       // console.log(amountFeildValue,"-----------amountFeildValue")
       // console.log(puroposeFeildValue,"-----------puroposeFeildValue")
     try {
-      await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+      const id =await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
         Title: `AD/${new Date().getHours()}-${new Date().getSeconds()}`,
         Department:"devlopment",
         CommitteeName:this.state.committeeNameFeildValue,
@@ -404,10 +407,13 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
         Purpose:this.state.puroposeFeildValue
        
       });
+      console.log(id)
       console.log("Item added successfully");
     } catch (error) {
       console.error("Error adding item: ", error);
     }
+
+
   }
 
 
@@ -474,6 +480,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 onChange={this.handleCommittename}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)' ,borderRadius:'8px'} }}
               />
+               {this.state.isWarning?<AlertComponent/>:''}
             </div>
             
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
@@ -481,6 +488,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 Subject<SpanComponent />
               </label>
               <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              {this.state.isWarning?<AlertComponent/>:''}
             </div>
            
 
@@ -497,6 +505,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
 
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
+               {this.state.isWarning?<AlertComponent/>:''}
             </div>
             {this.state.isNatureOfApprovalOrSanction? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
@@ -508,6 +517,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 options={this.state.natureOfApprovalSancation}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
+               {this.state.isWarning?<AlertComponent/>:''}
             </div>:""}
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
@@ -523,6 +533,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 selectedKey={this.state.noteTypeValue ? this.state.noteTypeValue.key : undefined}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
+               {this.state.isWarning?<AlertComponent/>:''}
             </div>
             {this.state.isTypeOfFinacialNote? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
@@ -534,6 +545,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 options={typeOfFinancialNote}
                 styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
+               {this.state.isWarning?<AlertComponent/>:''}
             </div>:""}
            
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
@@ -541,6 +553,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 Search Text<SpanComponent />
               </label>
               <TextField onChange={this.handleSearchText} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              {this.state.isWarning?<AlertComponent/>:''}
             </div>
             { 
               this.state.isAmountVisable? <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
@@ -548,6 +561,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 Amount<SpanComponent />
               </label>
               <TextField onChange={this.handleAmount} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              {this.state.isWarning?<AlertComponent/>:''}
             </div>:""
             }
             {
@@ -556,6 +570,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
                 Purpose<SpanComponent />
               </label>
               <TextField onChange={this.handlePurpose} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              {this.state.isWarning?<AlertComponent/>:''}
             </div>:""
             }
            
@@ -625,6 +640,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
             <UploadFileComponent typeOfDoc="notePdF" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />
             <p className={styles.message}>Allowed only one PDF. Up to 10MB max.</p>
           </div>
+         
           <div>
             <p className={styles.label}>
               Supporting Documents
