@@ -6,6 +6,8 @@ import styles from '../Form.module.scss';
 import { IFormProps } from '../IFormProps';
 import { TextField } from '@fluentui/react';
 import { Dropdown, IDropdownOption } from 'office-ui-fabric-react'; 
+// import { Input, InputChangeEvent } from '@progress/kendo-react-inputs';
+import { DropDownList } from '@progress/kendo-react-dropdowns';
 import TableComponent from './tableSwap';
 import UploadFileComponent from './uploadFile';
 import Header from './Header/header';
@@ -25,9 +27,9 @@ interface IMainFormState {
   getAllDropDownOptions:any;
   natureOfNote:IDropdownOption[];
   natureOfApprovalSancation:IDropdownOption[];
-  committename:IDropdownOption[];
+  committename:string[];
   typeOfFinancialNote:IDropdownOption[];
-  noteType:IDropdownOption[];
+  noteType:string[];
   isPuroposeVisable:boolean;
   isAmountVisable:boolean;
   isTypeOfFinacialNote:boolean;
@@ -55,6 +57,12 @@ interface IMainFormState {
 }
 
 export const FormContext = React.createContext<any>(null);
+
+// const committeeOptions = [
+//    'committeeA' ,
+//    'committeeB',
+//    'committeeC' 
+// ];
 
 
 
@@ -156,8 +164,10 @@ private getfield = async () => {
           else if (each[0] === "NoteType") {
             // console.log(each[1]);
             const noteTypeArray = each[1].map((item,index) => {
-              return {key:index+1,text:item}
+              return item
             });
+
+            console.log(noteTypeArray)
 
             this.setState({noteType:noteTypeArray})
             
@@ -183,7 +193,7 @@ private getfield = async () => {
           else if (each[0] === "CommitteeName") {
             // console.log(each[1]);
             const committenameArray = each[1].map((item,index) => {
-              return {key:index+1,text:item}
+              return item
             });
 
             this.setState({committename:committenameArray})
@@ -255,11 +265,17 @@ private getfield = async () => {
   // general section --------handling
   // general section --------handling
   // general section --------handling
-  private handleCommittename(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    // console.log(item.text);
-    // this.setState({ noteTypeValue: item });
-    const value = item.text
-    this.setState({committeeNameFeildValue:value})
+  // private handleCommittename(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+  //   // console.log(item.text);
+  //   // this.setState({ noteTypeValue: item });
+  //   const value = item.text
+  //   this.setState({committeeNameFeildValue:value})
+  // }
+
+  private handleCommittename(event: any): void {
+    const value = event.value;
+    console.log(value);
+    this.setState({ committeeNameFeildValue: value });
   }
 
   private handleSubject(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
@@ -289,17 +305,28 @@ private getfield = async () => {
   
   }
 
-  private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    // console.log(item.text);
-    
-    if (item.text === "Finanical" ){
-      console.log(item.text);
-      this.setState({ noteTypeFeildValue: item.text ,isTypeOfFinacialNote:true,isAmountVisable:true});
-
-    }else{
-      this.setState({ noteTypeFeildValue: item.text,isTypeOfFinacialNote:false,isAmountVisable:false });
+  private handleNoteType = (event: any): void => {
+    const item = event.value;  // Kendo UI passes the selected value directly
+    console.log( item)
+    if (item === "Finanical") {
+      console.log(item);
+      this.setState({ noteTypeFeildValue: item, isTypeOfFinacialNote: true, isAmountVisable: true });
+    } else {
+      this.setState({ noteTypeFeildValue: item, isTypeOfFinacialNote: false, isAmountVisable: false });
     }
   }
+
+  // private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
+  //   // console.log(item.text);
+    
+  //   if (item.text === "Finanical" ){
+  //     console.log(item.text);
+  //     this.setState({ noteTypeFeildValue: item.text ,isTypeOfFinacialNote:true,isAmountVisable:true});
+
+  //   }else{
+  //     this.setState({ noteTypeFeildValue: item.text,isTypeOfFinacialNote:false,isAmountVisable:false });
+  //   }
+  // }
 
   private handleTypeOfFinanicalNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
     // console.log(item.text);
@@ -420,7 +447,7 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
   
   public render(): React.ReactElement<IFormProps> {
 
-    const {natureOfNote,committename,typeOfFinancialNote,noteType,
+    const {natureOfNote,typeOfFinancialNote,
       // noteTypeFeildValue
       // committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue
     } = this.state
@@ -474,11 +501,11 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label>
                 Committee Name<SpanComponent />
               </label>
-              <Dropdown
-                placeholder="Select an option"
-                options={committename}
+              <DropDownList
+                // data={committename}
+                data={this.state.committename}
+                
                 onChange={this.handleCommittename}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)' ,borderRadius:'8px'} }}
               />
                {this.state.isWarning?<AlertComponent/>:''}
             </div>
@@ -523,15 +550,13 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label>
                 Note Type<SpanComponent />
               </label>
-              <Dropdown
-
-                placeholder="Select an option"
+              <DropDownList
+                     data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                // textField="text"  // The field from data items to display in the dropdown
+                // dataItemKey="value"  // The field from data items to use as the key
                 onChange={this.handleNoteType}
-                // options={noteTypeOptions}
-                options={noteType}
-                // options={this.dropDownAssign("NoteType")}
-                selectedKey={this.state.noteTypeValue ? this.state.noteTypeValue.key : undefined}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
+                // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                style={{ border: '1px solid rgb(211, 211, 211)', borderRadius: '8px' }}  // Inline styles
               />
                {this.state.isWarning?<AlertComponent/>:''}
             </div>
