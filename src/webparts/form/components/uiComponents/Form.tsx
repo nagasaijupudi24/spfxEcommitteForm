@@ -5,8 +5,9 @@ import styles from '../Form.module.scss';
 // import { SPFI } from "@pnp/sp";
 import { IFormProps } from '../IFormProps';
 import { TextField } from '@fluentui/react';
-import { Dropdown, IDropdownOption } from 'office-ui-fabric-react'; 
-// import { Input, InputChangeEvent } from '@progress/kendo-react-inputs';
+import { IDropdownOption } from 'office-ui-fabric-react'; 
+// import {  InputChangeEvent } from '@progress/kendo-react-inputs';
+import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import TableComponent from './tableSwap';
 import UploadFileComponent from './uploadFile';
@@ -25,10 +26,10 @@ interface IMainFormState {
   new: string;
   itemsFromSpList: any[];
   getAllDropDownOptions:any;
-  natureOfNote:IDropdownOption[];
-  natureOfApprovalSancation:IDropdownOption[];
+  natureOfNote:string[];
+  natureOfApprovalSancation:string[];
   committename:string[];
-  typeOfFinancialNote:IDropdownOption[];
+  typeOfFinancialNote:string[];
   noteType:string[];
   isPuroposeVisable:boolean;
   isAmountVisable:boolean;
@@ -36,7 +37,8 @@ interface IMainFormState {
   isNatureOfApprovalOrSanction:boolean;
   //generalSection
   committeeNameFeildValue:string;
-  subjectFeildValue:string;
+  subjectFeildValue: string | number | readonly string[];
+  
   natureOfNoteFeildValue:string;
   noteTypeFeildValue:string;
   natureOfApprovalOrSanctionFeildValue:string;
@@ -155,7 +157,7 @@ private getfield = async () => {
         if (each[0] === "natureOfNote") {
             // console.log(each[1]);
             const natureOfNoteArray = each[1].map((item,index) => {
-              return {key:index+1,text:item}
+              return item
             });
 
             this.setState({natureOfNote:natureOfNoteArray})
@@ -175,7 +177,7 @@ private getfield = async () => {
           else if (each[0] === "NatuerOfApprovalSanction") {
             // console.log(each[1]);
             const typeOfNatureOfApprovalSancation = each[1].map((item,index) => {
-              return {key:index+1,text:item}
+              return item
             });
 
             this.setState({natureOfApprovalSancation:typeOfNatureOfApprovalSancation})
@@ -184,7 +186,7 @@ private getfield = async () => {
           else if (each[0] === "TypeOfFinancialNote") {
             // console.log(each[1]);
             const typeOfFinancialNoteArray = each[1].map((item,index) => {
-              return {key:index+1,text:item}
+              return item
             });
 
             this.setState({typeOfFinancialNote:typeOfFinancialNoteArray})
@@ -278,31 +280,49 @@ private getfield = async () => {
     this.setState({ committeeNameFeildValue: value });
   }
 
-  private handleSubject(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
-    // console.log(newValue)
-    const value = newValue || ''; // Ensure value is a string
+  // private handleSubject(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
+  //   // console.log(newValue)
+  //   const value = newValue || ''; // Ensure value is a string
+  //   this.setState({ subjectFeildValue: value });
+  // }
+
+  // private handleSubject = (event: InputChangeEvent): void => {
+  //   const value = event.target.value ?? ''; // Handle undefined values
+  //   console.log(value);
+  //   this.setState({ subjectFeildValue: value });
+  // };
+
+  private handleSubject = (event: TextBoxChangeEvent) => {
+    // const value = event.target.value ?? ''; // Handle undefined values
+    // console.log(value);
+    // this.setState({ subjectFeildValue: value });
+    const value: string | number | readonly string[] = event.target.value ?? '';
+    console.log(value)
     this.setState({ subjectFeildValue: value });
-  }
+  };
 
 
-  private handleNatureOfNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    // console.log(item.text);
-    
-    if (item.text === "Sanction" || item.text === "Approval"){
+  private handleNatureOfNote(event: any): void {
+    const item = event.value;
+    console.log(item);
+    if (item === "Sanction" || item === "Approval"){
       this.setState({ natureOfNoteFeildValue: item.text ,isNatureOfApprovalOrSanction:true,isPuroposeVisable:true});
 
     }else{
       this.setState({ natureOfNoteFeildValue: item.text,isNatureOfApprovalOrSanction:false,isPuroposeVisable:false });
     }
-
-   
   }
 
-  private handleNatureOfApprovalOrSanction(event: React.FormEvent<HTMLDivElement>, option: IDropdownOption): void {
-    // console.log(item.text);
-    this.setState({ natureOfApprovalOrSanctionFeildValue:option.text });
+
 
   
+
+  
+
+  private handleNatureOfApprovalOrSanction(event: any): void {
+    const value = event.value;
+    console.log(value);
+    this.setState({ natureOfApprovalOrSanctionFeildValue: value });
   }
 
   private handleNoteType = (event: any): void => {
@@ -328,9 +348,12 @@ private getfield = async () => {
   //   }
   // }
 
-  private handleTypeOfFinanicalNote(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    // console.log(item.text);
-    this.setState({ typeOfFinancialNoteFeildValue: item.text });
+ 
+
+  private handleTypeOfFinanicalNote(event: any): void {
+    const value = event.value;
+    console.log(value);
+    this.setState({ typeOfFinancialNoteFeildValue: value });
   }
 
   private handleSearchText(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
@@ -447,10 +470,10 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
   
   public render(): React.ReactElement<IFormProps> {
 
-    const {natureOfNote,typeOfFinancialNote,
-      // noteTypeFeildValue
-      // committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue
-    } = this.state
+    // const {
+    //   // noteTypeFeildValue
+    //   // committeeNameFeildValue,subjectFeildValue,natureOfNoteFeildValue,noteTypeFeildValue,natureOfApprovalOrSanctionFeildValue,typeOfFinancialNoteFeildValue,searchTextFeildValue,amountFeildValue,puroposeFeildValue
+    // } = this.state
       // console.log(committeeNameFeildValue,"-----------committeeNameFeildValue")
       // console.log(subjectFeildValue,"-----------subjectFeildValue")
       // console.log(natureOfNoteFeildValue,"-----------natureOfNoteFeildValue")
@@ -512,9 +535,13 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
             
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label style={{ fontWeight: '600' }}>
-                Subject<SpanComponent />
+                Subject <SpanComponent />
               </label>
-              <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} />
+              {/* <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
+              <TextBox
+                value={this.state.subjectFeildValue}
+                onChange={this.handleSubject}
+              />
               {this.state.isWarning?<AlertComponent/>:''}
             </div>
            
@@ -524,13 +551,12 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label>
                 Nature of Note<SpanComponent />
               </label>
-              <Dropdown
-                placeholder="Select an option"
-                // options={options}
-                options={natureOfNote}
+             
+               <DropDownList
+                // data={committename}
+                data={this.state.natureOfNote}
+                
                 onChange={this.handleNatureOfNote}
-
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
               />
                {this.state.isWarning?<AlertComponent/>:''}
             </div>
@@ -538,11 +564,14 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label>
                 Nature of Approval/Sanction<SpanComponent />
               </label>
-              <Dropdown
+             
+               <DropDownList
+                     data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
+                // textField="text"  // The field from data items to display in the dropdown
+                // dataItemKey="value"  // The field from data items to use as the key
                 onChange={this.handleNatureOfApprovalOrSanction}
-                placeholder="Select an option"
-                options={this.state.natureOfApprovalSancation}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
+                // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                style={{ border: '1px solid rgb(211, 211, 211)', borderRadius: '8px' }}  // Inline styles
               />
                {this.state.isWarning?<AlertComponent/>:''}
             </div>:""}
@@ -564,11 +593,13 @@ private async handleSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent
               <label>
                 Type of Financial Note<SpanComponent />
               </label>
-              <Dropdown
+              <DropDownList
+                     data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
+                // textField="text"  // The field from data items to display in the dropdown
+                // dataItemKey="value"  // The field from data items to use as the key
                 onChange={this.handleTypeOfFinanicalNote}
-                placeholder="Select an option"
-                options={typeOfFinancialNote}
-                styles={{ title: { border: '1px solid rgb(211, 211, 211)',borderRadius:'8px' } }}
+                // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                style={{ border: '1px solid rgb(211, 211, 211)', borderRadius: '8px' }}  // Inline styles
               />
                {this.state.isWarning?<AlertComponent/>:''}
             </div>:""}
