@@ -78,8 +78,9 @@ interface IMainFormState {
   isWarningAmountField: boolean;
   isWarningSearchText: boolean;
   isWarningTypeOfFinancialNote: boolean;
-  noteData: any;
-  files: File[];
+  eCommitteData: any;
+  noteTofiles: File[];
+  supportingDocumentfiles:File[];
 }
 
 export const FormContext = React.createContext<any>(null);
@@ -117,7 +118,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       natureOfApprovalOrSanctionFeildValue: "",
       typeOfFinancialNoteFeildValue: "",
       searchTextFeildValue: "",
-      amountFeildValue: "",
+      amountFeildValue: 0,
       puroposeFeildValue: "",
       notePdfFile: null,
       supportingFile: null,
@@ -125,8 +126,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       isWarningAmountField: false,
       isWarningSearchText: false,
       isWarningTypeOfFinancialNote: false,
-      noteData: {},
-      files: [],
+      eCommitteData: {},
+      noteTofiles: [],
+      supportingDocumentfiles:[]
+
     };
     // general section --------handling---------start
     this.handleCommittename = this.handleCommittename.bind(this);
@@ -395,10 +398,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   // }
   public handletextBoxChange = (e: any, fieldName: string) => {
     const { value } = e.target;
-    console.log(this.state.noteData, "noteData");
+    console.log(this.state.eCommitteData, "eCommitteData");
     this.setState((prev) => ({
-      noteData: {
-        ...prev.noteData,
+      eCommitteData: {
+        ...prev.eCommitteData,
         [fieldName]: value,
       },
     }));
@@ -467,15 +470,16 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   // general section --------handling---------end
   // general section --------handling---------end
 
-  private createFolder = async (req: string): Promise<void> => {
-    const folderName = req.replace(/\//g, "-");
+  private createSubFolder = async (parentFolderPath:string): Promise<void> => {
+    console.log(parentFolderPath)
+   
     try {
       // const url = "/sites/uco/Shared Documents/MyFolder"
-      console.log(this.props.context.pageContext.web.serverRelativeUrl);
-      const absUrl = this.props.context.pageContext.web.serverRelativeUrl;
-      const siteUrl = `${absUrl}/ECommitteeDocuments/${folderName}`;
+
+      
+      const siteUrl = `${parentFolderPath}/Pdf`;
       console.log(siteUrl);
-      const filesData = this.state.files;
+      const filesData = this.state.noteTofiles;
       await this.props.sp.web.rootFolder.folders
         .addUsingPath(siteUrl)
         .then(async (res) => {
@@ -489,10 +493,62 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           }
         });
 
+      const siteUrlforSupportingDocument = `${parentFolderPath}/SupportingDocument`;
+      console.log(siteUrlforSupportingDocument);
+      const filesDataSupportingDocument = this.state.supportingDocumentfiles;
+      await this.props.sp.web.rootFolder.folders
+        .addUsingPath(siteUrlforSupportingDocument)
+        .then(async (res) => {
+          for (let i = 0; i < filesDataSupportingDocument.length; i++) {
+            const file = filesDataSupportingDocument[i];
+            const arrayBuffer = await file.arrayBuffer();
+            // Upload a file to the SharePoint Library
+            await this.props.sp.web
+              .getFolderByServerRelativePath(siteUrlforSupportingDocument)
+              .files.addUsingPath(file.name, arrayBuffer, { Overwrite: true });
+          }
+        });
+
+      // creates a new folder for web with specified server relative url
+      // const folderAddResult = await this.props.sp.web.folders.addUsingPath(url);
+
+      console.log(`Folder -----PDF---- created successfully in list `);
+      
+    } catch (error) {
+      console.error(`Error creating folder: ${error}`);
+    }
+  };
+
+  private createFolder = async (req: string): Promise<void> => {
+    const folderName = req.replace(/\//g, "-");
+    try {
+      // const url = "/sites/uco/Shared Documents/MyFolder"
+      console.log(this.props.context.pageContext.web.serverRelativeUrl);
+      const absUrl = this.props.context.pageContext.web.serverRelativeUrl;
+      const siteUrl = `${absUrl}/ECommitteeDocuments/${folderName}`;
+      console.log(siteUrl);
+      // const filesData = this.state.files;
+      // const folderId = 
+      await this.props.sp.web.rootFolder.folders
+        .addUsingPath(siteUrl)
+      //   .then(async (res) => {
+      //     for (let i = 0; i < filesData.length; i++) {
+      //       const file = filesData[i];
+      //       const arrayBuffer = await file.arrayBuffer();
+      //       // Upload a file to the SharePoint Library
+      //       await this.props.sp.web
+      //         .getFolderByServerRelativePath(siteUrl)
+      //         .files.addUsingPath(file.name, arrayBuffer, { Overwrite: true });
+      //     }
+      //   }
+      // );
+
       // creates a new folder for web with specified server relative url
       // const folderAddResult = await this.props.sp.web.folders.addUsingPath(url);
 
       console.log(`Folder '${folderName}' created successfully in list `);
+      // eslint-disable-next-line no-void
+      void this.createSubFolder(siteUrl)
     } catch (error) {
       console.error(`Error creating folder: ${error}`);
     }
@@ -540,24 +596,24 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private createNoteObject = (): INoteObject => ({
     Department: "development",
-    CommitteeName: this.state.committeeNameFeildValue,
-    Subject: this.state.subjectFeildValue,
-    natureOfNote: this.state.natureOfNoteFeildValue,
-    NatuerOfApprovalSanction: this.state.natureOfApprovalOrSanctionFeildValue,
-    NoteType: this.state.noteTypeFeildValue,
-    TypeOfFinancialNote: this.state.typeOfFinancialNoteFeildValue,
-    Amount: this.state.amountFeildValue,
-    Search_x0020_Keyword: this.state.searchTextFeildValue,
-    Purpose: this.state.puroposeFeildValue,
+    CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
+    Subject: this.state.eCommitteData.subjectFeildValue,
+    natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
+    NatuerOfApprovalSanction: this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
+    NoteType: this.state.eCommitteData.noteTypeFeildValue,
+    TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
+    Amount: this.state.eCommitteData.amountFeildValue,
+    Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
+    Purpose: this.state.eCommitteData.puroposeFeildValue,
   });
 
-  private isNatureOfApprovalOrSanction=()=>{
-    let isValid=true;
-    if((this.state.natureOfNoteFeildValue === "Sanction" || this.state.natureOfNoteFeildValue ==="Approval") && this.state.natureOfApprovalOrSanctionFeildValue ===""){
-      isValid =false;
-    }
-    return isValid;
-  }
+  // private isNatureOfApprovalOrSanction=()=>{
+  //   let isValid=true;
+  //   if((this.state.natureOfNoteFeildValue === "Sanction" || this.state.natureOfNoteFeildValue ==="Approval") && this.state.natureOfApprovalOrSanctionFeildValue ===""){
+  //     isValid =false;
+  //   }
+  //   return isValid;
+  // }
 
   private async handleSubmit(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -591,42 +647,157 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log(searchTextFeildValue, "-----------searchTextFeildValue");
     console.log(amountFeildValue, "-----------amountFeildValue");
     console.log(puroposeFeildValue, "-----------puroposeFeildValue");
+    console.log(this.state.noteTypeFeildValue ==='Finanical' && this.state.natureOfNoteFeildValue === 'Information'||'Ratification' ,"check..........................")
     try {
-      // if(this.state.natureOfNoteFeildValue ==='Sanction' ||this.state.natureOfNoteFeildValue==='Approval' && )
-      if (
-        this.state.committeeNameFeildValue &&
-          this.state.subjectFeildValue &&
-          this.state.natureOfNoteFeildValue &&
-          this.state.natureOfApprovalOrSanctionFeildValue &&
-          this.state.noteTypeFeildValue &&
-          this.state.typeOfFinancialNoteFeildValue &&
-          this.state.amountFeildValue &&
-          this.state.searchTextFeildValue &&
-          this.state.puroposeFeildValue &&
-          this.isNatureOfApprovalOrSanction()
-       
-      ) {
-        const id = await this.props.sp.web.lists
-          .getByTitle("eCommittee")
-          .items.add(this.createNoteObject());
-        console.log(id.Id, "id");
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._generateRequsterNumber(id.Id);
-
-        // console.log(id)
-        console.log("Item added successfully");
-        this.setState({
-          isWarning: false,
-          isWarningAmountField: false,
-          isWarningSearchText: false,
-        });
-      } else {
-        this.setState({
-          isWarning: true,
-          isWarningAmountField: true,
-          isWarningSearchText: true,
-        });
+      // eslint-disable-next-line no-constant-condition
+      if(this.state.noteTypeFeildValue ==='Finanical' && this.state.natureOfNoteFeildValue === 'Information'||'Ratification' ){
+        console.log('financial')
+        if (
+          this.state.committeeNameFeildValue &&
+            this.state.subjectFeildValue &&
+            this.state.natureOfNoteFeildValue &&
+            
+            this.state.noteTypeFeildValue &&
+            this.state.typeOfFinancialNoteFeildValue &&
+            this.state.amountFeildValue &&
+            this.state.searchTextFeildValue 
+            
+            // this.isNatureOfApprovalOrSanction()
+         
+        ) {
+          const id = await this.props.sp.web.lists
+            .getByTitle("eCommittee")
+            .items.add(this.createNoteObject());
+          console.log(id.Id, "id");
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this._generateRequsterNumber(id.Id);
+  
+          // console.log(id)
+          console.log("Item added successfully");
+          this.setState({
+            isWarning: false,
+            isWarningAmountField: false,
+            isWarningSearchText: false,
+          });
+        } else {
+          this.setState({
+            isWarning: true,
+            isWarningAmountField: true,
+            isWarningSearchText: true,
+          });
+        }
       }
+      else if(this.state.natureOfNoteFeildValue ==='Sanction'||'Approval' && this.state.noteTypeFeildValue==='NonFinancial'){
+        console.log('else entered','sanction,approval','nonFinancial')
+        if (
+          this.state.committeeNameFeildValue &&
+            this.state.subjectFeildValue &&
+            this.state.natureOfNoteFeildValue &&
+            this.state.natureOfApprovalOrSanctionFeildValue &&
+            this.state.noteTypeFeildValue &&
+            
+            this.state.searchTextFeildValue &&
+            this.state.puroposeFeildValue 
+         
+        ) {
+          const id = await this.props.sp.web.lists
+            .getByTitle("eCommittee")
+            .items.add(this.createNoteObject());
+          console.log(id.Id, "id");
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this._generateRequsterNumber(id.Id);
+  
+          // console.log(id)
+          console.log("Item added successfully");
+          this.setState({
+            isWarning: false,
+            isWarningAmountField: false,
+            isWarningSearchText: false,
+          });
+        } else {
+          this.setState({
+            isWarning: true,
+            isWarningAmountField: true,
+            isWarningSearchText: true,
+          });
+        }
+      }
+
+      
+      else if(this.state.natureOfNoteFeildValue ==='Sanction' || this.state.natureOfNoteFeildValue ==='Approval' &&this.state.noteTypeFeildValue ==='Finanical' ){
+        console.log('else entered','sanction,approval','financial')
+        if (
+          this.state.committeeNameFeildValue &&
+            this.state.subjectFeildValue &&
+            this.state.natureOfNoteFeildValue &&
+            this.state.natureOfApprovalOrSanctionFeildValue &&
+            this.state.noteTypeFeildValue &&
+            this.state.typeOfFinancialNoteFeildValue &&
+            this.state.amountFeildValue &&
+            this.state.searchTextFeildValue &&
+            this.state.puroposeFeildValue 
+         
+        ) {
+          const id = await this.props.sp.web.lists
+            .getByTitle("eCommittee")
+            .items.add(this.createNoteObject());
+          console.log(id.Id, "id");
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this._generateRequsterNumber(id.Id);
+  
+          // console.log(id)
+          console.log("Item added successfully");
+          this.setState({
+            isWarning: false,
+            isWarningAmountField: false,
+            isWarningSearchText: false,
+          });
+        } else {
+          this.setState({
+            isWarning: true,
+            isWarningAmountField: true,
+            isWarningSearchText: true,
+          });
+        }
+      }
+      else{
+        if (
+          this.state.committeeNameFeildValue &&
+            this.state.subjectFeildValue &&
+            this.state.natureOfNoteFeildValue &&
+          
+            this.state.noteTypeFeildValue &&
+         
+            
+            this.state.searchTextFeildValue 
+           
+         
+        ) {
+          console.log('else entered')
+          const id = await this.props.sp.web.lists
+            .getByTitle("eCommittee")
+            .items.add(this.createNoteObject());
+          console.log(id.Id, "id");
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this._generateRequsterNumber(id.Id);
+  
+          // console.log(id)
+          console.log("Item added successfully");
+          this.setState({
+            isWarning: false,
+            isWarningAmountField: false,
+            isWarningSearchText: false,
+          });
+        } else {
+          this.setState({
+            isWarning: true,
+            isWarningAmountField: true,
+            isWarningSearchText: true,
+          });
+
+      }
+      }
+      
     } catch (error) {
       console.error("Error adding item: ", error);
     }
@@ -650,18 +821,28 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     void this.createFolder(requesterNo);
   };
 
-  private handleFileChange = (files: FileList | null, typeOfDoc: string) => {
+  private handleNoteToFileChange = (files: FileList | null, typeOfDoc: string) => {
     console.log(typeOfDoc);
     if (files) {
       console.log(files);
       // Convert FileList to an array of File objects
       const filesArray = Array.from(files);
-      this.setState((prev) => ({ files: [...prev.files, ...filesArray] }));
+      this.setState((prev) => ({ noteTofiles: [...prev.noteTofiles, ...filesArray] }));
+    }
+  };
+
+  private handleSupportingFileChange = (files: FileList | null, typeOfDoc: string) => {
+    console.log(typeOfDoc);
+    if (files) {
+      console.log(files);
+      // Convert FileList to an array of File objects
+      const filesArray = Array.from(files);
+      this.setState((prev) => ({ supportingDocumentfiles: [...prev.supportingDocumentfiles, ...filesArray] }));
     }
   };
 
   public render(): React.ReactElement<IFormProps> {
-    console.log(this.state.files);
+    // console.log(this.state.files);
 
     return (
       <div className={styles.form}>
@@ -723,13 +904,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             <TextBox
               id="Subject"
               // eslint-disable-next-line dot-notation
-              // value={this.state.noteData["Subject"] ||""}
+              // value={this.state.eCommitteData["Subject"] ||""}
               value={this.state.subjectFeildValue}
               onChange={this.handleSubject}
               // onChange={(e)=>this.handletextBoxChange(e,"Subject")}
               style={{
                 // border: '2px solid #4CAF50',
-                border: "2px solid red",
+                // border: "2px solid red",
+                
                 borderRadius: "5px", // Rounded corners
               }}
             />
@@ -1065,7 +1247,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             </p>
             <UploadFileComponent
               typeOfDoc="notePdF"
-              onChange={this.handleFileChange}
+              onChange={this.handleNoteToFileChange}
               accept=".jpg,.jpeg,.png,.pdf"
             />
             <p className={styles.message}>
@@ -1081,7 +1263,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               /> */}
             <UploadFileComponent
               typeOfDoc="supportingDocument"
-              onChange={this.handleFileChange}
+              onChange={this.handleSupportingFileChange}
               accept=".jpg,.jpeg,.png,.pdf"
             />
             <p className={styles.message}>
