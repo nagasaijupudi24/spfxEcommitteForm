@@ -30,6 +30,7 @@
     "@progress/kendo-react-dropdowns": "^8.1.1",
     "@progress/kendo-react-inputs": "^8.1.1",
     "@progress/kendo-react-intl": "^8.1.1",
+    "@progress/kendo-react-upload": "^8.1.1",
     "@progress/kendo-theme-default": "^8.2.1",
     "bootstrap-icons": "^1.11.3",
     "fluentui-editable-grid": "^1.12.1",
