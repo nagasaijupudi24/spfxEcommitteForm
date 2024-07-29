@@ -1257,10 +1257,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
           <div>
             <p className={styles.label}>Supporting Documents</p>
-            {/* <Upload
-                autoUpload={false}
-                onAdd={this.handleAdd}
-              /> */}
+            
             <UploadFileComponent
               typeOfDoc="supportingDocument"
               onChange={this.handleSupportingFileChange}
