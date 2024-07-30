@@ -14,9 +14,12 @@ import UploadFileComponent from "./uploadFile";
 import Header from "./Header/header";
 import Title from "./titleSectionComponent/title";
 import SpanComponent from "./spanComponent/spanComponent";
+// import MyDialog from "./dialog/dialog";
 // import GetForm from '../spListGet/spListGet';
 import PeoplePicker from "./peoplePickerInKenod/peoplePickerInKendo";
+import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
 // import AlertComponent from "./alter/alter";
+
 import "@pnp/sp/fields";
 import "@pnp/sp/webs";
 import "@pnp/sp/items";
@@ -75,12 +78,25 @@ interface IMainFormState {
   // eslint-disable-next-line @rushstack/no-new-null
   supportingFile: File | null;
   isWarning: boolean;
-  isWarningAmountField: boolean;
-  isWarningSearchText: boolean;
+  isWarningCommittteeName:boolean;
+  isWarningSubject:boolean;
+  isWarningNatureOfNote:boolean;
+  isWarningNatureOfApporvalOrSanction:boolean;
+  isWarningNoteType:boolean;
   isWarningTypeOfFinancialNote: boolean;
+ 
+  isWarningSearchText: boolean;
+
+  
+  isWarningAmountField: boolean;
+  isWarningPurposeField:boolean;
   eCommitteData: any;
   noteTofiles: File[];
+  isWarningNoteToFiles:boolean;
+  
   supportingDocumentfiles:File[];
+  isWarningSupportingDocumentFiles:boolean;
+  isDialogHidden:boolean;
 }
 
 export const FormContext = React.createContext<any>(null);
@@ -123,12 +139,21 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       notePdfFile: null,
       supportingFile: null,
       isWarning: false,
-      isWarningAmountField: false,
-      isWarningSearchText: false,
+      isWarningCommittteeName:false,
+      isWarningSubject:false,
+      isWarningNatureOfNote:false,
+      isWarningNatureOfApporvalOrSanction:false,
+      isWarningNoteType:false,
       isWarningTypeOfFinancialNote: false,
+      isWarningSearchText: false,
+      isWarningAmountField: false,
+      isWarningPurposeField:false,
       eCommitteData: {},
       noteTofiles: [],
-      supportingDocumentfiles:[]
+      isWarningNoteToFiles:false,
+      supportingDocumentfiles:[],
+      isWarningSupportingDocumentFiles:false,
+      isDialogHidden:true
 
     };
     // general section --------handling---------start
@@ -317,8 +342,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log("Dropdown clicked");
     const value = event.value;
     console.log(value);
-    this.setState({ isWarning: false, committeeNameFeildValue: value });
+    this.setState({ isWarningCommittteeName: false, committeeNameFeildValue: value });
   };
+
+  // private closeDialog = (): void => {
+  //   this.setState({isDialogHidden:true})
+  // };
 
   // private handleSubject(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string): void {
   //   // console.log(newValue)
@@ -336,9 +365,18 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // const value = event.target.value ?? ''; // Handle undefined values
     // console.log(value);
     // this.setState({ subjectFeildValue: value });
-    const { value, id } = event.target;
-    console.log(value, id, "-----------handleSubject");
+    const { value } = event.target;
+    // console.log(value, id, "-----------handleSubject");
     this.setState({ subjectFeildValue: value });
+  };
+
+  private handleSubjectRed = (event: any) => {
+    // const value = event.target.value ?? ''; // Handle undefined values
+    // console.log(value);
+    // this.setState({ subjectFeildValue: value });
+    const { value } = event.target;
+    // console.log(value, id, "-----------handleSubject");
+    this.setState({ subjectFeildValue: value ,isWarningSubject:false});
   };
 
   private handleNatureOfNote(event: any): void {
@@ -359,10 +397,37 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     }
   }
 
+  private handleNatureOfNoteRed=(event: any): void =>{
+    const item = event.value;
+    console.log(item);
+    console.log(item === "Sanction" || item === "Approval")
+    if (item === "Sanction" || item === "Approval") {
+      this.setState(({
+        natureOfNoteFeildValue: item,
+        isNatureOfApprovalOrSanction: true,
+        isPuroposeVisable: true,
+        isWarningNatureOfNote:false
+      }));
+    } else {
+      this.setState(({
+        natureOfNoteFeildValue: item,
+        isNatureOfApprovalOrSanction: false,
+        isPuroposeVisable: false,
+        isWarningNatureOfNote:false
+      }));
+    }
+  }
+
   private handleNatureOfApprovalOrSanction(event: any): void {
     const value = event.value;
     console.log(value);
     this.setState({ natureOfApprovalOrSanctionFeildValue: value });
+  }
+
+  private handleNatureOfApprovalOrSanctionRed=(event: any): void =>{
+    const value = event.value;
+    console.log(value);
+    this.setState({ natureOfApprovalOrSanctionFeildValue: value,isWarningNatureOfApporvalOrSanction:false });
   }
 
   private handleNoteType = (event: any): void => {
@@ -384,6 +449,16 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     //   });
     // }
   };
+
+  private handleNoteTypeRed=(event: any): void =>{
+    const value = event.value;
+    console.log(value);
+    this.setState({
+      isWarningNoteType: false,
+      noteTypeFeildValue: value,
+    });
+  }
+
 
   // private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
   //   // console.log(item.text);
@@ -412,7 +487,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ typeOfFinancialNoteFeildValue: value });
   }
 
-  private handleTypeOfFinanicalNoteRed(event: any): void {
+  private handleTypeOfFinanicalNoteRed=(event: any): void=> {
     const value = event.value;
     console.log(value);
     this.setState({
@@ -465,6 +540,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log(value, "-----------handle Purpose");
     this.setState({ puroposeFeildValue: value });
   };
+
+  private handlePurposeRed=(event: any): void=> {
+    const value = event.value;
+    console.log(value);
+    this.setState({
+      isWarningAmountField: false,
+      puroposeFeildValue: value,
+    });
+  }
 
   // general section --------handling---------end
   // general section --------handling---------end
@@ -647,10 +731,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log(searchTextFeildValue, "-----------searchTextFeildValue");
     console.log(amountFeildValue, "-----------amountFeildValue");
     console.log(puroposeFeildValue, "-----------puroposeFeildValue");
-    console.log(this.state.noteTypeFeildValue ==='Finanical' && this.state.natureOfNoteFeildValue === 'Information'||'Ratification' ,"check..........................")
+    console.log(this.state.noteTypeFeildValue ==='Finanical' &&( this.state.natureOfNoteFeildValue === 'Information'||'Ratification') ,",check..........................")
     try {
       // eslint-disable-next-line no-constant-condition
-      if(this.state.noteTypeFeildValue ==='Finanical' && this.state.natureOfNoteFeildValue === 'Information'||'Ratification' ){
+      if(this.state.noteTypeFeildValue ==='Finanical' && (this.state.natureOfNoteFeildValue === 'Information'||'Ratification') ){
         console.log('financial')
         if (
           this.state.committeeNameFeildValue &&
@@ -660,7 +744,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             this.state.noteTypeFeildValue &&
             this.state.typeOfFinancialNoteFeildValue &&
             this.state.amountFeildValue &&
-            this.state.searchTextFeildValue 
+            this.state.searchTextFeildValue &&
+            this.state.noteTofiles.length>0&&
+            this.state.supportingDocumentfiles.length>0
             
             // this.isNatureOfApprovalOrSanction()
          
@@ -676,18 +762,34 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
+            isWarningCommittteeName:false,
+            isWarningSubject:false,
+            isWarningNatureOfNote:false,
+            isWarningNoteType:false,
+            isWarningTypeOfFinancialNote:false,
+
+            // isWarningS
             isWarningAmountField: false,
             isWarningSearchText: false,
+            isWarningNoteToFiles:false,
+            isWarningSupportingDocumentFiles:false
           });
         } else {
           this.setState({
             isWarning: true,
+            isWarningCommittteeName:true,
+            isWarningSubject:true,
+            isWarningNatureOfNote:true,
+            isWarningNoteType:true,
+            isWarningTypeOfFinancialNote:true,
             isWarningAmountField: true,
             isWarningSearchText: true,
+            isWarningNoteToFiles:true,
+            isWarningSupportingDocumentFiles:true
           });
         }
       }
-      else if(this.state.natureOfNoteFeildValue ==='Sanction'||'Approval' && this.state.noteTypeFeildValue==='NonFinancial'){
+      else if((this.state.natureOfNoteFeildValue ==='Sanction'||this.state.natureOfNoteFeildValue ==='Approval' )&& this.state.noteTypeFeildValue==='NonFinancial'){
         console.log('else entered','sanction,approval','nonFinancial')
         if (
           this.state.committeeNameFeildValue &&
@@ -711,20 +813,31 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningAmountField: false,
+            isWarningCommittteeName:false,
+            isWarningSubject:false,
+            isWarningNatureOfNote:false,
+            isWarningNatureOfApporvalOrSanction:false,
+            isWarningNoteType:false,
             isWarningSearchText: false,
+            isWarningPurposeField: false,
           });
         } else {
           this.setState({
             isWarning: true,
-            isWarningAmountField: true,
+            
+            isWarningCommittteeName:true,
+            isWarningSubject:true,
+            isWarningNatureOfNote:true,
+            isWarningNatureOfApporvalOrSanction:true,
+            isWarningNoteType:true,
             isWarningSearchText: true,
+            isWarningPurposeField: true,
           });
         }
       }
 
       
-      else if(this.state.natureOfNoteFeildValue ==='Sanction' || this.state.natureOfNoteFeildValue ==='Approval' &&this.state.noteTypeFeildValue ==='Finanical' ){
+      else if((this.state.natureOfNoteFeildValue ==='Sanction' || this.state.natureOfNoteFeildValue ==='Approval') &&this.state.noteTypeFeildValue ==='Finanical' ){
         console.log('else entered','sanction,approval','financial')
         if (
           this.state.committeeNameFeildValue &&
@@ -749,18 +862,37 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningAmountField: false,
+            isWarningCommittteeName:false,
+            isWarningSubject:false,
+            isWarningNatureOfNote:false,
+            isWarningNatureOfApporvalOrSanction:false,
+            isWarningNoteType:false,
+            isWarningTypeOfFinancialNote:false,
+            isWarningAmountField:false,
             isWarningSearchText: false,
+            isWarningPurposeField: false,
           });
-        } else {
+        } else  {
           this.setState({
             isWarning: true,
-            isWarningAmountField: true,
+            isWarningCommittteeName:true,
+            isWarningSubject:true,
+            isWarningNatureOfNote:true,
+            isWarningNatureOfApporvalOrSanction:true,
+            isWarningNoteType:true,
+            isWarningTypeOfFinancialNote:true,
+            isWarningAmountField:true,
             isWarningSearchText: true,
+            isWarningPurposeField: true,
           });
         }
       }
       else{
+        console.log("final else")
+        // eslint-disable-next-line no-constant-condition
+        if(this.state.natureOfNoteFeildValue === 'Approval' || 'Sanction'){
+          this.setState({isWarningNatureOfApporvalOrSanction:true,isWarningPurposeField:true})
+        }
         if (
           this.state.committeeNameFeildValue &&
             this.state.subjectFeildValue &&
@@ -785,14 +917,32 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningAmountField: false,
+            isWarningCommittteeName:false,
+            isWarningSubject:false,
+            isWarningNatureOfNote:false,
+            
+            isWarningNoteType:false,
+           
+          
             isWarningSearchText: false,
+            
+           
           });
         } else {
+          // alert("Required Fields")
+
+
           this.setState({
             isWarning: true,
-            isWarningAmountField: true,
+            isWarningCommittteeName:true,
+            isWarningSubject:true,
+            isWarningNatureOfNote:true,
+            
+            isWarningNoteType:true,
+           
+          
             isWarningSearchText: true,
+            isDialogHidden:false
           });
 
       }
@@ -823,6 +973,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private handleNoteToFileChange = (files: FileList | null, typeOfDoc: string) => {
     console.log(typeOfDoc);
+
+    if (this.state.isWarningNoteToFiles){
+      this.setState({isWarningNoteToFiles:false})
+    }
+    
+  
     if (files) {
       console.log(files);
       // Convert FileList to an array of File objects
@@ -841,13 +997,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     }
   };
 
+
   public render(): React.ReactElement<IFormProps> {
-    // console.log(this.state.files);
+    console.log(this.state.isWarningTypeOfFinancialNote);
 
     return (
       <div className={styles.form}>
         <Header />
         <Title />
+        {/* <MyDialog  /> */}
 
         <div className={`${styles.generalSectionMainContainer}`}>
           <h1 style={{ textAlign: "center", fontSize: "16px" }}>
@@ -869,8 +1027,19 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               <SpanComponent />
             </label>
 
-            {this.state.isWarning ? (
+            {this.state.isWarningCommittteeName ?
+             (
+              this.state.committeeNameFeildValue !==''?
               <DropDownList
+                // data={committename}
+                style={{
+                  borderRadius: "5px", // Rounded corners
+                }}
+                data={this.state.committename}
+                onChange={this.handleCommittename}
+              />
+
+              :<DropDownList
                 // data={committename}
                 style={{
                   // border: '2px solid #4CAF50',
@@ -880,6 +1049,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 data={this.state.committename}
                 onChange={this.handleCommittenameRedBorder}
               />
+
             ) : (
               <DropDownList
                 // data={committename}
@@ -900,26 +1070,30 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               Subject <SpanComponent />
             </label>
             {/* <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
-            {/* {this.state.isWarning? */}
-            <TextBox
-              id="Subject"
+            {this.state.isWarningSubject?
+            (this.state.subjectFeildValue?<TextBox
+              value={this.state.subjectFeildValue}
+              onChange={this.handleSubject}
+            />
+            :<TextBox
+              // id="Subject"
               // eslint-disable-next-line dot-notation
               // value={this.state.eCommitteData["Subject"] ||""}
               value={this.state.subjectFeildValue}
-              onChange={this.handleSubject}
+              onChange={this.handleSubjectRed}
               // onChange={(e)=>this.handletextBoxChange(e,"Subject")}
               style={{
                 // border: '2px solid #4CAF50',
-                // border: "2px solid red",
-                
+                border: "2px solid red",
+
                 borderRadius: "5px", // Rounded corners
               }}
-            />
-            {/* :
+            />)
+          :
           <TextBox
               value={this.state.subjectFeildValue}
               onChange={this.handleSubject}
-            />} */}
+            />} 
           </div>
 
           <div
@@ -930,11 +1104,17 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               Nature of Note
               <SpanComponent />
             </label>
-            {this.state.isWarning ? (
+            {this.state.isWarningNatureOfNote ? (
+              this.state.natureOfNoteFeildValue!==''?
+              <DropDownList
+              // data={committename}
+              data={this.state.natureOfNote}
+              onChange={this.handleNatureOfNote}
+            />:
               <DropDownList
                 // data={committename}
                 data={this.state.natureOfNote}
-                onChange={this.handleNatureOfNote}
+                onChange={this.handleNatureOfNoteRed}
                 style={{
                   // border: '2px solid #4CAF50',
                   border: "2px solid red",
@@ -958,12 +1138,24 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 Nature of Approval/Sanction
                 <SpanComponent />
               </label>
-              {this.state.isWarning ? (
+              {this.state.isWarningNatureOfApporvalOrSanction ? (
+                this.state.natureOfApprovalOrSanctionFeildValue!==''?
                 <DropDownList
                   data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
                   // textField="text"  // The field from data items to display in the dropdown
                   // dataItemKey="value"  // The field from data items to use as the key
                   onChange={this.handleNatureOfApprovalOrSanction}
+                  // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                  style={{
+                    border: "1px solid rgb(211, 211, 211)",
+                    borderRadius: "8px",
+                  }} // Inline styles
+                />:
+                <DropDownList
+                  data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
+                  // textField="text"  // The field from data items to display in the dropdown
+                  // dataItemKey="value"  // The field from data items to use as the key
+                  onChange={this.handleNatureOfApprovalOrSanctionRed}
                   // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                   style={{
                     border: "1px solid red",
@@ -995,12 +1187,25 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               Note Type
               <SpanComponent />
             </label>
-            {this.state.isWarning ? (
+            {this.state.isWarningNoteType ? (
+              this.state.noteTypeFeildValue?
               <DropDownList
                 data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
                 // textField="text"  // The field from data items to display in the dropdown
                 // dataItemKey="value"  // The field from data items to use as the key
                 onChange={this.handleNoteType}
+                // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                style={{
+                  border: "1px solid rgb(211, 211, 211)",
+                  borderRadius: "8px",
+                }} // Inline styles
+              />
+              :
+              <DropDownList
+                data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                // textField="text"  // The field from data items to display in the dropdown
+                // dataItemKey="value"  // The field from data items to use as the key
+                onChange={this.handleNoteTypeRed}
                 // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                 style={{
                   border: "1px solid red",
@@ -1031,6 +1236,20 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <SpanComponent />
               </label>
               {this.state.isWarningTypeOfFinancialNote ? (
+               ( this.state.typeOfFinancialNoteFeildValue!==''?
+                <DropDownList
+                  data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
+                  // textField="text"  // The field from data items to display in the dropdown
+                  // dataItemKey="value"  // The field from data items to use as the key
+                  onChange={this.handleTypeOfFinanicalNote}
+                  // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                  style={{
+                    border: "1px solid rgb(211, 211, 211)",
+                    borderRadius: "8px",
+                  }} // Inline styles
+                />
+
+                :
                 <DropDownList
                   data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
                   // textField="text"  // The field from data items to display in the dropdown
@@ -1041,7 +1260,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     border: "1px solid red",
                     borderRadius: "8px",
                   }} // Inline styles
-                />
+                />)
               ) : (
                 <DropDownList
                   data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
@@ -1083,6 +1302,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             </label>
             {/* <TextField onChange={this.handleSearchText} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
             {this.state.isWarningSearchText ? (
+              this.state.searchTextFeildValue!==''?
+              <TextBox
+                onChange={this.handleSearchText}
+                style={{
+                  borderRadius: "8px",
+                }}
+              />:
               <TextBox
                 onChange={this.handleSearchTextRed}
                 style={{
@@ -1109,6 +1335,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <SpanComponent />
               </label>
               {this.state.isWarningAmountField ? (
+                this.state.amountFeildValue!==0?
+                <TextBox
+                  onChange={this.handleAmount}
+                  style={{
+                    borderRadius: "8px",
+                  }}
+                />:
                 <TextBox
                   onChange={this.handleAmountRed}
                   style={{
@@ -1151,8 +1384,29 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 Purpose
                 <SpanComponent />
               </label>
-
-              <TextBox onChange={this.handlePurpose} />
+              {this.state.isWarningPurposeField ? (
+                this.state.puroposeFeildValue!==""?
+                <TextBox
+                  onChange={this.handlePurpose}
+                  style={{
+                    borderRadius: "8px",
+                  }}
+                />:
+                <TextBox
+                  onChange={this.handlePurposeRed}
+                  style={{
+                    border: "1px solid red",
+                    borderRadius: "8px",
+                  }}
+                />
+              ) : (
+                <TextBox
+                  onChange={this.handlePurpose}
+                  style={{
+                    borderRadius: "8px",
+                  }}
+                />
+              )}
             </div>
           ) : (
             ""
@@ -1204,6 +1458,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           </div>
           <div className={`${styles.tableContainer}`}>
             <TableComponent />
+            <MultiComboBoxTable/>/
           </div>
           <div>
             <div
@@ -1245,11 +1500,25 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             <p className={styles.label}>
               Note PDF<span className={styles.warning}>*</span>
             </p>
+            {this.state.isWarningNoteToFiles?
+            <div style={{border:'1px solid red'}}>
+              <UploadFileComponent
+                typeOfDoc="notePdF"
+                onChange={this.handleNoteToFileChange}
+                accept=".jpg,.jpeg,.png,.pdf"
+              />
+
+            </div>:
+            <div>
             <UploadFileComponent
               typeOfDoc="notePdF"
               onChange={this.handleNoteToFileChange}
               accept=".jpg,.jpeg,.png,.pdf"
             />
+
+          </div>}
+            
+            
             <p className={styles.message}>
               Allowed only one PDF. Up to 10MB max.
             </p>
@@ -1257,7 +1526,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
           <div>
             <p className={styles.label}>Supporting Documents</p>
-            
+
             <UploadFileComponent
               typeOfDoc="supportingDocument"
               onChange={this.handleSupportingFileChange}
@@ -1268,7 +1537,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             </p>
           </div>
         </div>
-        <div></div>
+        
         <div
           style={{
             marginTop: "10px",
