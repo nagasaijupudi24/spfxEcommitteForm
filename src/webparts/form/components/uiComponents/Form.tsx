@@ -4,22 +4,24 @@ import * as React from "react";
 import styles from "../Form.module.scss";
 // import { SPFI } from "@pnp/sp";
 import { IFormProps } from "../IFormProps";
-import { TextField } from "@fluentui/react";
+import { DefaultButton } from "@fluentui/react";
 import { IDropdownOption } from "office-ui-fabric-react";
 // import {  InputChangeEvent } from '@progress/kendo-react-inputs';
 import { TextBox, TextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { DropDownList } from "@progress/kendo-react-dropdowns";
-import TableComponent from "./tableSwap";
+// import TableComponent from "./tableSwap";
 import UploadFileComponent from "./uploadFile";
 import Header from "./Header/header";
 import Title from "./titleSectionComponent/title";
 import SpanComponent from "./spanComponent/spanComponent";
 // import MyDialog from "./dialog/dialog";
 // import GetForm from '../spListGet/spListGet';
-import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+// import PeoplePicker from "./peoplePickerInKenod/peoplePickerInKendo";
 // import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
 // import AlertComponent from "./alter/alter";
 import DraggableTable from "./draggableGridKendo/draggableGridKendo";
+import '@progress/kendo-theme-default/dist/all.css';
+
 
 import "@pnp/sp/fields";
 import "@pnp/sp/webs";
@@ -32,7 +34,7 @@ import "@pnp/sp/profiles";
 import "@pnp/sp/site-groups";
 // import { Upload, UploadOnAddEvent, UploadFileInfo } from '@progress/kendo-react-upload';
 // import { ConsoleListener } from "@pnp/logging";
-// import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 // import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 
 interface INoteObject {
@@ -98,7 +100,12 @@ interface IMainFormState {
   supportingDocumentfiles:File[];
   isWarningSupportingDocumentFiles:boolean;
   isDialogHidden:boolean;
+
+  peoplePickerData:any;
+  approverInfo:any
 }
+
+let fetchedData:any[];
 
 export const FormContext = React.createContext<any>(null);
 
@@ -154,7 +161,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       isWarningNoteToFiles:false,
       supportingDocumentfiles:[],
       isWarningSupportingDocumentFiles:false,
-      isDialogHidden:true
+      isDialogHidden:true,
+      peoplePickerData:[],
+      approverInfo:[]
 
     };
     // general section --------handling---------start
@@ -174,7 +183,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this._peopplePicker={
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
       msGraphClientFactory:this.props.context.msGraphClientFactory,
-      
+      // msGraphClientFactory: this.props.context.msGraphClientFactory,
       spHttpClient: this.props.context.spHttpClient
     }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -196,8 +205,26 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   // this.setState(prev=>({files:[...prev.files,newFiles]}))
   // };
 
-  private _getPeoplePickerItems(items: any[]) {
-    console.log('Items:', items);
+  private _getUserProperties =async (loginName: any):Promise<any>=>{
+    
+    let designation="NA"
+    // const loginName = this.state.peoplePickerData[0]
+    const profile = await this.props.sp.profiles.getPropertiesFor(loginName);
+    console.log(profile.DisplayName);
+    console.log(profile.Email);
+    console.log(profile.Title);
+    console.log(profile.UserProfileProperties.length);
+    designation=profile.Title;
+    // Properties are stored in inconvenient Key/Value pairs,
+    // so parse into an object called userProperties
+    const props:any = {};
+    profile.UserProfileProperties.forEach((prop: { Key: string | number; Value: any; }) => {
+      props[prop.Key] = prop.Value;
+    });
+
+    profile.userProperties = props;
+    console.log("Account Name: " + profile.userProperties.AccountName);
+    return designation;
   }
 
   private getfield = async () => {
@@ -322,9 +349,54 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   this.setState({ noteTypeValue: item }); // Update state with selected item
   // };
 
-  // private _getPeoplePickerItems(items: any[]) {
-  //   console.log('Items:', items);
-  // }
+  private _getPeoplePickerItems=async (items: any[])=> {
+    console.log('Items:', items);
+    fetchedData = items
+    
+    
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    console.log(items,"this._getUserProperties(items[0].loginName)")
+
+    this.setState({approverInfo:items})
+
+  }
+
+  public reOrderData =(reOrderData:any[]):void=>{
+    this.setState({peoplePickerData:reOrderData})
+  }
+
+  private handleOnAdd  =async (event:any,type:string): Promise<void>=>{
+    // console.log(event)
+    // let designation=""
+    // eslint-disable-next-line no-return-assign
+    const dataRec = await this._getUserProperties(this.state.approverInfo[0].loginName )
+    // const finalData = await dataRec.json()
+    // dataRec.then((x: any)=>{
+    //   console.log(x)
+    //   designation=x
+    // });
+    console.log(dataRec)
+
+    // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
+    const newItemsData = this.state.approverInfo.map((obj: { loginName: any; }) => { return { ...obj, optionalText: dataRec }; })
+    // console.log(type,newItemsData,"test",designation)
+    this.setState(prev=>({peoplePickerData:[...prev.peoplePickerData,...newItemsData]}));
+    
+    console.log(fetchedData)
+    // this._getPeoplePickerItems()
+    console.log(this.state.approverInfo,"handle On Add")
+   
+    
+
+  }
+
+  // private handleCommittenameRedBorder = (event: any): void => {
+  //   // Handle click event
+  //   console.log("Dropdown clicked");
+  //   const value = event.value;
+  //   console.log(value);
+  //   this.setState({ isWarningCommittteeName: false, committeeNameFeildValue: value });
+  // };
 
   // general section --------handling
   // general section --------handling
@@ -1004,7 +1076,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
 
   public render(): React.ReactElement<IFormProps> {
-    console.log(this.state.isWarningTypeOfFinancialNote);
+    console.log(this.state.approverInfo,"Data..........PeoplePicker");
 
     return (
       <div className={styles.form}>
@@ -1436,34 +1508,38 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             >
               <div style={{ display: "flex" }}>
                 <PeoplePicker
-                context={this._peopplePicker}
-                titleText="People Picker"
-                personSelectionLimit={3}
-                groupName={""} // Leave this blank in case you want to filter from all users
-                showtooltip={true}
-                
-                disabled={false}
-                ensureUser={true}
-                onChange={this._getPeoplePickerItems}
-                // showHiddenInUI={false}
-                principalTypes={[PrincipalType.User]}
+                  placeholder="Approver Details"
+                  context={this._peopplePicker}
+                  // titleText="People Picker"
+                  personSelectionLimit={1}
+                  groupName={""} // Leave this blank in case you want to filter from all users
+                  showtooltip={true}
+                  defaultSelectedUsers={[""]}
+                  
+                  disabled={false}
+                  ensureUser={true}
+                  onChange={this._getPeoplePickerItems}
+                  // showHiddenInUI={false}
+                  principalTypes={[PrincipalType.User]}
                 resolveDelay={1000} />
                 {/* <PeoplePicker /> */}
-                <button
+                <DefaultButton
                   type="button"
                   className={`${styles.commonBtn2} ${styles.addBtn}`}
+                  onClick={(e)=>this.handleOnAdd(e,"approver")}
+                  iconProps={{iconName:"Add"}}
                 >
-                  <span>+</span>Add
-                </button>
+                  Add
+                </DefaultButton>
               </div>
               <span style={{ color: "blue" }}>
-                (Please enter minimum 4 character to search)
+                (Please enter minimum  character to search)
               </span>
             </div>
           </div>
           <div className={`${styles.tableContainer}`}>
             {/* <TableComponent /> */}
-            <DraggableTable/>
+            <DraggableTable data={this.state.peoplePickerData} reOrderData={this.reOrderData}/>
             {/* <MultiComboBoxTable/>/ */}
           </div>
           <div>
@@ -1476,21 +1552,39 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               }}
             >
               <div style={{ display: "flex" }}>
-                <TextField placeholder="Add Reviewers" />
-                <button
-                  type="button"
-                  className={`${styles.commonBtn2} ${styles.addBtn}`}
-                >
-                  <span>+</span>Add
-                </button>
+              <PeoplePicker
+              placeholder="Reviewer Details"
+               
+               context={this._peopplePicker}
+               // titleText="People Picker"
+               personSelectionLimit={1}
+               groupName={""} // Leave this blank in case you want to filter from all users
+               showtooltip={true}
+               defaultSelectedUsers={[""]}
+               
+               disabled={false}
+               ensureUser={true}
+               onChange={this._getPeoplePickerItems}
+               // showHiddenInUI={false}
+               principalTypes={[PrincipalType.User]}
+             resolveDelay={1000} />
+             {/* <PeoplePicker /> */}
+             <DefaultButton
+               type="button"
+               className={`${styles.commonBtn2} ${styles.addBtn}`}
+               onClick={(e)=>this.handleOnAdd(e,"approver")}
+               iconProps={{iconName:"Add"}}
+             >
+               Add
+             </DefaultButton>
               </div>
               <span style={{ color: "blue" }}>
-                (Please enter minimum 4 character to search)
+                (Please enter minimum  character to search)
               </span>
             </div>
           </div>
           <div className={`${styles.tableContainer}`}>
-            <TableComponent />
+          <DraggableTable data={this.state.peoplePickerData} reOrderData={this.reOrderData}/>
           </div>
         </div>
         <div className={`${styles.generalSectionMainContainer}`}>

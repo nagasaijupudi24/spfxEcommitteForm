@@ -28,9 +28,14 @@ export const ReorderContext = React.createContext<ContextProps>({
     dragStart: () => {},
 });
 
-const DraggableTable = () => {
+const DraggableTable = (props:any) => {
+    console.log(props.data)
+    const {reOrderData} = props
+    
+    const gridData = props.data
     // State to hold the grid's data and the item currently being dragged
-    const [gridData, setGridData] = React.useState<any[]>(products);
+    // const [gridData, setGridData] = React.useState<any[]>(props.data);
+    // setGridData(props.data)
     const [activeItem, setActiveItem] = React.useState<any | null>(null);
 
     const reorder = (dataItem: any, direction: 'before' | 'after' | null) => {
@@ -53,7 +58,8 @@ const DraggableTable = () => {
         reorderedData.splice(prevIndex, 1); // Remove from the old position
         reorderedData.splice(nextIndex, 0, activeItem); // Insert at the new position
 
-        setGridData(reorderedData); // Update the grid data state
+        reOrderData(reorderedData)
+        // setGridData(reorderedData); // Update the grid data state
         setActiveItem(null); // Clear the active item after drop
     };
 
@@ -66,7 +72,7 @@ const DraggableTable = () => {
     <ReorderContext.Provider value={{ reorder, dragStart }}>
       <DragAndDrop>
         <Grid
-          style={{ height: '400px' }}
+        //   style={{ height: '400px' }}
           data={gridData}
           dataItemKey={'ProductID'}
           rowRender={(row, rowProps) => (
@@ -74,11 +80,11 @@ const DraggableTable = () => {
           )}
         >
           <Column title="" width="50px" cell={DragHandleCell} />
-          <Column field="ProductID" title="ID" width="60px" />
-          <Column field="ProductName" title="Name" width="250px" />
-          <Column field="Category.CategoryName" title="CategoryName" />
+          <Column field="id" title="id" width="60px" />
+          <Column field="text" title="text" width="250px" />
+          {/* <Column field="Category.CategoryName" title="CategoryName" />
           <Column field="UnitPrice" title="Price" width="80px" />
-          <Column field="UnitsInStock" title="In stock" width="80px" />
+          <Column field="UnitsInStock" title="In stock" width="80px" /> */}
         </Grid>
       </DragAndDrop>
     </ReorderContext.Provider>
