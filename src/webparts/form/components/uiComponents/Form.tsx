@@ -16,9 +16,10 @@ import Title from "./titleSectionComponent/title";
 import SpanComponent from "./spanComponent/spanComponent";
 // import MyDialog from "./dialog/dialog";
 // import GetForm from '../spListGet/spListGet';
-import PeoplePicker from "./peoplePickerInKenod/peoplePickerInKendo";
-import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
+import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+// import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
 // import AlertComponent from "./alter/alter";
+import DraggableTable from "./draggableGridKendo/draggableGridKendo";
 
 import "@pnp/sp/fields";
 import "@pnp/sp/webs";
@@ -108,7 +109,7 @@ export const FormContext = React.createContext<any>(null);
 // ];
 
 export default class Form extends React.Component<IFormProps, IMainFormState> {
-  // private _peopplePicker:IPeoplePickerContext;
+  private _peopplePicker:IPeoplePickerContext;
   constructor(props: IFormProps) {
     super(props);
     this.state = {
@@ -170,12 +171,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // general section --------handling---------end
     this.handleSubmit = this.handleSubmit.bind(this);
 
-    // this._peopplePicker={
-    //   absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
-    //   // msGraphClientFactory:this.props.context.msGraphClientFactory
-    //   // msGraphClientFactory: this.props.context.msGraphClientFactory,
-    //   // spHttpClient: this.props.context.spHttpClient
-    // }
+    this._peopplePicker={
+      absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
+      msGraphClientFactory:this.props.context.msGraphClientFactory,
+      
+      spHttpClient: this.props.context.spHttpClient
+    }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
     // eslint-disable-next-line no-void
@@ -194,6 +195,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   // this.setState({ files: newFiles });
   //   // this.setState(prev=>({files:[...prev.files,newFiles]}))
   // };
+
+  private _getPeoplePickerItems(items: any[]) {
+    console.log('Items:', items);
+  }
 
   private getfield = async () => {
     try {
@@ -1430,7 +1435,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               }}
             >
               <div style={{ display: "flex" }}>
-                {/* <PeoplePicker
+                <PeoplePicker
                 context={this._peopplePicker}
                 titleText="People Picker"
                 personSelectionLimit={3}
@@ -1442,8 +1447,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 onChange={this._getPeoplePickerItems}
                 // showHiddenInUI={false}
                 principalTypes={[PrincipalType.User]}
-                resolveDelay={1000} /> */}
-                <PeoplePicker />
+                resolveDelay={1000} />
+                {/* <PeoplePicker /> */}
                 <button
                   type="button"
                   className={`${styles.commonBtn2} ${styles.addBtn}`}
@@ -1457,8 +1462,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             </div>
           </div>
           <div className={`${styles.tableContainer}`}>
-            <TableComponent />
-            <MultiComboBoxTable/>/
+            {/* <TableComponent /> */}
+            <DraggableTable/>
+            {/* <MultiComboBoxTable/>/ */}
           </div>
           <div>
             <div
