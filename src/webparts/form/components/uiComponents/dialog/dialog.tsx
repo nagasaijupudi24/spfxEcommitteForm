@@ -1,13 +1,34 @@
 // MyDialog.tsx
 import * as React from 'react';
-import { Dialog, DialogFooter, DialogType, PrimaryButton, DefaultButton } from '@fluentui/react';
+import { Dialog, DialogFooter, DialogType, PrimaryButton } from '@fluentui/react';
 
 interface MyDialogProps {
   hidden: boolean;
-//   onClose: () => void;
+  handleDialogBox: () => void;
+  data:any;
+  // undefindedData:any;
 }
 
-const MyDialog: React.FC<MyDialogProps> = ({ hidden }) => {
+const MyDialog: React.FC<MyDialogProps> = ({ hidden,data,handleDialogBox }) => {
+
+  console.log(data)
+  // const [undefinedData, setUndefinedData] = React.useState<string[]>([]);
+
+
+  
+
+   const undefinedData = Object.keys(data).filter((each:string)=>{
+    // console.log(each)
+    if (data[each]===""){
+      // console.log(each)
+      return each
+      
+
+    }
+  })
+  // console.log(emptyArray)
+  console.log(undefinedData)
+
   return (
     <Dialog
       hidden={hidden}
@@ -21,9 +42,14 @@ const MyDialog: React.FC<MyDialogProps> = ({ hidden }) => {
         isBlocking: true,
       }}
     >
+      <ul>
+        {undefinedData.map(each=><li key={each}>{each}</li>)}
+      </ul>
       <DialogFooter>
-        <PrimaryButton  text="OK" />
-        <DefaultButton  text="Cancel" />
+
+        
+        <PrimaryButton  text="OK" onClick={handleDialogBox}/>
+        {/* <DefaultButton  text="Cancel" /> */}
       </DialogFooter>
     </Dialog>
   );

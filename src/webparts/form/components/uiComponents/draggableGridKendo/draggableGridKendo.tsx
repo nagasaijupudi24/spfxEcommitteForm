@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { Grid, GridColumn as Column } from '@progress/kendo-react-grid';
 import { DragAndDrop } from '@progress/kendo-react-common';
+import { Button } from "@progress/kendo-react-buttons";
 
 // import { DraggableRow } from './draggable-row';
 import { DraggableRow } from './draggable-row';
@@ -28,9 +29,11 @@ export const ReorderContext = React.createContext<ContextProps>({
     dragStart: () => {},
 });
 
+
+
 const DraggableTable = (props:any) => {
     console.log(props.data)
-    const {reOrderData} = props
+    const {reOrderData, removeDataFromGrid} = props
     
     const gridData = props.data
     // State to hold the grid's data and the item currently being dragged
@@ -68,26 +71,43 @@ const DraggableTable = (props:any) => {
         setActiveItem(dataItem);
     };
 
+    const remove = (dataItem:any) => {
+        removeDataFromGrid(dataItem)
+        
+      };
+
     return (
-    <ReorderContext.Provider value={{ reorder, dragStart }}>
-      <DragAndDrop>
-        <Grid
-        //   style={{ height: '400px' }}
-          data={gridData}
-          dataItemKey={'ProductID'}
-          rowRender={(row, rowProps) => (
-            <DraggableRow elementProps={row.props} {...rowProps} />
-          )}
-        >
-          <Column title="" width="50px" cell={DragHandleCell} />
-          <Column field="id" title="id" width="60px" />
-          <Column field="text" title="text" width="250px" />
-          {/* <Column field="Category.CategoryName" title="CategoryName" />
-          <Column field="UnitPrice" title="Price" width="80px" />
-          <Column field="UnitsInStock" title="In stock" width="80px" /> */}
-        </Grid>
-      </DragAndDrop>
-    </ReorderContext.Provider>
+      <ReorderContext.Provider value={{ reorder, dragStart }}>
+        <DragAndDrop>
+          <Grid
+            //   style={{ height: '400px' }}
+            data={gridData}
+            dataItemKey={"ProductID"}
+            rowRender={(row, rowProps) => (
+              <DraggableRow elementProps={row.props} {...rowProps} />
+            )}
+          >
+            <Column title="" width="50px" cell={DragHandleCell} />
+            <Column field="id" title="ID" width="60px" />
+            <Column field="text" title="text" width="90px" />
+            <Column title="SR No" width="90px" />
+            <Column field="optionalText" title="Designation" />
+            <Column
+              cell={(props) => (
+                <td>
+                  <Button
+                  onClick={() =>
+                     remove(props.dataItem)
+                  }>Delete</Button>
+                </td>
+              )}
+              title="Actions"
+            />
+            {/* <Column field="UnitPrice" title="Price" width="80px" /> */}
+            {/* <Column field="UnitsInStock" title="In stock" width="80px" /> */}
+          </Grid>
+        </DragAndDrop>
+      </ReorderContext.Provider>
     );
 };
 
