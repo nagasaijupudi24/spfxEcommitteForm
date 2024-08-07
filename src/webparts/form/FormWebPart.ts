@@ -1,7 +1,9 @@
+/* eslint-disable @microsoft/spfx/pair-react-dom-render-unmount */
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
-import { IPropertyPaneConfiguration, PropertyPaneTextField } from '@microsoft/sp-property-pane';
+import { IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField } from '@microsoft/sp-property-pane';
+import { PropertyFieldListPicker, PropertyFieldListPickerOrderBy } from '@pnp/spfx-property-controls/lib/PropertyFieldListPicker';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
@@ -16,6 +18,8 @@ import "@pnp/sp/items"; // Import items functionality
 
 export interface IFormWebPartProps {
   description: string;
+  listId:any;
+  libraryId:any;
 }
 
 export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps> {
@@ -41,7 +45,9 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
         sp: this.sp, // Pass the configured sp object
-        context: this.context // Pass the WebPartContext
+        context: this.context, // Pass the WebPartContext
+        listId:this.properties.listId,
+        libraryId:this.properties.libraryId
       }
     );
 
@@ -101,6 +107,36 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
     return Version.parse('1.0');
   }
 
+  protected onPropertyPaneFieldChanged = async (propertyPath: string, oldValue: any, newValue: any): Promise<void> => {
+    console.log(newValue,"---New Value, ",propertyPath,"---Propery path")
+    super.onPropertyPaneFieldChanged(propertyPath, oldValue, newValue);
+    if (propertyPath === "listId" && newValue) {
+      console.log(`"Entered into ${newValue.title}"`)
+      // this._listId = newValue;
+      this.properties.listId = newValue.title
+      // this.properties.customOptions = await this._spService.getcolumnInfo(this._listId.title);
+      
+      this.render();
+      console.log("render is triggered")
+      // this.context.propertyPane.refresh();
+      // console.log("refresh is triggered")
+    } 
+    else if (propertyPath === "libraryId" && newValue) {
+      console.log(`"Entered into ${newValue.title}"`)
+      // this._listId = newValue;
+      this.properties.libraryId = newValue.title
+      // this.properties.customOptions = await this._spService.getcolumnInfo(this._listId.title);
+      
+      this.render();
+      console.log("render is triggered")
+      // this.context.propertyPane.refresh();
+      // console.log("refresh is triggered")
+    } 
+    
+    this.context.propertyPane.refresh();
+  }
+
+
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [
@@ -114,9 +150,52 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
               groupFields: [
                 PropertyPaneTextField('description', {
                   label: strings.DescriptionFieldLabel
-                })
+                }),
+                PropertyPaneDropdown('FormType', {
+                  label: "FormType",
+                  selectedKey: 'New',
+                  options: [
+                    { key: 'New', text: 'New' },
+                    { key: 'View', text: 'View' },
+                    { key: 'Edit', text: 'Edit' }
+
+                  ]
+                }),
+                PropertyFieldListPicker('listId', {
+                  label: 'Select a list',
+                  selectedList: this.properties.listId,
+                  includeHidden: true,
+                  includeListTitleAndUrl: true,
+                  orderBy: PropertyFieldListPickerOrderBy.Id,
+                  disabled: false,
+                  baseTemplate: 100,
+                  onPropertyChange: this.onPropertyPaneFieldChanged,
+                  properties: this.properties,
+                  context: this.context,
+                  // onGetErrorMessage: null,
+                  deferredValidationTime: 0,
+                  key: 'listPickerFieldId',
+                  multiSelect: false,
+                }),
+                PropertyFieldListPicker('libraryId', {
+                  label: 'Select a Library',
+                  selectedList: this.properties.listId,
+                  includeHidden: true,
+                  includeListTitleAndUrl: true,
+                  orderBy: PropertyFieldListPickerOrderBy.Id,
+                  disabled: false,
+                  baseTemplate: 101,
+                  onPropertyChange: this.onPropertyPaneFieldChanged,
+                  properties: this.properties,
+                  context: this.context,
+                  // onGetErrorMessage: null,/
+                  deferredValidationTime: 0,
+                  key: 'listPickerFieldId',
+                  multiSelect: false,
+                }),
               ]
-            }
+            },
+            
           ]
         }
       ]

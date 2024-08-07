@@ -9,4 +9,6 @@ export interface IFormProps {
   userDisplayName: string;
   sp: SPFI; // Pass the configured sp object
   context: WebPartContext; // Pass the WebPartContext
+  listId:any;
+  libraryId:any;
 }

@@ -26,6 +26,7 @@
     "@pnp/odata": "^2.15.0",
     "@pnp/sp": "^4.3.0",
     "@pnp/spfx-controls-react": "3.18.1",
+    "@pnp/spfx-property-controls": "3.17.1",
     "@progress/kendo-data-query": "^1.7.0",
     "@progress/kendo-react-buttons": "^8.1.1",
     "@progress/kendo-react-dropdowns": "^8.1.1",

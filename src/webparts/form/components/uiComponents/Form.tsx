@@ -225,7 +225,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   private getfield = async () => {
     try {
       const fieldDetails = await this.props.sp.web.lists
-        .getByTitle("eCommittee")
+        .getByTitle(this.props.listId)
         .fields.filter("Hidden eq false and ReadOnlyField eq false")();
       // console.log(fieldDetails)
 
@@ -334,7 +334,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const items: any[] = await this.props.sp.web.lists
-        .getByTitle("eCommittee")
+        .getByTitle(this.props.listId)
         .items.select("Title", "Id")();
       console.log(items);
       // this.setState({ itemsFromSpList:items });
@@ -721,7 +721,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // const url = "/sites/uco/Shared Documents/MyFolder"
       console.log(this.props.context.pageContext.web.serverRelativeUrl);
       const absUrl = this.props.context.pageContext.web.serverRelativeUrl;
-      const siteUrl = `${absUrl}/ECommitteeDocuments/${folderName}`;
+      const siteUrl = `${absUrl}/${this.props.libraryId}/${folderName}`;
       console.log(siteUrl);
       // const filesData = this.state.files;
       // const folderId =
@@ -756,7 +756,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   console.log("this.props in handleSubmit:", this.props); // Add this line to log 'this.props'
 
   //   try {
-  //     await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+  //     await this.props.sp.web.lists.getByTitle(this.props.listId).items.add({
   //       Title: "New Item",
   //     });
   //     console.log("Item added successfully");
@@ -770,7 +770,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   console.log(event);
   //   console.log("Event Triggered");
   //   try {
-  //     await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+  //     await this.props.sp.web.lists.getByTitle(this.props.listId).items.add({
   //       Title: "New Item2222",
   //     });
   //     console.log("Item added successfully");
@@ -783,7 +783,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //     event.preventDefault();
   //     console.log(event);
   //     console.log("Event Triggered");
-  //     await this.props.sp.web.lists.getByTitle("eCommittee").items.add({
+  //     await this.props.sp.web.lists.getByTitle(this.props.listId).items.add({
   //       Title: "Title",
 
   //     });
@@ -870,13 +870,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           // this.isNatureOfApprovalOrSanction()
         ) {
           const id = await this.props.sp.web.lists
-            .getByTitle("eCommittee")
+            .getByTitle(this.props.listId)
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
             const listItem = await this.props.sp.web.lists
-              .getByTitle("ApprovalConfiguration")
+              .getByTitle(this.props.listId)
               .items.add({
                 Title: `${each.id}`,
                 // Approvers:each.text
@@ -955,13 +955,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.peoplePickerData.length > 0
         ) {
           const id = await this.props.sp.web.lists
-            .getByTitle("eCommittee")
+            .getByTitle(this.props.listId)
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
             const listItem = await this.props.sp.web.lists
-              .getByTitle("ApprovalConfiguration")
+              .getByTitle(this.props.listId)
               .items.add({
                 Title: `${each.id}`,
                 // Approvers:each.text
@@ -1039,7 +1039,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.peoplePickerData.length > 0
         ) {
           const id = await this.props.sp.web.lists
-            .getByTitle("eCommittee")
+            .getByTitle(this.props.listId)
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -1047,7 +1047,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
             const listItem = await this.props.sp.web.lists
-              .getByTitle("ApprovalConfiguration")
+              .getByTitle(this.props.listId)
               .items.add({
                 Title: `${each.id}`,
                 // Approvers:each.text
@@ -1129,7 +1129,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         ) {
           console.log("else entered");
           const id = await this.props.sp.web.lists
-            .getByTitle("eCommittee")
+            .getByTitle(this.props.listId)
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -1137,7 +1137,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
             const listItem = await this.props.sp.web.lists
-              .getByTitle("ApprovalConfiguration")
+              .getByTitle(this.props.listId)
               .items.add({
                 Title: `${each.id}`,
                 // // Approvers:each.text
@@ -1206,7 +1206,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     const requesterNo = `AD1/${currentyear}-${nextYear}/C${id}`;
     // const requesterNo=`AD1/${currentyear}-${nextYear}/C${id}`
     await this.props.sp.web.lists
-      .getByTitle("eCommittee")
+      .getByTitle(this.props.listId)
       .items.getById(id)
       .update({
         Title: requesterNo,
