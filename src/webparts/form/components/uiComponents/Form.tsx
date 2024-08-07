@@ -371,7 +371,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     //   console.log(x)
     //   designation=x
     // });
-    console.log(typeof dataRec?.toString());
+    // console.log(typeof dataRec?.toString());
 
     if (typeof dataRec?.toString() === 'undefined'){
       const newItemsDataNA = items.map((obj: { loginName: any }) => {
@@ -380,12 +380,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       console.log(newItemsDataNA)
       this.setState({ approverInfo: newItemsDataNA });
 
+    }else{
+      const newItemsData = items.map((obj: { loginName: any }) => {
+        return { ...obj, optionalText: dataRec };
+      });
+      // console.log(newItemsData)
+      this.setState({ approverInfo: newItemsData });
+
     }
-    const newItemsData = items.map((obj: { loginName: any }) => {
-      return { ...obj, optionalText: dataRec };
-    });
-    // console.log(newItemsData)
-    this.setState({ approverInfo: newItemsData });
+   
   };
 
   public reOrderData = (reOrderData: any[]): void => {
@@ -932,7 +935,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             },
           });
         }
-      } else if (
+      }
+       else if (
         (this.state.natureOfNoteFeildValue === "Sanction" ||
           this.state.natureOfNoteFeildValue === "Approval") &&
         this.state.noteTypeFeildValue === "NonFinancial"
