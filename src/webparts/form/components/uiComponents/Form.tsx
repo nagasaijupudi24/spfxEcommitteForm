@@ -21,8 +21,7 @@ import MyDialog from "./dialog/dialog";
 // import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
 // import AlertComponent from "./alter/alter";
 import DraggableTable from "./draggableGridKendo/draggableGridKendo";
-import '@progress/kendo-theme-default/dist/all.css';
-
+import "@progress/kendo-theme-default/dist/all.css";
 
 import "@pnp/sp/fields";
 import "@pnp/sp/webs";
@@ -35,7 +34,11 @@ import "@pnp/sp/profiles";
 import "@pnp/sp/site-groups";
 // import { Upload, UploadOnAddEvent, UploadFileInfo } from '@progress/kendo-react-upload';
 // import { ConsoleListener } from "@pnp/logging";
-import { PeoplePicker, PrincipalType,IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import {
+  PeoplePicker,
+  PrincipalType,
+  IPeoplePickerContext,
+} from "@pnp/spfx-controls-react/lib/PeoplePicker";
 // import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 
 interface INoteObject {
@@ -82,30 +85,29 @@ interface IMainFormState {
   // eslint-disable-next-line @rushstack/no-new-null
   supportingFile: File | null;
   isWarning: boolean;
-  isWarningCommittteeName:boolean;
-  isWarningSubject:boolean;
-  isWarningNatureOfNote:boolean;
-  isWarningNatureOfApporvalOrSanction:boolean;
-  isWarningNoteType:boolean;
+  isWarningCommittteeName: boolean;
+  isWarningSubject: boolean;
+  isWarningNatureOfNote: boolean;
+  isWarningNatureOfApporvalOrSanction: boolean;
+  isWarningNoteType: boolean;
   isWarningTypeOfFinancialNote: boolean;
- 
+
   isWarningSearchText: boolean;
 
-
   isWarningAmountField: boolean;
-  isWarningPurposeField:boolean;
+  isWarningPurposeField: boolean;
   eCommitteData: any;
   noteTofiles: File[];
-  isWarningNoteToFiles:boolean;
-  
-  supportingDocumentfiles:File[];
-  isWarningSupportingDocumentFiles:boolean;
+  isWarningNoteToFiles: boolean;
 
-  isWarningPeoplePicker:boolean;
-  isDialogHidden:boolean;
+  supportingDocumentfiles: File[];
+  isWarningSupportingDocumentFiles: boolean;
 
-  peoplePickerData:any;
-  approverInfo:any
+  isWarningPeoplePicker: boolean;
+  isDialogHidden: boolean;
+
+  peoplePickerData: any;
+  approverInfo: any;
 }
 
 // let fetchedData:any[];
@@ -119,7 +121,7 @@ export const FormContext = React.createContext<any>(null);
 // ];
 
 export default class Form extends React.Component<IFormProps, IMainFormState> {
-  private _peopplePicker:IPeoplePickerContext;
+  private _peopplePicker: IPeoplePickerContext;
   constructor(props: IFormProps) {
     super(props);
     this.state = {
@@ -150,46 +152,33 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       notePdfFile: null,
       supportingFile: null,
       isWarning: false,
-      isWarningCommittteeName:false,
-      isWarningSubject:false,
-      isWarningNatureOfNote:false,
-      isWarningNatureOfApporvalOrSanction:false,
-      isWarningNoteType:false,
+      isWarningCommittteeName: false,
+      isWarningSubject: false,
+      isWarningNatureOfNote: false,
+      isWarningNatureOfApporvalOrSanction: false,
+      isWarningNoteType: false,
       isWarningTypeOfFinancialNote: false,
       isWarningSearchText: false,
       isWarningAmountField: false,
-      isWarningPurposeField:false,
-      isWarningPeoplePicker:false,
+      isWarningPurposeField: false,
+      isWarningPeoplePicker: false,
       eCommitteData: {},
       noteTofiles: [],
-      isWarningNoteToFiles:false,
-      supportingDocumentfiles:[],
-      isWarningSupportingDocumentFiles:false,
-      isDialogHidden:true,
-      peoplePickerData:[],
-      approverInfo:[]
-
+      isWarningNoteToFiles: false,
+      supportingDocumentfiles: [],
+      isWarningSupportingDocumentFiles: false,
+      isDialogHidden: true,
+      peoplePickerData: [],
+      approverInfo: [],
     };
-    // general section --------handling---------start
-    this.handleCommittename = this.handleCommittename.bind(this);
-    this.handleSubject = this.handleSubject.bind(this);
-    this.handleNatureOfNote = this.handleNatureOfNote.bind(this);
-    this.handleNoteType = this.handleNoteType.bind(this);
-    this.handleNatureOfApprovalOrSanction =
-      this.handleNatureOfApprovalOrSanction.bind(this);
-    this.handleTypeOfFinanicalNote = this.handleTypeOfFinanicalNote.bind(this);
-    this.handleSearchText = this.handleSearchText.bind(this);
-    this.handleAmount = this.handleAmount.bind(this);
-    this.handlePurpose = this.handlePurpose.bind(this);
-    // general section --------handling---------end
-    this.handleSubmit = this.handleSubmit.bind(this);
+    
 
-    this._peopplePicker={
+    this._peopplePicker = {
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
-      msGraphClientFactory:this.props.context.msGraphClientFactory,
+      msGraphClientFactory: this.props.context.msGraphClientFactory,
       // msGraphClientFactory: this.props.context.msGraphClientFactory,
-      spHttpClient: this.props.context.spHttpClient
-    }
+      spHttpClient: this.props.context.spHttpClient,
+    };
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
     // eslint-disable-next-line no-void
@@ -209,27 +198,28 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   // this.setState(prev=>({files:[...prev.files,newFiles]}))
   // };
 
-  private _getUserProperties =async (loginName: any):Promise<any>=>{
-    
-    let designation="NA"
+  private _getUserProperties = async (loginName: any): Promise<any> => {
+    let designation = "NA";
     // const loginName = this.state.peoplePickerData[0]
     const profile = await this.props.sp.profiles.getPropertiesFor(loginName);
     console.log(profile.DisplayName);
     console.log(profile.Email);
     console.log(profile.Title);
     console.log(profile.UserProfileProperties.length);
-    designation=profile.Title;
+    designation = profile.Title;
     // Properties are stored in inconvenient Key/Value pairs,
     // so parse into an object called userProperties
-    const props:any = {};
-    profile.UserProfileProperties.forEach((prop: { Key: string | number; Value: any; }) => {
-      props[prop.Key] = prop.Value;
-    });
+    const props: any = {};
+    profile.UserProfileProperties.forEach(
+      (prop: { Key: string | number; Value: any }) => {
+        props[prop.Key] = prop.Value;
+      }
+    );
 
     profile.userProperties = props;
     console.log("Account Name: " + profile.userProperties.AccountName);
     return designation;
-  }
+  };
 
   private getfield = async () => {
     try {
@@ -353,60 +343,59 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   this.setState({ noteTypeValue: item }); // Update state with selected item
   // };
 
-  private _getPeoplePickerItems=async (items: any[])=> {
-    console.log('Items:', items);
+  private _getPeoplePickerItems = async (items: any[]) => {
+    console.log("Items:", items);
     // fetchedData = items
-    console.log(items[0].loginName)
-    
-    
+    console.log(items[0].loginName);
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    console.log(items,"this._getUserProperties(items[0].loginName)")
+    console.log(items, "this._getUserProperties(items[0].loginName)");
 
     // this.setState({approverInfo:items})
 
-    const dataRec = await this._getUserProperties(items[0].loginName )
+    const dataRec = await this._getUserProperties(items[0].loginName);
     // const finalData = await dataRec.json()
     // dataRec.then((x: any)=>{
     //   console.log(x)
     //   designation=x
     // });
-    console.log(dataRec)
-    const newItemsData = items.map((obj: { loginName: any; }) => { return { ...obj, optionalText: dataRec }; })
+    console.log(dataRec);
+    const newItemsData = items.map((obj: { loginName: any }) => {
+      return { ...obj, optionalText: dataRec };
+    });
     // console.log(newItemsData)
-    this.setState({approverInfo:newItemsData})
+    this.setState({ approverInfo: newItemsData });
+  };
 
-  }
+  public reOrderData = (reOrderData: any[]): void => {
+    this.setState({ peoplePickerData: reOrderData });
+  };
 
-  public reOrderData =(reOrderData:any[]):void=>{
-    this.setState({peoplePickerData:reOrderData})
-  }
+  public removeDataFromGrid = (dataItem: any): void => {
+    console.log("Remove triggered");
+    console.log(dataItem);
+    const filterData = this.state.peoplePickerData.filter(
+      (item: any) => item.id !== dataItem.id
+    );
+    this.setState({ peoplePickerData: filterData });
+  };
 
-  public removeDataFromGrid =(dataItem:any):void=>{
-    console.log("Remove triggered")
-    console.log(dataItem)
-    const filterData = this.state.peoplePickerData.filter((item:any) => item.id !== dataItem.id)
-    this.setState({peoplePickerData:filterData})
-    
-  }
-
-  private handleOnAdd  =async (event:any,type:string): Promise<void>=>{
+  private handleOnAdd = async (event: any, type: string): Promise<void> => {
     // console.log(event)
     // let designation=""
     // eslint-disable-next-line no-return-assign
-   
 
     // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
-   
+
     // console.log(type,newItemsData,"test",designation)
-    this.setState(prev=>({peoplePickerData:[...prev.peoplePickerData,...this.state.approverInfo]}));
-    
+    this.setState((prev) => ({
+      peoplePickerData: [...prev.peoplePickerData, ...this.state.approverInfo],
+    }));
+
     // console.log(fetchedData)
     // this._getPeoplePickerItems()
-    console.log(this.state.approverInfo,"handle On Add")
-   
-    
-
-  }
+    console.log(this.state.approverInfo, "handle On Add");
+  };
 
   // private handleCommittenameRedBorder = (event: any): void => {
   //   // Handle click event
@@ -426,7 +415,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   this.setState({committeeNameFeildValue:value})
   // }
 
-  private handleCommittename(event: any): void {
+  private handleCommittename=(event: any): void=> {
     const value = event.value;
     console.log(value);
     this.setState({ committeeNameFeildValue: value });
@@ -437,7 +426,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log("Dropdown clicked");
     const value = event.value;
     console.log(value);
-    this.setState({ isWarningCommittteeName: false, committeeNameFeildValue: value });
+    this.setState({
+      isWarningCommittteeName: false,
+      committeeNameFeildValue: value,
+    });
   };
 
   // private closeDialog = (): void => {
@@ -471,10 +463,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // this.setState({ subjectFeildValue: value });
     const { value } = event.target;
     // console.log(value, id, "-----------handleSubject");
-    this.setState({ subjectFeildValue: value ,isWarningSubject:false});
+    this.setState({ subjectFeildValue: value, isWarningSubject: false });
   };
 
-  private handleNatureOfNote(event: any): void {
+  private handleNatureOfNote =(event: any): void=> {
     const item = event.value;
     console.log(item);
     if (item === "Sanction" || item === "Approval") {
@@ -492,38 +484,41 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     }
   }
 
-  private handleNatureOfNoteRed=(event: any): void =>{
+  private handleNatureOfNoteRed = (event: any): void => {
     const item = event.value;
     console.log(item);
-    console.log(item === "Sanction" || item === "Approval")
+    console.log(item === "Sanction" || item === "Approval");
     if (item === "Sanction" || item === "Approval") {
-      this.setState(({
+      this.setState({
         natureOfNoteFeildValue: item,
         isNatureOfApprovalOrSanction: true,
         isPuroposeVisable: true,
-        isWarningNatureOfNote:false
-      }));
+        isWarningNatureOfNote: false,
+      });
     } else {
-      this.setState(({
+      this.setState({
         natureOfNoteFeildValue: item,
         isNatureOfApprovalOrSanction: false,
         isPuroposeVisable: false,
-        isWarningNatureOfNote:false
-      }));
+        isWarningNatureOfNote: false,
+      });
     }
-  }
+  };
 
-  private handleNatureOfApprovalOrSanction(event: any): void {
+  private handleNatureOfApprovalOrSanction =(event: any): void =>{
     const value = event.value;
     console.log(value);
     this.setState({ natureOfApprovalOrSanctionFeildValue: value });
   }
 
-  private handleNatureOfApprovalOrSanctionRed=(event: any): void =>{
+  private handleNatureOfApprovalOrSanctionRed = (event: any): void => {
     const value = event.value;
     console.log(value);
-    this.setState({ natureOfApprovalOrSanctionFeildValue: value,isWarningNatureOfApporvalOrSanction:false });
-  }
+    this.setState({
+      natureOfApprovalOrSanctionFeildValue: value,
+      isWarningNatureOfApporvalOrSanction: false,
+    });
+  };
 
   private handleNoteType = (event: any): void => {
     const item = event.value; // Kendo UI passes the selected value directly
@@ -545,15 +540,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // }
   };
 
-  private handleNoteTypeRed=(event: any): void =>{
+  private handleNoteTypeRed = (event: any): void => {
     const value = event.value;
     console.log(value);
     this.setState({
       isWarningNoteType: false,
       noteTypeFeildValue: value,
     });
-  }
-
+  };
 
   // private handleNoteType(event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
   //   // console.log(item.text);
@@ -576,20 +570,20 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       },
     }));
   };
-  private handleTypeOfFinanicalNote(event: any): void {
+  private handleTypeOfFinanicalNote =(event: any): void =>{
     const value = event.value;
     console.log(value);
     this.setState({ typeOfFinancialNoteFeildValue: value });
   }
 
-  private handleTypeOfFinanicalNoteRed=(event: any): void=> {
+  private handleTypeOfFinanicalNoteRed = (event: any): void => {
     const value = event.value;
     console.log(value);
     this.setState({
       isWarningTypeOfFinancialNote: false,
       typeOfFinancialNoteFeildValue: value,
     });
-  }
+  };
 
   private handleSearchText = (event: TextBoxChangeEvent) => {
     // const value = event.target.value ?? ''; // Handle undefined values
@@ -636,26 +630,25 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ puroposeFeildValue: value });
   };
 
-  private handlePurposeRed=(event: any): void=> {
+  private handlePurposeRed = (event: any): void => {
     const value = event.value;
     console.log(value);
     this.setState({
       isWarningAmountField: false,
       puroposeFeildValue: value,
     });
-  }
+  };
 
   // general section --------handling---------end
   // general section --------handling---------end
   // general section --------handling---------end
 
-  private createSubFolder = async (parentFolderPath:string): Promise<void> => {
-    console.log(parentFolderPath)
-   
+  private createSubFolder = async (parentFolderPath: string): Promise<void> => {
+    console.log(parentFolderPath);
+
     try {
       // const url = "/sites/uco/Shared Documents/MyFolder"
 
-      
       const siteUrl = `${parentFolderPath}/Pdf`;
       console.log(siteUrl);
       const filesData = this.state.noteTofiles;
@@ -692,7 +685,6 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // const folderAddResult = await this.props.sp.web.folders.addUsingPath(url);
 
       console.log(`Folder -----PDF---- created successfully in list `);
-      
     } catch (error) {
       console.error(`Error creating folder: ${error}`);
     }
@@ -707,9 +699,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       const siteUrl = `${absUrl}/ECommitteeDocuments/${folderName}`;
       console.log(siteUrl);
       // const filesData = this.state.files;
-      // const folderId = 
-      await this.props.sp.web.rootFolder.folders
-        .addUsingPath(siteUrl)
+      // const folderId =
+      await this.props.sp.web.rootFolder.folders.addUsingPath(siteUrl);
       //   .then(async (res) => {
       //     for (let i = 0; i < filesData.length; i++) {
       //       const file = filesData[i];
@@ -727,7 +718,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
       console.log(`Folder '${folderName}' created successfully in list `);
       // eslint-disable-next-line no-void
-      void this.createSubFolder(siteUrl)
+      void this.createSubFolder(siteUrl);
     } catch (error) {
       console.error(`Error creating folder: ${error}`);
     }
@@ -778,7 +769,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
     Subject: this.state.eCommitteData.subjectFeildValue,
     natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
-    NatuerOfApprovalSanction: this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
+    NatuerOfApprovalSanction:
+      this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
     NoteType: this.state.eCommitteData.noteTypeFeildValue,
     TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
     Amount: this.state.eCommitteData.amountFeildValue,
@@ -794,9 +786,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   return isValid;
   // }
 
-  private async handleSubmit(
+  private  handleSubmit=async(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): Promise<void> {
+  ): Promise<void>=> {
     event.preventDefault();
     console.log(event);
     console.log("Event Triggered");
@@ -826,206 +818,199 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log(searchTextFeildValue, "-----------searchTextFeildValue");
     console.log(amountFeildValue, "-----------amountFeildValue");
     console.log(puroposeFeildValue, "-----------puroposeFeildValue");
-    console.log(this.state.noteTypeFeildValue ==='Finanical' &&( this.state.natureOfNoteFeildValue === 'Information'||'Ratification') ,",check..........................")
+    console.log(
+      this.state.noteTypeFeildValue === "Finanical" &&
+        (this.state.natureOfNoteFeildValue === "Information" || "Ratification"),
+      ",check.........................."
+    );
     try {
       // eslint-disable-next-line no-constant-condition
-      if(this.state.noteTypeFeildValue ==='Finanical' && (this.state.natureOfNoteFeildValue === 'Information'||'Ratification') ){
-        console.log('financial')
+      if (
+        this.state.noteTypeFeildValue === "Finanical" &&
+        (this.state.natureOfNoteFeildValue === "Information" || "Ratification")
+      ) {
+        console.log("financial");
         if (
           this.state.committeeNameFeildValue &&
-            this.state.subjectFeildValue &&
-            this.state.natureOfNoteFeildValue &&
-            
-            this.state.noteTypeFeildValue &&
-            this.state.typeOfFinancialNoteFeildValue &&
-            this.state.amountFeildValue &&
-            this.state.searchTextFeildValue &&
-            this.state.noteTofiles.length>0&&
-            this.state.supportingDocumentfiles.length>0&&
-            this.state.peoplePickerData.length > 0
-            
-            // this.isNatureOfApprovalOrSanction()
-         
+          this.state.subjectFeildValue &&
+          this.state.natureOfNoteFeildValue &&
+          this.state.noteTypeFeildValue &&
+          this.state.typeOfFinancialNoteFeildValue &&
+          this.state.amountFeildValue &&
+          this.state.searchTextFeildValue &&
+          this.state.noteTofiles.length > 0 &&
+          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.peoplePickerData.length > 0
+
+          // this.isNatureOfApprovalOrSanction()
         ) {
           const id = await this.props.sp.web.lists
             .getByTitle("eCommittee")
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
-          this.state.peoplePickerData.map(async (each:any)=>{
-            console.log(each)
-            const listItem = await this.props.sp.web.lists.getByTitle('ApprovalConfiguration').items.add(
-              {
-                Title:`${each.id}`,
+          this.state.peoplePickerData.map(async (each: any) => {
+            console.log(each);
+            const listItem = await this.props.sp.web.lists
+              .getByTitle("ApprovalConfiguration")
+              .items.add({
+                Title: `${each.id}`,
                 // Approvers:each.text
-              }
-
-            )
-            console.log(listItem)
-          })
+              });
+            console.log(listItem);
+          });
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
-  
+
           // console.log(id)
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningCommittteeName:false,
-            isWarningSubject:false,
-            isWarningNatureOfNote:false,
-            isWarningNoteType:false,
-            isWarningTypeOfFinancialNote:false,
+            isWarningCommittteeName: false,
+            isWarningSubject: false,
+            isWarningNatureOfNote: false,
+            isWarningNoteType: false,
+            isWarningTypeOfFinancialNote: false,
 
             // isWarningS
             isWarningAmountField: false,
             isWarningSearchText: false,
-            isWarningNoteToFiles:false,
-            isWarningSupportingDocumentFiles:false,
-            isWarningPeoplePicker:false,
+            isWarningNoteToFiles: false,
+            isWarningSupportingDocumentFiles: false,
+            isWarningPeoplePicker: false,
           });
-          
         } else {
           this.setState({
             isWarning: true,
-            isWarningCommittteeName:true,
-            isWarningSubject:true,
-            isWarningNatureOfNote:true,
-            isWarningNoteType:true,
-            isWarningTypeOfFinancialNote:true,
+            isWarningCommittteeName: true,
+            isWarningSubject: true,
+            isWarningNatureOfNote: true,
+            isWarningNoteType: true,
+            isWarningTypeOfFinancialNote: true,
             isWarningAmountField: true,
             isWarningSearchText: true,
-            isWarningNoteToFiles:true,
-            isWarningSupportingDocumentFiles:true,
-            isWarningPeoplePicker:true,
-            isDialogHidden:false,
+            isWarningNoteToFiles: true,
+            isWarningSupportingDocumentFiles: true,
+            isWarningPeoplePicker: true,
+            isDialogHidden: false,
           });
 
           this.setState({
             eCommitteData: {
               committeeNameFeildValue: this.state.committeeNameFeildValue,
-              subjectFeildValue:this.state.subjectFeildValue,
-              natureOfNoteFeildValue:this.state.natureOfNoteFeildValue,
-              noteTypeFeildValue:this.state.noteTypeFeildValue,
-              typeOfFinancialNoteFeildValue:this.state.typeOfFinancialNoteFeildValue,
-              amountFeildValue:this.state.amountFeildValue,
-              searchTextFeildValue:this.state.searchTextFeildValue,
-              noteTofiles:this.state.noteTofiles,
-              supportingDocumentfiles:this.state.supportingDocumentfiles,
-              peoplePickerData:this.state.peoplePickerData 
+              subjectFeildValue: this.state.subjectFeildValue,
+              natureOfNoteFeildValue: this.state.natureOfNoteFeildValue,
+              noteTypeFeildValue: this.state.noteTypeFeildValue,
+              typeOfFinancialNoteFeildValue:
+                this.state.typeOfFinancialNoteFeildValue,
+              amountFeildValue: this.state.amountFeildValue,
+              searchTextFeildValue: this.state.searchTextFeildValue,
+              noteTofiles: this.state.noteTofiles,
+              supportingDocumentfiles: this.state.supportingDocumentfiles,
+              peoplePickerData: this.state.peoplePickerData,
             },
           });
         }
-      }
-      else if((this.state.natureOfNoteFeildValue ==='Sanction'||this.state.natureOfNoteFeildValue ==='Approval' )&& this.state.noteTypeFeildValue==='NonFinancial'){
-        console.log('else entered','sanction,approval','nonFinancial')
+      } else if (
+        (this.state.natureOfNoteFeildValue === "Sanction" ||
+          this.state.natureOfNoteFeildValue === "Approval") &&
+        this.state.noteTypeFeildValue === "NonFinancial"
+      ) {
+        console.log("else entered", "sanction,approval", "nonFinancial");
         if (
           this.state.committeeNameFeildValue &&
-            this.state.subjectFeildValue &&
-            this.state.natureOfNoteFeildValue &&
-            this.state.natureOfApprovalOrSanctionFeildValue &&
-            this.state.noteTypeFeildValue &&
-            
-            this.state.searchTextFeildValue &&
-            this.state.puroposeFeildValue 
-            &&
-            this.state.noteTofiles.length>0&&
-            this.state.supportingDocumentfiles.length>0&&
-            this.state.peoplePickerData.length > 0
-         
+          this.state.subjectFeildValue &&
+          this.state.natureOfNoteFeildValue &&
+          this.state.natureOfApprovalOrSanctionFeildValue &&
+          this.state.noteTypeFeildValue &&
+          this.state.searchTextFeildValue &&
+          this.state.puroposeFeildValue &&
+          this.state.noteTofiles.length > 0 &&
+          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.peoplePickerData.length > 0
         ) {
           const id = await this.props.sp.web.lists
             .getByTitle("eCommittee")
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
-          this.state.peoplePickerData.map(async (each:any)=>{
-            console.log(each)
-            const listItem = await this.props.sp.web.lists.getByTitle('ApprovalConfiguration').items.add(
-              {
-                Title:`${each.id}`,
+          this.state.peoplePickerData.map(async (each: any) => {
+            console.log(each);
+            const listItem = await this.props.sp.web.lists
+              .getByTitle("ApprovalConfiguration")
+              .items.add({
+                Title: `${each.id}`,
                 // Approvers:each.text
-              }
-
-            )
-            console.log(listItem)
-          })
+              });
+            console.log(listItem);
+          });
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
-  
+
           // console.log(id)
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningCommittteeName:false,
-            isWarningSubject:false,
-            isWarningNatureOfNote:false,
-            isWarningNatureOfApporvalOrSanction:false,
-            isWarningNoteType:false,
+            isWarningCommittteeName: false,
+            isWarningSubject: false,
+            isWarningNatureOfNote: false,
+            isWarningNatureOfApporvalOrSanction: false,
+            isWarningNoteType: false,
             isWarningSearchText: false,
             isWarningPurposeField: false,
-            isWarningNoteToFiles:false,
-            isWarningSupportingDocumentFiles:false,
-            isWarningPeoplePicker:false,
-          
-            
+            isWarningNoteToFiles: false,
+            isWarningSupportingDocumentFiles: false,
+            isWarningPeoplePicker: false,
           });
-
-
-         
         } else {
           this.setState({
             isWarning: true,
-            
-            isWarningCommittteeName:true,
-            isWarningSubject:true,
-            isWarningNatureOfNote:true,
-            isWarningNatureOfApporvalOrSanction:true,
-            isWarningNoteType:true,
+            isWarningCommittteeName: true,
+            isWarningSubject: true,
+            isWarningNatureOfNote: true,
+            isWarningNatureOfApporvalOrSanction: true,
+            isWarningNoteType: true,
             isWarningSearchText: true,
             isWarningPurposeField: true,
-            isWarningNoteToFiles:true,
-            isWarningSupportingDocumentFiles:true,
-            isWarningPeoplePicker:true,
-            isDialogHidden:false,
-            
+            isWarningNoteToFiles: true,
+            isWarningSupportingDocumentFiles: true,
+            isWarningPeoplePicker: true,
+            isDialogHidden: false,
           });
 
           this.setState({
             eCommitteData: {
               committeeNameFeildValue: this.state.committeeNameFeildValue,
-              subjectFeildValue:this.state.subjectFeildValue,
-              natureOfNoteFeildValue:this.state.natureOfNoteFeildValue,
-              natureOfApprovalOrSanctionFeildValue:this.state.natureOfApprovalOrSanctionFeildValue,
-
-              noteTypeFeildValue:this.state.noteTypeFeildValue,
-             
-
-             
-              searchTextFeildValue:this.state.searchTextFeildValue,
-              puroposeFeildValue:this.state.puroposeFeildValue,
-              noteTofiles:this.state.noteTofiles,
-              supportingDocumentfiles:this.state.supportingDocumentfiles,
-              peoplePickerData:this.state.peoplePickerData 
+              subjectFeildValue: this.state.subjectFeildValue,
+              natureOfNoteFeildValue: this.state.natureOfNoteFeildValue,
+              natureOfApprovalOrSanctionFeildValue:
+                this.state.natureOfApprovalOrSanctionFeildValue,
+              noteTypeFeildValue: this.state.noteTypeFeildValue,
+              searchTextFeildValue: this.state.searchTextFeildValue,
+              puroposeFeildValue: this.state.puroposeFeildValue,
+              noteTofiles: this.state.noteTofiles,
+              supportingDocumentfiles: this.state.supportingDocumentfiles,
+              peoplePickerData: this.state.peoplePickerData,
             },
           });
         }
-      }
-
-      
-      else if((this.state.natureOfNoteFeildValue ==='Sanction' || this.state.natureOfNoteFeildValue ==='Approval') &&this.state.noteTypeFeildValue ==='Finanical' ){
-        console.log('else entered','sanction,approval','financial')
+      } else if (
+        (this.state.natureOfNoteFeildValue === "Sanction" ||
+          this.state.natureOfNoteFeildValue === "Approval") &&
+        this.state.noteTypeFeildValue === "Finanical"
+      ) {
+        console.log("else entered", "sanction,approval", "financial");
         if (
           this.state.committeeNameFeildValue &&
-            this.state.subjectFeildValue &&
-            this.state.natureOfNoteFeildValue &&
-            this.state.natureOfApprovalOrSanctionFeildValue &&
-            this.state.noteTypeFeildValue &&
-            this.state.typeOfFinancialNoteFeildValue &&
-            this.state.amountFeildValue &&
-            this.state.searchTextFeildValue &&
-            this.state.puroposeFeildValue  &&
-            this.state.noteTofiles.length>0&&
-            this.state.supportingDocumentfiles.length>0&&
-            this.state.peoplePickerData.length > 0
-         
+          this.state.subjectFeildValue &&
+          this.state.natureOfNoteFeildValue &&
+          this.state.natureOfApprovalOrSanctionFeildValue &&
+          this.state.noteTypeFeildValue &&
+          this.state.typeOfFinancialNoteFeildValue &&
+          this.state.amountFeildValue &&
+          this.state.searchTextFeildValue &&
+          this.state.puroposeFeildValue &&
+          this.state.noteTofiles.length > 0 &&
+          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.peoplePickerData.length > 0
         ) {
           const id = await this.props.sp.web.lists
             .getByTitle("eCommittee")
@@ -1033,169 +1018,156 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
-          this.state.peoplePickerData.map(async (each:any)=>{
-            console.log(each)
-            const listItem = await this.props.sp.web.lists.getByTitle('ApprovalConfiguration').items.add(
-              {
-                Title:`${each.id}`,
+          this.state.peoplePickerData.map(async (each: any) => {
+            console.log(each);
+            const listItem = await this.props.sp.web.lists
+              .getByTitle("ApprovalConfiguration")
+              .items.add({
+                Title: `${each.id}`,
                 // Approvers:each.text
-              }
+              });
+            console.log(listItem);
+          });
 
-            )
-            console.log(listItem)
-          })
-  
           // console.log(id)
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningCommittteeName:false,
-            isWarningSubject:false,
-            isWarningNatureOfNote:false,
-            isWarningNatureOfApporvalOrSanction:false,
-            isWarningNoteType:false,
-            isWarningTypeOfFinancialNote:false,
-            isWarningAmountField:false,
+            isWarningCommittteeName: false,
+            isWarningSubject: false,
+            isWarningNatureOfNote: false,
+            isWarningNatureOfApporvalOrSanction: false,
+            isWarningNoteType: false,
+            isWarningTypeOfFinancialNote: false,
+            isWarningAmountField: false,
             isWarningSearchText: false,
             isWarningPurposeField: false,
-            isWarningNoteToFiles:false,
-            isWarningSupportingDocumentFiles:false,
-            isWarningPeoplePicker:false
+            isWarningNoteToFiles: false,
+            isWarningSupportingDocumentFiles: false,
+            isWarningPeoplePicker: false,
           });
-        } else  {
+        } else {
           this.setState({
             isWarning: true,
-            isWarningCommittteeName:true,
-            isWarningSubject:true,
-            isWarningNatureOfNote:true,
-            isWarningNatureOfApporvalOrSanction:true,
-            isWarningNoteType:true,
-            isWarningTypeOfFinancialNote:true,
-            isWarningAmountField:true,
+            isWarningCommittteeName: true,
+            isWarningSubject: true,
+            isWarningNatureOfNote: true,
+            isWarningNatureOfApporvalOrSanction: true,
+            isWarningNoteType: true,
+            isWarningTypeOfFinancialNote: true,
+            isWarningAmountField: true,
             isWarningSearchText: true,
             isWarningPurposeField: true,
-            isWarningNoteToFiles:true,
-            isWarningSupportingDocumentFiles:true,
-            isWarningPeoplePicker:true,
-            isDialogHidden:false,
+            isWarningNoteToFiles: true,
+            isWarningSupportingDocumentFiles: true,
+            isWarningPeoplePicker: true,
+            isDialogHidden: false,
           });
           this.setState({
             eCommitteData: {
               committeeNameFeildValue: this.state.committeeNameFeildValue,
-              subjectFeildValue:this.state.subjectFeildValue,
-              natureOfNoteFeildValue:this.state.natureOfNoteFeildValue,
-              natureOfApprovalOrSanctionFeildValue:this.state.natureOfApprovalOrSanctionFeildValue,
-              noteTypeFeildValue:this.state.noteTypeFeildValue,
-              typeOfFinancialNoteFeildValue:this.state.typeOfFinancialNoteFeildValue,
-              amountFeildValue:this.state.amountFeildValue,
-              searchTextFeildValue:this.state.searchTextFeildValue,
-              puroposeFeildValue:this.state.puroposeFeildValue,
-              noteTofiles:this.state.noteTofiles,
-              supportingDocumentfiles:this.state.supportingDocumentfiles,
-              peoplePickerData:this.state.peoplePickerData 
+              subjectFeildValue: this.state.subjectFeildValue,
+              natureOfNoteFeildValue: this.state.natureOfNoteFeildValue,
+              natureOfApprovalOrSanctionFeildValue:
+                this.state.natureOfApprovalOrSanctionFeildValue,
+              noteTypeFeildValue: this.state.noteTypeFeildValue,
+              typeOfFinancialNoteFeildValue:
+                this.state.typeOfFinancialNoteFeildValue,
+              amountFeildValue: this.state.amountFeildValue,
+              searchTextFeildValue: this.state.searchTextFeildValue,
+              puroposeFeildValue: this.state.puroposeFeildValue,
+              noteTofiles: this.state.noteTofiles,
+              supportingDocumentfiles: this.state.supportingDocumentfiles,
+              peoplePickerData: this.state.peoplePickerData,
             },
           });
         }
-      }
-      else{
-        console.log("final else")
+      } else {
+        console.log("final else");
         // eslint-disable-next-line no-constant-condition
-        if(this.state.natureOfNoteFeildValue === 'Approval' || 'Sanction'){
-          this.setState({isWarningNatureOfApporvalOrSanction:true,isWarningPurposeField:true})
+        if (this.state.natureOfNoteFeildValue === "Approval" || "Sanction") {
+          this.setState({
+            isWarningNatureOfApporvalOrSanction: true,
+            isWarningPurposeField: true,
+          });
         }
         if (
           this.state.committeeNameFeildValue &&
-            this.state.subjectFeildValue &&
-            this.state.natureOfNoteFeildValue &&
-          
-            this.state.noteTypeFeildValue &&
-         
-            
-            this.state.searchTextFeildValue  &&
-            this.state.noteTofiles.length>0&&
-            this.state.supportingDocumentfiles.length>0 &&
-            this.state.peoplePickerData.length > 0
-           
-         
+          this.state.subjectFeildValue &&
+          this.state.natureOfNoteFeildValue &&
+          this.state.noteTypeFeildValue &&
+          this.state.searchTextFeildValue &&
+          this.state.noteTofiles.length > 0 &&
+          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.peoplePickerData.length > 0
         ) {
-          console.log('else entered')
+          console.log("else entered");
           const id = await this.props.sp.web.lists
             .getByTitle("eCommittee")
             .items.add(this.createNoteObject());
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
-          this.state.peoplePickerData.map(async (each:any)=>{
-            console.log(each)
-            const listItem = await this.props.sp.web.lists.getByTitle('ApprovalConfiguration').items.add(
-              {
-                Title:`${each.id}`,
+          this.state.peoplePickerData.map(async (each: any) => {
+            console.log(each);
+            const listItem = await this.props.sp.web.lists
+              .getByTitle("ApprovalConfiguration")
+              .items.add({
+                Title: `${each.id}`,
                 // // Approvers:each.text
-              }
+              });
+            console.log(listItem);
+          });
 
-            )
-            console.log(listItem)
-          })
-  
           // console.log(id)
           console.log("Item added successfully");
           this.setState({
             isWarning: false,
-            isWarningCommittteeName:false,
-            isWarningSubject:false,
-            isWarningNatureOfNote:false,
-            
-            isWarningNoteType:false,
-           
-          
+            isWarningCommittteeName: false,
+            isWarningSubject: false,
+            isWarningNatureOfNote: false,
+
+            isWarningNoteType: false,
+
             isWarningSearchText: false,
-            isWarningNoteToFiles:false,
-            isWarningSupportingDocumentFiles:false,
-            isWarningPeoplePicker:false,
-            
-            
-           
+            isWarningNoteToFiles: false,
+            isWarningSupportingDocumentFiles: false,
+            isWarningPeoplePicker: false,
           });
         } else {
           // alert("Required Fields")
 
-
           this.setState({
             isWarning: true,
-            isWarningCommittteeName:true,
-            isWarningSubject:true,
-            isWarningNatureOfNote:true,
-            
-            isWarningNoteType:true,
-           
-          
+            isWarningCommittteeName: true,
+            isWarningSubject: true,
+            isWarningNatureOfNote: true,
+
+            isWarningNoteType: true,
+
             isWarningSearchText: true,
-            isDialogHidden:false,
-            isWarningNoteToFiles:true,
-            isWarningSupportingDocumentFiles:true,
-            isWarningPeoplePicker:true,
-            
+            isDialogHidden: false,
+            isWarningNoteToFiles: true,
+            isWarningSupportingDocumentFiles: true,
+            isWarningPeoplePicker: true,
           });
           this.setState({
             eCommitteData: {
               committeeNameFeildValue: this.state.committeeNameFeildValue,
-              subjectFeildValue:this.state.subjectFeildValue,
-              natureOfNoteFeildValue:this.state.natureOfNoteFeildValue,
-              
-              noteTypeFeildValue:this.state.noteTypeFeildValue,
-             
-             
-              searchTextFeildValue:this.state.searchTextFeildValue,
-              
-              noteTofiles:this.state.noteTofiles,
-              supportingDocumentfiles:this.state.supportingDocumentfiles,
-              peoplePickerData:this.state.peoplePickerData 
+              subjectFeildValue: this.state.subjectFeildValue,
+              natureOfNoteFeildValue: this.state.natureOfNoteFeildValue,
+
+              noteTypeFeildValue: this.state.noteTypeFeildValue,
+
+              searchTextFeildValue: this.state.searchTextFeildValue,
+
+              noteTofiles: this.state.noteTofiles,
+              supportingDocumentfiles: this.state.supportingDocumentfiles,
+              peoplePickerData: this.state.peoplePickerData,
             },
           });
-
+        }
       }
-      }
-      
     } catch (error) {
       console.error("Error adding item: ", error);
     }
@@ -1219,53 +1191,67 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     void this.createFolder(requesterNo);
   };
 
-  private handleNoteToFileChange = (files: FileList | null, typeOfDoc: string) => {
+  private handleNoteToFileChange = (
+    files: FileList | null,
+    typeOfDoc: string
+  ) => {
     console.log(typeOfDoc);
 
-    if (this.state.isWarningNoteToFiles){
-      this.setState({isWarningNoteToFiles:false})
-    }
-    
-  
-    if (files) {
-      console.log(files);
-      // Convert FileList to an array of File objects
-      const filesArray = Array.from(files);
-      this.setState((prev) => ({ noteTofiles: [...prev.noteTofiles, ...filesArray] }));
-    }
-  };
-
-  private handleSupportingFileChange = (files: FileList | null, typeOfDoc: string) => {
-    console.log(typeOfDoc);
-
-    if (this.state.isWarningSupportingDocumentFiles){
-      this.setState({isWarningSupportingDocumentFiles:false})
+    if (this.state.isWarningNoteToFiles) {
+      this.setState({ isWarningNoteToFiles: false });
     }
 
     if (files) {
       console.log(files);
       // Convert FileList to an array of File objects
       const filesArray = Array.from(files);
-      this.setState((prev) => ({ supportingDocumentfiles: [...prev.supportingDocumentfiles, ...filesArray] }));
+      this.setState((prev) => ({
+        noteTofiles: [...prev.noteTofiles, ...filesArray],
+      }));
     }
   };
 
-  public handleDialogBox =():void=>{
-    console.log("Dialog handling")
-    this.setState({isDialogHidden:true})
-  }
+  private handleSupportingFileChange = (
+    files: FileList | null,
+    typeOfDoc: string
+  ) => {
+    console.log(typeOfDoc);
 
+    if (this.state.isWarningSupportingDocumentFiles) {
+      this.setState({ isWarningSupportingDocumentFiles: false });
+    }
+
+    if (files) {
+      console.log(files);
+      // Convert FileList to an array of File objects
+      const filesArray = Array.from(files);
+      this.setState((prev) => ({
+        supportingDocumentfiles: [
+          ...prev.supportingDocumentfiles,
+          ...filesArray,
+        ],
+      }));
+    }
+  };
+
+  public handleDialogBox = (): void => {
+    console.log("Dialog handling");
+    this.setState({ isDialogHidden: true });
+  };
 
   public render(): React.ReactElement<IFormProps> {
-    console.log(this.state.peoplePickerData,"Data..........PeoplePicker");
+    console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
 
     return (
       <div className={styles.form}>
         <Header />
         <Title />
         {/* {this.state.isDialogHidden&&<MyDialog  />} */}
-        <MyDialog hidden={this.state.isDialogHidden} data={this.state.eCommitteData} handleDialogBox={this.handleDialogBox}/>
-        
+        <MyDialog
+          hidden={this.state.isDialogHidden}
+          data={this.state.eCommitteData}
+          handleDialogBox={this.handleDialogBox}
+        />
 
         <div className={`${styles.generalSectionMainContainer}`}>
           <h1 style={{ textAlign: "center", fontSize: "16px" }}>
@@ -1737,23 +1723,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           <div className={`${styles.tableContainer}`}>
             {/* <TableComponent /> */}
             {this.state.isWarningPeoplePicker ? (
-                this.state.peoplePickerData.length === 0 ? (
-                  <div style={{ border: "1px solid red" }}>
-                    <DraggableTable
-                      data={this.state.peoplePickerData}
-                      reOrderData={this.reOrderData}
-                      removeDataFromGrid={this.removeDataFromGrid}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <DraggableTable
-                      data={this.state.peoplePickerData}
-                      reOrderData={this.reOrderData}
-                      removeDataFromGrid={this.removeDataFromGrid}
-                    />
-                  </div>
-                )
+              this.state.peoplePickerData.length === 0 ? (
+                <div style={{ border: "1px solid red" }}>
+                  <DraggableTable
+                    data={this.state.peoplePickerData}
+                    reOrderData={this.reOrderData}
+                    removeDataFromGrid={this.removeDataFromGrid}
+                  />
+                </div>
               ) : (
                 <div>
                   <DraggableTable
@@ -1762,7 +1739,16 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     removeDataFromGrid={this.removeDataFromGrid}
                   />
                 </div>
-              )}
+              )
+            ) : (
+              <div>
+                <DraggableTable
+                  data={this.state.peoplePickerData}
+                  reOrderData={this.reOrderData}
+                  removeDataFromGrid={this.removeDataFromGrid}
+                />
+              </div>
+            )}
 
             {/* <MultiComboBoxTable/>/ */}
           </div>
@@ -1847,7 +1833,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           </h1>
         </div>
         <div
-          style={{ display: "flex", justifyContent: "space-between" }}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+          }}
           className={`${styles.generalSectionApproverDetails}`}
         >
           <div>
@@ -1876,7 +1866,34 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               Allowed only one PDF. Up to 10MB max.
             </p>
           </div>
+          
 
+          <div>
+            <p className={styles.label}>
+              Word Document {" "}<span className={styles.warning}>*</span>
+            </p>
+            {this.state.isWarningSupportingDocumentFiles ? (
+              <div style={{ border: "1px solid red" }}>
+                <UploadFileComponent
+                  typeOfDoc="supportingDocument"
+                  onChange={this.handleSupportingFileChange}
+                  accept=".jpg,.jpeg,.png,.pdf"
+                />
+              </div>
+            ) : (
+              <div>
+                <UploadFileComponent
+                  typeOfDoc="supportingDocument"
+                  onChange={this.handleSupportingFileChange}
+                  accept=".jpg,.jpeg,.png,.pdf"
+                />
+              </div>
+            )}
+
+            <p className={styles.message}>
+              Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
+            </p>
+          </div>
           <div>
             <p className={styles.label}>Supporting Documents</p>
             {this.state.isWarningSupportingDocumentFiles ? (
