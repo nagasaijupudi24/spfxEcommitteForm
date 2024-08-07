@@ -27,7 +27,7 @@ const MyDialog: React.FC<MyDialogProps> = ({
   data,
   handleDialogBox,
 }) => {
-  console.log(data);
+  // console.log(data);
   // const [undefinedData, setUndefinedData] = React.useState<string[]>([]);
 
   const stackStyles: IStackStyles = {
@@ -56,7 +56,7 @@ const MyDialog: React.FC<MyDialogProps> = ({
     }
   });
   // console.log(emptyArray)
-  console.log(undefinedData);
+  // console.log(undefinedData);
 
   return (
     <Dialog

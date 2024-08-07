@@ -32,7 +32,7 @@ export const ReorderContext = React.createContext<ContextProps>({
 
 
 const DraggableTable = (props:any) => {
-    console.log(props.data)
+    // console.log(props.data)
     const {reOrderData, removeDataFromGrid} = props
     
     const gridData = props.data

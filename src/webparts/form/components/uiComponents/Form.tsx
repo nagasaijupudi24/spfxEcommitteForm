@@ -55,6 +55,7 @@ interface INoteObject {
 }
 
 interface IMainFormState {
+  department: string;
   noteTypeValue?: IDropdownOption;
   isNoteType: boolean;
   new: string;
@@ -125,6 +126,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   constructor(props: IFormProps) {
     super(props);
     this.state = {
+      department: "",
       isNoteType: false,
       noteTypeValue: undefined,
       new: "",
@@ -171,7 +173,6 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       peoplePickerData: [],
       approverInfo: [],
     };
-    
 
     this._peopplePicker = {
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
@@ -228,10 +229,21 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         .fields.filter("Hidden eq false and ReadOnlyField eq false")();
       // console.log(fieldDetails)
 
+      const profile = await this.props.sp.profiles.myProperties();
+      // console.log(profile)
+
+      profile.UserProfileProperties.filter((element: any) => {
+        // console.log(element)
+        if (element.Key === "Department" && element.Value === "Development") {
+          // console.log(element)
+          this.setState({ department: element.Value });
+        }
+      });
+
       // fieldDetails.map(each=>console.log(each.StaticName))
       const filtering = fieldDetails.map((_x) => {
         if (_x.TypeDisplayName === "Choice") {
-          console.log(_x.InternalName, ":", _x.Choices);
+          // console.log(_x.InternalName, ":", _x.Choices);
 
           return [_x.InternalName, _x.Choices];
         }
@@ -264,7 +276,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               return item;
             });
 
-            console.log(noteTypeArray);
+            // console.log(noteTypeArray);
 
             this.setState({ noteType: noteTypeArray });
           } else if (each[0] === "NatuerOfApprovalSanction") {
@@ -359,7 +371,16 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     //   console.log(x)
     //   designation=x
     // });
-    console.log(dataRec);
+    console.log(typeof dataRec?.toString());
+
+    if (typeof dataRec?.toString() === 'undefined'){
+      const newItemsDataNA = items.map((obj: { loginName: any }) => {
+        return { ...obj, optionalText: 'N/A' };
+      });
+      console.log(newItemsDataNA)
+      this.setState({ approverInfo: newItemsDataNA });
+
+    }
     const newItemsData = items.map((obj: { loginName: any }) => {
       return { ...obj, optionalText: dataRec };
     });
@@ -388,6 +409,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
 
     // console.log(type,newItemsData,"test",designation)
+    console.log(this.state.approverInfo, "Approver Info");
     this.setState((prev) => ({
       peoplePickerData: [...prev.peoplePickerData, ...this.state.approverInfo],
     }));
@@ -415,11 +437,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   this.setState({committeeNameFeildValue:value})
   // }
 
-  private handleCommittename=(event: any): void=> {
+  private handleCommittename = (event: any): void => {
     const value = event.value;
     console.log(value);
     this.setState({ committeeNameFeildValue: value });
-  }
+  };
 
   private handleCommittenameRedBorder = (event: any): void => {
     // Handle click event
@@ -466,7 +488,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ subjectFeildValue: value, isWarningSubject: false });
   };
 
-  private handleNatureOfNote =(event: any): void=> {
+  private handleNatureOfNote = (event: any): void => {
     const item = event.value;
     console.log(item);
     if (item === "Sanction" || item === "Approval") {
@@ -482,7 +504,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         isPuroposeVisable: false,
       });
     }
-  }
+  };
 
   private handleNatureOfNoteRed = (event: any): void => {
     const item = event.value;
@@ -505,11 +527,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     }
   };
 
-  private handleNatureOfApprovalOrSanction =(event: any): void =>{
+  private handleNatureOfApprovalOrSanction = (event: any): void => {
     const value = event.value;
     console.log(value);
     this.setState({ natureOfApprovalOrSanctionFeildValue: value });
-  }
+  };
 
   private handleNatureOfApprovalOrSanctionRed = (event: any): void => {
     const value = event.value;
@@ -570,11 +592,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       },
     }));
   };
-  private handleTypeOfFinanicalNote =(event: any): void =>{
+  private handleTypeOfFinanicalNote = (event: any): void => {
     const value = event.value;
     console.log(value);
     this.setState({ typeOfFinancialNoteFeildValue: value });
-  }
+  };
 
   private handleTypeOfFinanicalNoteRed = (event: any): void => {
     const value = event.value;
@@ -765,7 +787,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   }
 
   private createNoteObject = (): INoteObject => ({
-    Department: "development",
+    Department: this.state.department,
     CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
     Subject: this.state.eCommitteData.subjectFeildValue,
     natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
@@ -786,43 +808,43 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //   return isValid;
   // }
 
-  private  handleSubmit=async(
+  private handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): Promise<void>=> {
+  ): Promise<void> => {
     event.preventDefault();
     console.log(event);
     console.log("Event Triggered");
-    const {
-      committeeNameFeildValue,
-      subjectFeildValue,
-      natureOfNoteFeildValue,
-      noteTypeFeildValue,
-      natureOfApprovalOrSanctionFeildValue,
-      typeOfFinancialNoteFeildValue,
-      searchTextFeildValue,
-      amountFeildValue,
-      puroposeFeildValue,
-    } = this.state;
-    console.log(committeeNameFeildValue, "-----------committeeNameFeildValue");
-    console.log(subjectFeildValue, "-----------subjectFeildValue");
-    console.log(natureOfNoteFeildValue, "-----------natureOfNoteFeildValue");
-    console.log(
-      natureOfApprovalOrSanctionFeildValue,
-      "--------------natureOfApprovalOrSanctionFeildValue"
-    );
-    console.log(noteTypeFeildValue, "-----------noteTypeFeildValue");
-    console.log(
-      typeOfFinancialNoteFeildValue,
-      "-----------typeOfFinancialNoteFeildValue"
-    );
-    console.log(searchTextFeildValue, "-----------searchTextFeildValue");
-    console.log(amountFeildValue, "-----------amountFeildValue");
-    console.log(puroposeFeildValue, "-----------puroposeFeildValue");
-    console.log(
-      this.state.noteTypeFeildValue === "Finanical" &&
-        (this.state.natureOfNoteFeildValue === "Information" || "Ratification"),
-      ",check.........................."
-    );
+    // const {
+    //   committeeNameFeildValue,
+    //   subjectFeildValue,
+    //   natureOfNoteFeildValue,
+    //   noteTypeFeildValue,
+    //   natureOfApprovalOrSanctionFeildValue,
+    //   typeOfFinancialNoteFeildValue,
+    //   searchTextFeildValue,
+    //   amountFeildValue,
+    //   puroposeFeildValue,
+    // } = this.state;
+    // console.log(committeeNameFeildValue, "-----------committeeNameFeildValue");
+    // console.log(subjectFeildValue, "-----------subjectFeildValue");
+    // console.log(natureOfNoteFeildValue, "-----------natureOfNoteFeildValue");
+    // console.log(
+    //   natureOfApprovalOrSanctionFeildValue,
+    //   "--------------natureOfApprovalOrSanctionFeildValue"
+    // );
+    // console.log(noteTypeFeildValue, "-----------noteTypeFeildValue");
+    // console.log(
+    //   typeOfFinancialNoteFeildValue,
+    //   "-----------typeOfFinancialNoteFeildValue"
+    // );
+    // console.log(searchTextFeildValue, "-----------searchTextFeildValue");
+    // console.log(amountFeildValue, "-----------amountFeildValue");
+    // console.log(puroposeFeildValue, "-----------puroposeFeildValue");
+    // console.log(
+    //   this.state.noteTypeFeildValue === "Finanical" &&
+    //     (this.state.natureOfNoteFeildValue === "Information" || "Ratification"),
+    //   ",check.........................."
+    // );
     try {
       // eslint-disable-next-line no-constant-condition
       if (
@@ -1171,7 +1193,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     } catch (error) {
       console.error("Error adding item: ", error);
     }
-  }
+  };
 
   // Generate Request Number
   private _generateRequsterNumber = async (id: number) => {
@@ -1239,8 +1261,24 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ isDialogHidden: true });
   };
 
+
+  public checkUserIsIBTes2 = (peoplePickerData: any):boolean =>{
+    // console.log(peoplePickerData)
+    const  booleanCheck = peoplePickerData?.some(
+      (each:any)=>{
+        if (each.text === "IB Test2"){
+          return true
+        }
+      }
+    )
+    // console.log(booleanCheck)
+    return booleanCheck
+
+  }
+
   public render(): React.ReactElement<IFormProps> {
-    console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
+    // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
+    // console.log(this.checkUserIsIBTes2(this.state.peoplePickerData))
 
     return (
       <div className={styles.form}>
@@ -1262,7 +1300,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           {/* <div className={`${styles.generalSectionContainer1}`}> */}
           <div className={styles.halfWidth}>
             Department<span className={styles.warning}>*</span>
-            <h4 style={{ marginLeft: "20px" }}>Development</h4>
+            <h4 style={{ marginLeft: "20px" }}>{this.state.department}</h4>
           </div>
           <div
             className={styles.halfWidth}
@@ -1866,34 +1904,38 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               Allowed only one PDF. Up to 10MB max.
             </p>
           </div>
-          
 
-          <div>
-            <p className={styles.label}>
-              Word Document {" "}<span className={styles.warning}>*</span>
-            </p>
-            {this.state.isWarningSupportingDocumentFiles ? (
-              <div style={{ border: "1px solid red" }}>
-                <UploadFileComponent
-                  typeOfDoc="supportingDocument"
-                  onChange={this.handleSupportingFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf"
-                />
-              </div>
-            ) : (
-              <div>
-                <UploadFileComponent
-                  typeOfDoc="supportingDocument"
-                  onChange={this.handleSupportingFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf"
-                />
-              </div>
-            )}
+          {this.checkUserIsIBTes2(this.state.peoplePickerData) ? (
+            <div>
+              <p className={styles.label}>
+                Word Document <span className={styles.warning}>*</span>
+              </p>
+              {this.state.isWarningSupportingDocumentFiles ? (
+                <div style={{ border: "1px solid red" }}>
+                  <UploadFileComponent
+                    typeOfDoc="supportingDocument"
+                    onChange={this.handleSupportingFileChange}
+                    accept=".jpg,.jpeg,.png,.pdf"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <UploadFileComponent
+                    typeOfDoc="supportingDocument"
+                    onChange={this.handleSupportingFileChange}
+                    accept=".jpg,.jpeg,.png,.pdf"
+                  />
+                </div>
+              )}
 
-            <p className={styles.message}>
-              Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
-            </p>
-          </div>
+              <p className={styles.message}>
+                Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
+              </p>
+            </div>
+          ) : (
+            ""
+          )}
+
           <div>
             <p className={styles.label}>Supporting Documents</p>
             {this.state.isWarningSupportingDocumentFiles ? (
