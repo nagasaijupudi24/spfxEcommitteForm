@@ -135,7 +135,7 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
     
     this.context.propertyPane.refresh();
   }
-
+  
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
@@ -169,7 +169,7 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
                   orderBy: PropertyFieldListPickerOrderBy.Id,
                   disabled: false,
                   baseTemplate: 100,
-                  onPropertyChange: this.onPropertyPaneFieldChanged,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
                   properties: this.properties,
                   context: this.context,
                   // onGetErrorMessage: null,

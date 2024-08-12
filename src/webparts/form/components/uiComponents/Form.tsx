@@ -11,7 +11,7 @@ import { TextBox, TextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { DropDownList } from "@progress/kendo-react-dropdowns";
 // import TableComponent from "./tableSwap";
 import UploadFileComponent from "./uploadFile";
-import Header from "./Header/header";
+// import Header from "./Header/header";
 import Title from "./titleSectionComponent/title";
 import SpanComponent from "./spanComponent/spanComponent";
 
@@ -1286,7 +1286,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
     return (
       <div className={styles.form}>
-        <Header />
+        {/* <Header /> */}
         <Title />
         {/* {this.state.isDialogHidden&&<MyDialog  />} */}
         <MyDialog
@@ -1804,7 +1804,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               }}
             >
               <div style={{ display: "flex" }}>
-                <PeoplePicker
+                 <PeoplePicker
                   placeholder="Reviewer Details"
                   context={this._peopplePicker}
                   // titleText="People Picker"
@@ -1877,12 +1877,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+
+            justifyContent: "flex-start",
+            alignItems:'center',
             flexWrap: "wrap",
           }}
           className={`${styles.generalSectionApproverDetails}`}
         >
-          <div>
+          <div className={`${styles.fileInputContainers}`}>
             <p className={styles.label}>
               Note PDF<span className={styles.warning}>*</span>
             </p>
@@ -1910,7 +1912,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           </div>
 
           {this.checkUserIsIBTes2(this.state.peoplePickerData) ? (
-            <div>
+            <div className={`${styles.fileInputContainers}`}>
               <p className={styles.label}>
                 Word Document <span className={styles.warning}>*</span>
               </p>
@@ -1940,7 +1942,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             ""
           )}
 
-          <div>
+          <div className={`${styles.fileInputContainers}`}>
             <p className={styles.label}>Supporting Documents</p>
             {this.state.isWarningSupportingDocumentFiles ? (
               <div style={{ border: "1px solid red" }}>

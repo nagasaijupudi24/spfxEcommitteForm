@@ -29,6 +29,7 @@
     "@pnp/spfx-property-controls": "3.17.1",
     "@progress/kendo-data-query": "^1.7.0",
     "@progress/kendo-react-buttons": "^8.1.1",
+    "@progress/kendo-react-common": "^8.1.1",
     "@progress/kendo-react-dropdowns": "^8.1.1",
     "@progress/kendo-react-grid": "^8.1.1",
     "@progress/kendo-react-inputs": "^8.1.1",
