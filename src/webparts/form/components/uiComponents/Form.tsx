@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import * as React from "react";
@@ -101,6 +102,9 @@ interface IMainFormState {
   noteTofiles: File[];
   isWarningNoteToFiles: boolean;
 
+  wordDocumentfiles: File[];
+  isWarningWordDocumentFiles: boolean;
+
   supportingDocumentfiles: File[];
   isWarningSupportingDocumentFiles: boolean;
 
@@ -167,6 +171,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       eCommitteData: {},
       noteTofiles: [],
       isWarningNoteToFiles: false,
+
+      wordDocumentfiles: [],
+      isWarningWordDocumentFiles: false,
+
       supportingDocumentfiles: [],
       isWarningSupportingDocumentFiles: false,
       isDialogHidden: true,
@@ -373,22 +381,19 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // });
     // console.log(typeof dataRec?.toString());
 
-    if (typeof dataRec?.toString() === 'undefined'){
+    if (typeof dataRec?.toString() === "undefined") {
       const newItemsDataNA = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: 'N/A' };
+        return { ...obj, optionalText: "N/A" };
       });
-      console.log(newItemsDataNA)
+      console.log(newItemsDataNA);
       this.setState({ approverInfo: newItemsDataNA });
-
-    }else{
+    } else {
       const newItemsData = items.map((obj: { loginName: any }) => {
         return { ...obj, optionalText: dataRec };
       });
       // console.log(newItemsData)
       this.setState({ approverInfo: newItemsData });
-
     }
-   
   };
 
   public reOrderData = (reOrderData: any[]): void => {
@@ -690,6 +695,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           }
         });
 
+        console.log(`Folder -----PDF---- created successfully in list `);
+
       const siteUrlforSupportingDocument = `${parentFolderPath}/SupportingDocument`;
       console.log(siteUrlforSupportingDocument);
       const filesDataSupportingDocument = this.state.supportingDocumentfiles;
@@ -706,10 +713,30 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           }
         });
 
+
+
       // creates a new folder for web with specified server relative url
       // const folderAddResult = await this.props.sp.web.folders.addUsingPath(url);
 
-      console.log(`Folder -----PDF---- created successfully in list `);
+      console.log(`Folder -----Supporting Document---- created successfully in list `);
+
+      const siteUrlWordDocument = `${parentFolderPath}/WordDocument`;
+      console.log(siteUrl);
+      const filesDataWordDocument = this.state.wordDocumentfiles;
+      await this.props.sp.web.rootFolder.folders
+        .addUsingPath(siteUrlWordDocument)
+        .then(async (res) => {
+          for (let i = 0; i < filesDataWordDocument.length; i++) {
+            const file = filesDataWordDocument[i];
+            const arrayBuffer = await file.arrayBuffer();
+            // Upload a file to the SharePoint Library
+            await this.props.sp.web
+              .getFolderByServerRelativePath(siteUrlWordDocument)
+              .files.addUsingPath(file.name, arrayBuffer, { Overwrite: true });
+          }
+        });
+
+        console.log(`Folder -----Word Document---- created successfully in list `);
     } catch (error) {
       console.error(`Error creating folder: ${error}`);
     }
@@ -789,19 +816,35 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //     });
   //   }
 
-  private createNoteObject = (): INoteObject => ({
-    Department: this.state.department,
-    CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
-    Subject: this.state.eCommitteData.subjectFeildValue,
-    natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
-    NatuerOfApprovalSanction:
-      this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
-    NoteType: this.state.eCommitteData.noteTypeFeildValue,
-    TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
-    Amount: this.state.eCommitteData.amountFeildValue,
-    Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
-    Purpose: this.state.eCommitteData.puroposeFeildValue,
-  });
+  private createNoteObject = (): INoteObject =>{
+    console.log(({
+      Department: this.state.department,
+      CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
+      Subject: this.state.eCommitteData.subjectFeildValue,
+      natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
+      NatuerOfApprovalSanction:
+        this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
+      NoteType: this.state.eCommitteData.noteTypeFeildValue,
+      TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
+      Amount: this.state.eCommitteData.amountFeildValue,
+      Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
+      Purpose: this.state.eCommitteData.puroposeFeildValue,
+    }))
+    return ({
+      Department: this.state.department,
+      CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
+      Subject: this.state.eCommitteData.subjectFeildValue,
+      natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
+      NatuerOfApprovalSanction:
+        this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
+      NoteType: this.state.eCommitteData.noteTypeFeildValue,
+      TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
+      Amount: this.state.eCommitteData.amountFeildValue,
+      Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
+      Purpose: this.state.eCommitteData.puroposeFeildValue,
+    })
+  }
+     ;
 
   // private isNatureOfApprovalOrSanction=()=>{
   //   let isValid=true;
@@ -817,37 +860,37 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     event.preventDefault();
     console.log(event);
     console.log("Event Triggered");
-    // const {
-    //   committeeNameFeildValue,
-    //   subjectFeildValue,
-    //   natureOfNoteFeildValue,
-    //   noteTypeFeildValue,
-    //   natureOfApprovalOrSanctionFeildValue,
-    //   typeOfFinancialNoteFeildValue,
-    //   searchTextFeildValue,
-    //   amountFeildValue,
-    //   puroposeFeildValue,
-    // } = this.state;
-    // console.log(committeeNameFeildValue, "-----------committeeNameFeildValue");
-    // console.log(subjectFeildValue, "-----------subjectFeildValue");
-    // console.log(natureOfNoteFeildValue, "-----------natureOfNoteFeildValue");
-    // console.log(
-    //   natureOfApprovalOrSanctionFeildValue,
-    //   "--------------natureOfApprovalOrSanctionFeildValue"
-    // );
-    // console.log(noteTypeFeildValue, "-----------noteTypeFeildValue");
-    // console.log(
-    //   typeOfFinancialNoteFeildValue,
-    //   "-----------typeOfFinancialNoteFeildValue"
-    // );
-    // console.log(searchTextFeildValue, "-----------searchTextFeildValue");
-    // console.log(amountFeildValue, "-----------amountFeildValue");
-    // console.log(puroposeFeildValue, "-----------puroposeFeildValue");
-    // console.log(
-    //   this.state.noteTypeFeildValue === "Finanical" &&
-    //     (this.state.natureOfNoteFeildValue === "Information" || "Ratification"),
-    //   ",check.........................."
-    // );
+    const {
+      committeeNameFeildValue,
+      subjectFeildValue,
+      natureOfNoteFeildValue,
+      noteTypeFeildValue,
+      natureOfApprovalOrSanctionFeildValue,
+      typeOfFinancialNoteFeildValue,
+      searchTextFeildValue,
+      amountFeildValue,
+      puroposeFeildValue,
+    } = this.state;
+    console.log(committeeNameFeildValue, "-----------committeeNameFeildValue");
+    console.log(subjectFeildValue, "-----------subjectFeildValue");
+    console.log(natureOfNoteFeildValue, "-----------natureOfNoteFeildValue");
+    console.log(
+      natureOfApprovalOrSanctionFeildValue,
+      "--------------natureOfApprovalOrSanctionFeildValue"
+    );
+    console.log(noteTypeFeildValue, "-----------noteTypeFeildValue");
+    console.log(
+      typeOfFinancialNoteFeildValue,
+      "-----------typeOfFinancialNoteFeildValue"
+    );
+    console.log(searchTextFeildValue, "-----------searchTextFeildValue");
+    console.log(amountFeildValue, "-----------amountFeildValue");
+    console.log(puroposeFeildValue, "-----------puroposeFeildValue");
+    console.log(
+      this.state.noteTypeFeildValue === "Finanical" &&
+        (this.state.natureOfNoteFeildValue === "Information" || "Ratification"),
+      ",check.........................."
+    );
     try {
       // eslint-disable-next-line no-constant-condition
       if (
@@ -935,8 +978,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             },
           });
         }
-      }
-       else if (
+      } else if (
         (this.state.natureOfNoteFeildValue === "Sanction" ||
           this.state.natureOfNoteFeildValue === "Approval") &&
         this.state.noteTypeFeildValue === "NonFinancial"
@@ -1260,25 +1302,41 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     }
   };
 
+  private handleWordDocumentFileChange = (
+    files: FileList | null,
+    typeOfDoc: string
+  ) => {
+    console.log(typeOfDoc);
+
+    if (this.state.isWarningWordDocumentFiles) {
+      this.setState({ isWarningWordDocumentFiles: false });
+    }
+
+    if (files) {
+      console.log(files);
+      // Convert FileList to an array of File objects
+      const filesArray = Array.from(files);
+      this.setState((prev) => ({
+        wordDocumentfiles: [...prev.wordDocumentfiles, ...filesArray],
+      }));
+    }
+  };
+
   public handleDialogBox = (): void => {
     console.log("Dialog handling");
     this.setState({ isDialogHidden: true });
   };
 
-
-  public checkUserIsIBTes2 = (peoplePickerData: any):boolean =>{
+  public checkUserIsIBTes2 = (peoplePickerData: any): boolean => {
     // console.log(peoplePickerData)
-    const  booleanCheck = peoplePickerData?.some(
-      (each:any)=>{
-        if (each.text === "IB Test2"){
-          return true
-        }
+    const booleanCheck = peoplePickerData?.some((each: any) => {
+      if (each.text === "IB Test2") {
+        return true;
       }
-    )
+    });
     // console.log(booleanCheck)
-    return booleanCheck
-
-  }
+    return booleanCheck;
+  };
 
   public render(): React.ReactElement<IFormProps> {
     // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
@@ -1804,7 +1862,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               }}
             >
               <div style={{ display: "flex" }}>
-                 <PeoplePicker
+                <PeoplePicker
                   placeholder="Reviewer Details"
                   context={this._peopplePicker}
                   // titleText="People Picker"
@@ -1879,7 +1937,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             display: "flex",
 
             justifyContent: "flex-start",
-            alignItems:'center',
+            alignItems: "center",
             flexWrap: "wrap",
           }}
           className={`${styles.generalSectionApproverDetails}`}
@@ -1893,7 +1951,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <UploadFileComponent
                   typeOfDoc="notePdF"
                   onChange={this.handleNoteToFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf"
+                  accept=".pdf"
+                  multiple={false}
+                  maxFileSizeMB={10}
+                  maxTotalSizeMB={10}  
                 />
               </div>
             ) : (
@@ -1901,7 +1962,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <UploadFileComponent
                   typeOfDoc="notePdF"
                   onChange={this.handleNoteToFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf"
+                  accept=".pdf"
+                  multiple={false}
+                  maxFileSizeMB={10}
+                  maxTotalSizeMB={10}  
                 />
               </div>
             )}
@@ -1916,26 +1980,32 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               <p className={styles.label}>
                 Word Document <span className={styles.warning}>*</span>
               </p>
-              {this.state.isWarningSupportingDocumentFiles ? (
+              {this.state.isWarningWordDocumentFiles ? (
                 <div style={{ border: "1px solid red" }}>
                   <UploadFileComponent
                     typeOfDoc="supportingDocument"
-                    onChange={this.handleSupportingFileChange}
+                    onChange={this.handleWordDocumentFileChange}
                     accept=".jpg,.jpeg,.png,.pdf"
+                    multiple={false}
+                    maxFileSizeMB={10}
+                    maxTotalSizeMB={10}  
                   />
                 </div>
               ) : (
                 <div>
                   <UploadFileComponent
                     typeOfDoc="supportingDocument"
-                    onChange={this.handleSupportingFileChange}
-                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={this.handleWordDocumentFileChange}
+                    accept=".doc,.docx"
+                    multiple={false}
+                    maxFileSizeMB={10}
+                    maxTotalSizeMB={10}  
                   />
                 </div>
               )}
 
               <p className={styles.message}>
-                Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
+                Allowed Formats (doc,docx only) Upto 10MB max.
               </p>
             </div>
           ) : (
@@ -1949,7 +2019,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <UploadFileComponent
                   typeOfDoc="supportingDocument"
                   onChange={this.handleSupportingFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf"
+                  accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                  multiple={true}
+                  maxFileSizeMB={25}
+                  maxTotalSizeMB={25}  
                 />
               </div>
             ) : (
@@ -1957,7 +2030,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <UploadFileComponent
                   typeOfDoc="supportingDocument"
                   onChange={this.handleSupportingFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf"
+                  accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                  multiple={true}
+                  maxFileSizeMB={25}
+                  maxTotalSizeMB={25}  
                 />
               </div>
             )}
