@@ -33,7 +33,7 @@ export const ReorderContext = React.createContext<ContextProps>({
 
 const DraggableTable = (props:any) => {
     // console.log(props.data)
-    const {reOrderData, removeDataFromGrid} = props
+    const {reOrderData, removeDataFromGrid,type} = props
     
     const gridData = props.data
     // State to hold the grid's data and the item currently being dragged
@@ -72,7 +72,7 @@ const DraggableTable = (props:any) => {
     };
 
     const remove = (dataItem:any) => {
-        removeDataFromGrid(dataItem)
+        removeDataFromGrid(dataItem,type)
         
       };
 
@@ -89,7 +89,7 @@ const DraggableTable = (props:any) => {
           >
             <Column title="" width="50px" cell={DragHandleCell} />
             <Column field="id" title="ID" width="60px" />
-            <Column field="text" title="text" width="90px" />
+            <Column field="text" title={type} width="90px" />
             <Column title="SR No" width="90px" />
             <Column field="optionalText" title="Designation" />
             <Column

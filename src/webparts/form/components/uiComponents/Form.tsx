@@ -17,6 +17,7 @@ import Title from "./titleSectionComponent/title";
 import SpanComponent from "./spanComponent/spanComponent";
 
 import MyDialog from "./dialog/dialog";
+import ApproverOrReviewerDialog from "./ApproverOrReviewerDialog/approverOrReviewerDialog";
 // import GetForm from '../spListGet/spListGet';
 // import PeoplePicker from "./peoplePickerInKenod/peoplePickerInKendo";
 // import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
@@ -110,9 +111,12 @@ interface IMainFormState {
 
   isWarningPeoplePicker: boolean;
   isDialogHidden: boolean;
+  isApproverOrReviewerDialogHandel:boolean;
 
   peoplePickerData: any;
+  peoplePickerApproverData:any;
   approverInfo: any;
+  reviewerInfo:any;
 }
 
 // let fetchedData:any[];
@@ -178,8 +182,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       supportingDocumentfiles: [],
       isWarningSupportingDocumentFiles: false,
       isDialogHidden: true,
+      isApproverOrReviewerDialogHandel:true,
       peoplePickerData: [],
+      peoplePickerApproverData: [],
       approverInfo: [],
+      reviewerInfo:[]
     };
 
     this._peopplePicker = {
@@ -328,8 +335,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     }
   };
 
-  public componentDidMount(): void {
-    this.fetchListItems()
+  public componentDidMount= (): void=> {
+    this._fetchApproverDetails()
       .then(() => {
         console.log("List items fetched successfully.");
       })
@@ -338,12 +345,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       });
   }
 
-  private async fetchListItems(): Promise<void> {
+  private  _fetchApproverDetails =async (): Promise<void> => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const items: any[] = await this.props.sp.web.lists
         .getByTitle(this.props.listId)
-        .items.select("Title", "Id")();
+        .items.select("*","Approvers/Title","Approvers/EMail").expand("Approvers")();
       console.log(items);
       // this.setState({ itemsFromSpList:items });
       // this.setState(prevState => ({
@@ -386,6 +393,39 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         return { ...obj, optionalText: "N/A" };
       });
       console.log(newItemsDataNA);
+      this.setState({ reviewerInfo: newItemsDataNA });
+    } else {
+      const newItemsData = items.map((obj: { loginName: any }) => {
+        return { ...obj, optionalText: dataRec };
+      });
+      // console.log(newItemsData)
+      this.setState({ reviewerInfo: newItemsData });
+    }
+  };
+
+  private _getPeoplePickerItemsApporvers = async (items: any[]) => {
+    console.log("Items:", items);
+    // fetchedData = items
+    console.log(items[0].loginName);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    console.log(items, "this._getUserProperties(items[0].loginName)");
+
+    // this.setState({approverInfo:items})
+
+    const dataRec = await this._getUserProperties(items[0].loginName);
+    // const finalData = await dataRec.json()
+    // dataRec.then((x: any)=>{
+    //   console.log(x)
+    //   designation=x
+    // });
+    // console.log(typeof dataRec?.toString());
+
+    if (typeof dataRec?.toString() === "undefined") {
+      const newItemsDataNA = items.map((obj: { loginName: any }) => {
+        return { ...obj, optionalText: "N/A" };
+      });
+      console.log(newItemsDataNA);
       this.setState({ approverInfo: newItemsDataNA });
     } else {
       const newItemsData = items.map((obj: { loginName: any }) => {
@@ -400,31 +440,108 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ peoplePickerData: reOrderData });
   };
 
-  public removeDataFromGrid = (dataItem: any): void => {
-    console.log("Remove triggered");
-    console.log(dataItem);
-    const filterData = this.state.peoplePickerData.filter(
-      (item: any) => item.id !== dataItem.id
-    );
-    this.setState({ peoplePickerData: filterData });
+  public removeDataFromGrid = (dataItem: any,typeOfTable:string): void => {
+
+    if (typeOfTable === "Reviewer"){
+
+      console.log("Remove triggered from Reviewer Table");
+      console.log(dataItem);
+      const filterData = this.state.peoplePickerData.filter(
+        (item: any) => item.id !== dataItem.id
+      );
+      this.setState({ peoplePickerData: filterData });
+    }else{
+      console.log("Remove triggered Approver Table");
+      console.log(dataItem);
+      const filterData = this.state.peoplePickerApproverData.filter(
+        (item: any) => item.id !== dataItem.id
+      );
+      this.setState({ peoplePickerApproverData: filterData });
+    }
+  
   };
 
+  private checkReviewer = ()=>{
+    const approverTitles = this.state.peoplePickerApproverData.map((each:any) =>each.text)
+    console.log(approverTitles)
+
+    const reveiwerTitles = this.state.peoplePickerData.map((each:any)=>each.text)
+    console.log(reveiwerTitles)
+
+    const returnBoolean = reveiwerTitles.includes(this.state.reviewerInfo[0].text) || approverTitles.includes(this.state.reviewerInfo[0].text)
+    return returnBoolean
+  }
+
+  private checkApprover= ()=>{
+    const approverTitles = this.state.peoplePickerApproverData.map((each:any) =>each.text)
+    console.log(approverTitles)
+
+    const reveiwerTitles = this.state.peoplePickerData.map((each:any)=>each.text)
+    console.log(reveiwerTitles)
+
+    const returnBoolean = reveiwerTitles.includes(this.state.approverInfo[0].text) || approverTitles.includes(this.state.approverInfo[0].text)
+    return returnBoolean
+  }
+
   private handleOnAdd = async (event: any, type: string): Promise<void> => {
-    // console.log(event)
-    // let designation=""
-    // eslint-disable-next-line no-return-assign
+    if (type === "reveiwer") {
+      console.log(this.checkReviewer())
+      // this.checkReviewer()
 
-    // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
+      // console.log(event)
+      // let designation=""
+      // eslint-disable-next-line no-return-assign
 
-    // console.log(type,newItemsData,"test",designation)
-    console.log(this.state.approverInfo, "Approver Info");
-    this.setState((prev) => ({
-      peoplePickerData: [...prev.peoplePickerData, ...this.state.approverInfo],
-    }));
+      // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
 
-    // console.log(fetchedData)
-    // this._getPeoplePickerItems()
-    console.log(this.state.approverInfo, "handle On Add");
+      // console.log(type,newItemsData,"test",designation)
+      if(this.checkReviewer()){
+        console.log("Data already Exist in Reviewer Table or Approver Table")
+        this.setState({isApproverOrReviewerDialogHandel:false})
+
+      }else{
+        console.log(this.state.reviewerInfo, "Reviewer Info");
+        this.setState((prev) => ({
+          peoplePickerData: [
+            ...prev.peoplePickerData,
+            ...this.state.reviewerInfo,
+          ],
+        }));
+
+      }
+      
+
+      // console.log(fetchedData)
+      // this._getPeoplePickerItems()
+      console.log(this.state.reviewerInfo, "handle On Add-reveiwer section");
+    }else{
+      // console.log(event)
+      // let designation=""
+      // eslint-disable-next-line no-return-assign
+
+      // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
+
+      // console.log(type,newItemsData,"test",designation)
+      if(this.checkApprover()){
+        console.log("Data already Exist in Reviewer Table or Approver Table")
+        this.setState({isApproverOrReviewerDialogHandel:false})
+
+      }else{
+        console.log(this.state.approverInfo, "Approver Info");
+        this.setState((prev) => ({
+          peoplePickerApproverData: [
+            ...prev.peoplePickerApproverData,
+            ...this.state.approverInfo,
+          ],
+        }));
+
+      }
+      
+
+      // console.log(fetchedData)
+      // this._getPeoplePickerItems()
+      console.log(this.state.approverInfo, "handle On Add-Approver section");
+    }
   };
 
   // private handleCommittenameRedBorder = (event: any): void => {
@@ -695,7 +812,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           }
         });
 
-        console.log(`Folder -----PDF---- created successfully in list `);
+      console.log(`Folder -----PDF---- created successfully in list `);
 
       const siteUrlforSupportingDocument = `${parentFolderPath}/SupportingDocument`;
       console.log(siteUrlforSupportingDocument);
@@ -713,12 +830,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           }
         });
 
-
-
       // creates a new folder for web with specified server relative url
       // const folderAddResult = await this.props.sp.web.folders.addUsingPath(url);
 
-      console.log(`Folder -----Supporting Document---- created successfully in list `);
+      console.log(
+        `Folder -----Supporting Document---- created successfully in list `
+      );
 
       const siteUrlWordDocument = `${parentFolderPath}/WordDocument`;
       console.log(siteUrl);
@@ -736,7 +853,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           }
         });
 
-        console.log(`Folder -----Word Document---- created successfully in list `);
+      console.log(
+        `Folder -----Word Document---- created successfully in list `
+      );
     } catch (error) {
       console.error(`Error creating folder: ${error}`);
     }
@@ -816,8 +935,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //     });
   //   }
 
-  private createNoteObject = (): INoteObject =>{
-    console.log(({
+  private createNoteObject = (): INoteObject => {
+    console.log({
       Department: this.state.department,
       CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
       Subject: this.state.eCommitteData.subjectFeildValue,
@@ -825,12 +944,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       NatuerOfApprovalSanction:
         this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
       NoteType: this.state.eCommitteData.noteTypeFeildValue,
-      TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
+      TypeOfFinancialNote:
+        this.state.eCommitteData.typeOfFinancialNoteFeildValue,
       Amount: this.state.eCommitteData.amountFeildValue,
       Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
       Purpose: this.state.eCommitteData.puroposeFeildValue,
-    }))
-    return ({
+    });
+    return {
       Department: this.state.department,
       CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
       Subject: this.state.eCommitteData.subjectFeildValue,
@@ -838,13 +958,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       NatuerOfApprovalSanction:
         this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
       NoteType: this.state.eCommitteData.noteTypeFeildValue,
-      TypeOfFinancialNote: this.state.eCommitteData.typeOfFinancialNoteFeildValue,
+      TypeOfFinancialNote:
+        this.state.eCommitteData.typeOfFinancialNoteFeildValue,
       Amount: this.state.eCommitteData.amountFeildValue,
       Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
       Purpose: this.state.eCommitteData.puroposeFeildValue,
-    })
-  }
-     ;
+    };
+  };
 
   // private isNatureOfApprovalOrSanction=()=>{
   //   let isValid=true;
@@ -1327,6 +1447,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ isDialogHidden: true });
   };
 
+  public handleApproverOrReviewerDialogBox = (): void => {
+    console.log("Dialog handling");
+    this.setState({ isApproverOrReviewerDialogHandel: true });
+  };
+
   public checkUserIsIBTes2 = (peoplePickerData: any): boolean => {
     // console.log(peoplePickerData)
     const booleanCheck = peoplePickerData?.some((each: any) => {
@@ -1352,6 +1477,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           data={this.state.eCommitteData}
           handleDialogBox={this.handleDialogBox}
         />
+        <ApproverOrReviewerDialog 
+        hidden={this.state.isApproverOrReviewerDialogHandel}
+        
+        handleDialogBox={this.handleApproverOrReviewerDialogBox}/>
+
 
         <div className={`${styles.generalSectionMainContainer}`}>
           <h1 style={{ textAlign: "center", fontSize: "16px" }}>
@@ -1733,7 +1863,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           ) : (
             ""
           )} */}
-          
+
           {this.state.isPuroposeVisable ? (
             // (this.state.natureOfNoteFeildValue === 'Approval' || 'Information'?
             //   <div
@@ -1784,7 +1914,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             //     />
             //   )}
             // </div>:
-              
+
             // )
             <div
               className={styles.halfWidth}
@@ -1843,7 +1973,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             >
               <div style={{ display: "flex" }}>
                 <PeoplePicker
-                  placeholder="Approver Details"
+                  
+                  placeholder="Reviewer Details"
                   context={this._peopplePicker}
                   // titleText="People Picker"
                   personSelectionLimit={1}
@@ -1861,7 +1992,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 <DefaultButton
                   type="button"
                   className={`${styles.commonBtn2} ${styles.addBtn}`}
-                  onClick={(e) => this.handleOnAdd(e, "approver")}
+                  onClick={(e) => this.handleOnAdd(e, "reveiwer")}
                   iconProps={{ iconName: "Add" }}
                 >
                   Add
@@ -1881,6 +2012,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     data={this.state.peoplePickerData}
                     reOrderData={this.reOrderData}
                     removeDataFromGrid={this.removeDataFromGrid}
+                    type="Reviewer"
                   />
                 </div>
               ) : (
@@ -1889,6 +2021,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     data={this.state.peoplePickerData}
                     reOrderData={this.reOrderData}
                     removeDataFromGrid={this.removeDataFromGrid}
+                    type="Reviewer"
                   />
                 </div>
               )
@@ -1898,6 +2031,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                   data={this.state.peoplePickerData}
                   reOrderData={this.reOrderData}
                   removeDataFromGrid={this.removeDataFromGrid}
+                  type="Reviewer"
                 />
               </div>
             )}
@@ -1915,7 +2049,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             >
               <div style={{ display: "flex" }}>
                 <PeoplePicker
-                  placeholder="Reviewer Details"
+                  
+                  placeholder="Approver Details"
                   context={this._peopplePicker}
                   // titleText="People Picker"
                   personSelectionLimit={1}
@@ -1924,7 +2059,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                   defaultSelectedUsers={[""]}
                   disabled={false}
                   ensureUser={true}
-                  onChange={this._getPeoplePickerItems}
+                  onChange={this._getPeoplePickerItemsApporvers}
                   // showHiddenInUI={false}
                   principalTypes={[PrincipalType.User]}
                   resolveDelay={1000}
@@ -1951,26 +2086,29 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 this.state.peoplePickerData.length === 0 ? (
                   <div style={{ border: "1px solid red" }}>
                     <DraggableTable
-                      data={this.state.peoplePickerData}
+                      data={this.state.peoplePickerApproverData}
                       reOrderData={this.reOrderData}
                       removeDataFromGrid={this.removeDataFromGrid}
+                      type="Approver"
                     />
                   </div>
                 ) : (
                   <div>
                     <DraggableTable
-                      data={this.state.peoplePickerData}
+                      data={this.state.peoplePickerApproverData}
                       reOrderData={this.reOrderData}
                       removeDataFromGrid={this.removeDataFromGrid}
+                      type="Approver"
                     />
                   </div>
                 )
               ) : (
                 <div>
                   <DraggableTable
-                    data={this.state.peoplePickerData}
+                    data={this.state.peoplePickerApproverData}
                     reOrderData={this.reOrderData}
                     removeDataFromGrid={this.removeDataFromGrid}
+                    type="Approver"
                   />
                 </div>
               )}
@@ -1995,68 +2133,83 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           className={`${styles.generalSectionApproverDetails}`}
         >
           <div className={`${styles.fileInputContainers}`}>
-            <p className={styles.label}>
+            <p className={styles.label} style={{ margin: "0px" }}>
               Note PDF<span className={styles.warning}>*</span>
             </p>
             {this.state.isWarningNoteToFiles ? (
-              <div style={{width:"100%", border: "1px solid red" }}>
+              <div
+                style={{
+                  width: "100%",
+                  border: "1px solid red",
+                  margin: "0px",
+                }}
+              >
                 <UploadFileComponent
                   typeOfDoc="notePdF"
                   onChange={this.handleNoteToFileChange}
                   accept=".pdf"
                   multiple={false}
                   maxFileSizeMB={10}
-                  maxTotalSizeMB={10}  
+                  maxTotalSizeMB={10}
                 />
               </div>
             ) : (
-              <div style={{width:"100%",}}>
+              <div style={{ width: "100%", margin: "0px" }}>
                 <UploadFileComponent
                   typeOfDoc="notePdF"
                   onChange={this.handleNoteToFileChange}
                   accept=".pdf"
                   multiple={false}
                   maxFileSizeMB={10}
-                  maxTotalSizeMB={10}  
+                  maxTotalSizeMB={10}
                 />
               </div>
             )}
 
-            <p className={styles.message} style={{textAlign:'right'}}>
+            <p
+              className={styles.message}
+              style={{ textAlign: "right", margin: "0px" }}
+            >
               Allowed only one PDF. Up to 10MB max.
             </p>
           </div>
 
           {this.checkUserIsIBTes2(this.state.peoplePickerData) ? (
             <div className={`${styles.fileInputContainers}`}>
-              <p className={styles.label}>
+              <p className={styles.label} style={{ margin: "0px" }}>
                 Word Document <span className={styles.warning}>*</span>
               </p>
               {this.state.isWarningWordDocumentFiles ? (
-                <div style={{width:"100%", border: "1px solid red" }}>
+                <div
+                  style={{
+                    width: "100%",
+                    border: "1px solid red",
+                    margin: "0px",
+                  }}
+                >
                   <UploadFileComponent
                     typeOfDoc="supportingDocument"
                     onChange={this.handleWordDocumentFileChange}
                     accept=".jpg,.jpeg,.png,.pdf"
                     multiple={false}
                     maxFileSizeMB={10}
-                    maxTotalSizeMB={10}  
+                    maxTotalSizeMB={10}
                   />
                 </div>
               ) : (
-                <div style={{width:"100%",}}>
+                <div style={{ width: "100%", margin: "0px" }}>
                   <UploadFileComponent
                     typeOfDoc="supportingDocument"
                     onChange={this.handleWordDocumentFileChange}
                     accept=".doc,.docx"
                     multiple={false}
                     maxFileSizeMB={10}
-                    maxTotalSizeMB={10}  
+                    maxTotalSizeMB={10}
                   />
                 </div>
               )}
 
-              <p className={styles.message}>
+              <p className={styles.message} style={{ margin: "0px" }}>
                 Allowed Formats (doc,docx only) Upto 10MB max.
               </p>
             </div>
@@ -2065,32 +2218,40 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           )}
 
           <div className={`${styles.fileInputContainers}`}>
-            <p className={styles.label}>Supporting Documents</p>
+            <p className={styles.label} style={{ margin: "0px" }}>
+              Supporting Documents
+            </p>
             {this.state.isWarningSupportingDocumentFiles ? (
-              <div style={{width:"100%", border: "1px solid red" }}>
+              <div
+                style={{
+                  width: "100%",
+                  border: "1px solid red",
+                  margin: "0px",
+                }}
+              >
                 <UploadFileComponent
                   typeOfDoc="supportingDocument"
                   onChange={this.handleSupportingFileChange}
                   accept=".xlsx,.pdf,.doc,.docx"
                   multiple={true}
                   maxFileSizeMB={25}
-                  maxTotalSizeMB={25}  
+                  maxTotalSizeMB={25}
                 />
               </div>
             ) : (
-              <div style={{width:"100%",}}>
+              <div style={{ width: "100%", margin: "0px" }}>
                 <UploadFileComponent
                   typeOfDoc="supportingDocument"
                   onChange={this.handleSupportingFileChange}
                   accept=".xlsx,.pdf,.doc,.docx"
                   multiple={true}
                   maxFileSizeMB={25}
-                  maxTotalSizeMB={25}  
+                  maxTotalSizeMB={25}
                 />
               </div>
             )}
 
-            <p className={styles.message}>
+            <p className={styles.message} style={{ margin: "0px" }}>
               Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
             </p>
           </div>

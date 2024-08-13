@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { IconButton, Icon } from "@fluentui/react";
 import styles from "../Form.module.scss";
 
+
 interface UploadFileProps {
   typeOfDoc: string;
   onChange: (files: FileList | null, typeOfDoc: string) => void;
@@ -115,6 +116,7 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
           style={{ padding: "10px" }}
           multiple={multiple}
         />
+        
       </li>
 
       {selectedFiles.length > 0 &&
