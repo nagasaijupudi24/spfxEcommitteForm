@@ -124,15 +124,21 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
             style={{ display: "flex", alignItems: "center" }}
             className={`${styles.basicLi} ${styles.attachementli}`}
           >
-            <div style={{display:'flex',justifyContent:'center',alignContent:'center',border:'1px solid red'}}>
+            <div style={{padding:'2px',marginBottom:'4px',display:'flex',justifyContent:'flex-start',alignContent:'center',
+              // border:'1px solid red',
+              flexGrow:'1'}}>
               <Icon
                 iconName={getFileTypeIcon(file.name)}
-                style={{ fontSize: "24px", marginTop: "10px" }}
+                style={{ fontSize: "24px", marginTop: "14px" }}
               />
               <div>
-                <p style={{ marginRight: "10px" }}>{file.name}</p>
+                <p style={{paddingBottom:'0px',marginBottom:'0px',paddingLeft:'4px',
+                  // border:'1px solid green'
+                  }}>{file.name}</p>
                 {error && (
-                  <span style={{ color: "red", marginLeft: "10px",fontSize:'10px' }}>{error}</span>
+                  <span style={{ color: "red",fontSize:'10px',paddingLeft:'4px'
+                    // ,border:'1px solid olive'
+                    ,margin:'0px' }}>{error}</span>
                 )}
 
               </div>
