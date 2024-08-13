@@ -244,8 +244,10 @@
 
 .message{
   color: green;
-  text-align: center;
+  // text-align: center;
+  // border: 1px solid olive;
   font-size: 10px;
+  align-self: flex-end;
 }
 
 .warning{
@@ -254,7 +256,9 @@
 }
 
 .label{
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
 }
 
 
@@ -297,6 +301,11 @@
 .fileInputContainers{
   width:45%;
   margin: 12px;
+  // border: 1px solid red;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 /* Tablet view */
@@ -320,5 +329,52 @@
   .fileInputContainers {
     width: 100%;
     margin: 12px;
+    
+  }
+}
+
+.fileAttachementsUl{
+  padding-left: 0px;
+  list-style-type: none;
+  // border: 1px solid green;
+}
+
+.basicLi{
+  border: 1px solid rgb(211, 211, 211);
+}
+
+.inputField{
+  display: flex;
+  flex-direction: column;
+}
+
+.attachementli{
+  margin: 0px;
+  display: flex;
+  padding-left: 4px;
+  
+  justify-content: space-between;
+}
+
+.customFileUpload {
+  display: inline-block;
+  padding: 8px 16px;
+  cursor: pointer;
+  background-color: #0078d4; /* Fluent UI primary color */
+  color: #fff;
+  font-size: 14px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid #0078d4; /* Same color as background for consistent styling */
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #005a9e; /* Darker shade for hover effect */
+    border-color: #005a9e; /* Match border with hover background color */
+  }
+
+  &:active {
+    background-color: #004578; /* Even darker shade for active state */
+    border-color: #004578;
   }
 }

@@ -1733,7 +1733,59 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           ) : (
             ""
           )} */}
+          
           {this.state.isPuroposeVisable ? (
+            // (this.state.natureOfNoteFeildValue === 'Approval' || 'Information'?
+            //   <div
+            //   className={styles.halfWidth}
+            //   style={{ margin: "4px", marginTop: "18px" }}
+            // >
+            //   <label>
+            //     Note Type
+            //     <SpanComponent />
+            //   </label>
+            //   {this.state.isWarningNoteType ? (
+            //     this.state.noteTypeFeildValue ? (
+            //       <DropDownList
+            //         data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+            //         // textField="text"  // The field from data items to display in the dropdown
+            //         // dataItemKey="value"  // The field from data items to use as the key
+            //         onChange={this.handleNoteType}
+            //         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+            //         style={{
+            //           border: "1px solid rgb(211, 211, 211)",
+            //           borderRadius: "8px",
+            //         }} // Inline styles
+            //       />
+            //     ) : (
+            //       <DropDownList
+            //         data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+            //         // textField="text"  // The field from data items to display in the dropdown
+            //         // dataItemKey="value"  // The field from data items to use as the key
+            //         onChange={this.handleNoteTypeRed}
+            //         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+            //         style={{
+            //           border: "1px solid red",
+            //           borderRadius: "8px",
+            //         }} // Inline styles
+            //       />
+            //     )
+            //   ) : (
+            //     <DropDownList
+            //       data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+            //       // textField="text"  // The field from data items to display in the dropdown
+            //       // dataItemKey="value"  // The field from data items to use as the key
+            //       onChange={this.handleNoteType}
+            //       // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+            //       style={{
+            //         border: "1px solid rgb(211, 211, 211)",
+            //         borderRadius: "8px",
+            //       }} // Inline styles
+            //     />
+            //   )}
+            // </div>:
+              
+            // )
             <div
               className={styles.halfWidth}
               style={{ margin: "4px", marginTop: "18px" }}
@@ -1937,7 +1989,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             display: "flex",
 
             justifyContent: "flex-start",
-            alignItems: "center",
+            alignItems: "flex-start",
             flexWrap: "wrap",
           }}
           className={`${styles.generalSectionApproverDetails}`}
@@ -1947,7 +1999,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               Note PDF<span className={styles.warning}>*</span>
             </p>
             {this.state.isWarningNoteToFiles ? (
-              <div style={{ border: "1px solid red" }}>
+              <div style={{width:"100%", border: "1px solid red" }}>
                 <UploadFileComponent
                   typeOfDoc="notePdF"
                   onChange={this.handleNoteToFileChange}
@@ -1958,7 +2010,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 />
               </div>
             ) : (
-              <div>
+              <div style={{width:"100%",}}>
                 <UploadFileComponent
                   typeOfDoc="notePdF"
                   onChange={this.handleNoteToFileChange}
@@ -1970,7 +2022,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               </div>
             )}
 
-            <p className={styles.message}>
+            <p className={styles.message} style={{textAlign:'right'}}>
               Allowed only one PDF. Up to 10MB max.
             </p>
           </div>
@@ -1981,7 +2033,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 Word Document <span className={styles.warning}>*</span>
               </p>
               {this.state.isWarningWordDocumentFiles ? (
-                <div style={{ border: "1px solid red" }}>
+                <div style={{width:"100%", border: "1px solid red" }}>
                   <UploadFileComponent
                     typeOfDoc="supportingDocument"
                     onChange={this.handleWordDocumentFileChange}
@@ -1992,7 +2044,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                   />
                 </div>
               ) : (
-                <div>
+                <div style={{width:"100%",}}>
                   <UploadFileComponent
                     typeOfDoc="supportingDocument"
                     onChange={this.handleWordDocumentFileChange}
@@ -2015,22 +2067,22 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           <div className={`${styles.fileInputContainers}`}>
             <p className={styles.label}>Supporting Documents</p>
             {this.state.isWarningSupportingDocumentFiles ? (
-              <div style={{ border: "1px solid red" }}>
+              <div style={{width:"100%", border: "1px solid red" }}>
                 <UploadFileComponent
                   typeOfDoc="supportingDocument"
                   onChange={this.handleSupportingFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                  accept=".xlsx,.pdf,.doc,.docx"
                   multiple={true}
                   maxFileSizeMB={25}
                   maxTotalSizeMB={25}  
                 />
               </div>
             ) : (
-              <div>
+              <div style={{width:"100%",}}>
                 <UploadFileComponent
                   typeOfDoc="supportingDocument"
                   onChange={this.handleSupportingFileChange}
-                  accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                  accept=".xlsx,.pdf,.doc,.docx"
                   multiple={true}
                   maxFileSizeMB={25}
                   maxTotalSizeMB={25}  
