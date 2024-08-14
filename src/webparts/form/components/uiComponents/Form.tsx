@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -61,7 +62,10 @@ interface INoteObject {
   Amount: string | number | readonly string[];
   Search_x0020_Keyword: string | number | readonly string[];
   Purpose: string | number | readonly string[];
-  ApproverDetails:any;
+  ApproverDetails: any;
+  Status: string;
+  statusNumber: any;
+  AuditTrail: any;
 }
 
 interface IMainFormState {
@@ -126,7 +130,9 @@ interface IMainFormState {
   peoplePickerApproverData: any;
   approverInfo: any;
   reviewerInfo: any;
-  
+
+  status: string;
+  statusNumber: any;
 }
 
 // let fetchedData:any[];
@@ -147,6 +153,8 @@ export const FormContext = React.createContext<any>(null);
 
 export default class Form extends React.Component<IFormProps, IMainFormState> {
   private _peopplePicker: IPeoplePickerContext;
+  private _userName: string;
+  private _role: string;
   constructor(props: IFormProps) {
     super(props);
     this.state = {
@@ -204,6 +212,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       peoplePickerApproverData: [],
       approverInfo: [],
       reviewerInfo: [],
+      status: "",
+      statusNumber: null,
     };
 
     this._peopplePicker = {
@@ -233,15 +243,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private _getUserProperties = async (loginName: any): Promise<any> => {
     let designation = "NA";
-    let email = 'NA'
+    let email = "NA";
     // const loginName = this.state.peoplePickerData[0]
     const profile = await this.props.sp.profiles.getPropertiesFor(loginName);
     // console.log(profile.DisplayName);
     // console.log(profile.Email);
     // console.log(profile.Title);
     // console.log(profile.UserProfileProperties.length);
-    designation = profile.Title
-    email = profile.Email
+    designation = profile.Title;
+    email = profile.Email;
     // Properties are stored in inconvenient Key/Value pairs,
     // so parse into an object called userProperties
     const props: any = {};
@@ -253,7 +263,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
     profile.userProperties = props;
     // console.log("Account Name: " + profile.userProperties.AccountName);
-    return [designation,email];
+    return [designation, email];
   };
 
   private getfield = async () => {
@@ -264,12 +274,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // console.log(fieldDetails)
 
       const profile = await this.props.sp.profiles.myProperties();
-      // console.log(profile)
+      console.log(profile);
+      this._userName = profile.DisplayName;
+      this._role = profile.Title;
 
       profile.UserProfileProperties.filter((element: any) => {
         // console.log(element)
         if (element.Key === "Department" && element.Value === "Development") {
           // console.log(element)
+          //
           this.setState({ department: element.Value });
         }
       });
@@ -436,13 +449,18 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
     if (typeof dataRec[0]?.toString() === "undefined") {
       const newItemsDataNA = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: "N/A",approverType:1 };
+        return { ...obj, optionalText: "N/A", approverType: 1 };
       });
       console.log(newItemsDataNA);
       this.setState({ reviewerInfo: newItemsDataNA });
     } else {
       const newItemsData = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: dataRec[0],approverType:1 ,email:dataRec[1]};
+        return {
+          ...obj,
+          optionalText: dataRec[0],
+          approverType: 1,
+          email: dataRec[1],
+        };
       });
       // console.log(newItemsData)
       this.setState({ reviewerInfo: newItemsData });
@@ -469,13 +487,18 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
     if (typeof dataRec[0]?.toString() === "undefined") {
       const newItemsDataNA = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: "N/A",approverType:2 };
+        return { ...obj, optionalText: "N/A", approverType: 2 };
       });
       console.log(newItemsDataNA);
       this.setState({ approverInfo: newItemsDataNA });
     } else {
       const newItemsData = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: dataRec[0] ,approverType:2,email:dataRec[1]};
+        return {
+          ...obj,
+          optionalText: dataRec[0],
+          approverType: 2,
+          email: dataRec[1],
+        };
       });
       // console.log(newItemsData)
       this.setState({ approverInfo: newItemsData });
@@ -984,59 +1007,85 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //     });
   //   }
 
-  private _getApproverDetails =(reveiwerData:any, apporverData:any):any=>{
-    const dataOfReveiwerAndApprover = [...reveiwerData,...apporverData]
-    const finalData = dataOfReveiwerAndApprover.map((each:any,index:number)=>{
-      console.log(each)
-      return {
-        approverType:each.approverType,
-        approverEmail: each.email,
-        approverOrder: index+1,
-        approverStatus: 1,
-        
-        srNo: "selectedReveiwer.srNo",
-        designation: each.optionalText,
-        approverEmailName: each.text,
+  private _getApproverDetails = (reveiwerData: any, apporverData: any): any => {
+    const dataOfReveiwerAndApprover = [...reveiwerData, ...apporverData];
+    const finalData = dataOfReveiwerAndApprover.map(
+      (each: any, index: number) => {
+        console.log(each);
+        return {
+          approverType: each.approverType,
+          approverEmail: each.email,
+          approverOrder: index + 1,
+          approverStatus: 1,
 
+          srNo: "selectedReveiwer.srNo",
+          designation: each.optionalText,
+          approverEmailName: each.text,
+        };
       }
+    );
 
-    })
+    return JSON.stringify(finalData);
+  };
 
-    return JSON.stringify(finalData)
 
+  private _getAuditTrail = (status:any): any => {
+    console.log(this._userName,this._role)
+    const auditLog = [
+      {
+        Actioner: this._userName,
+        ActionTaken: status,
+        Role: this._role,
+        ActionTakenOn:
+          new Date().toDateString() + " " + new Date().toLocaleTimeString(),
+        Comments: "No Comments",
+      },
+    ]
 
-  }
+    return JSON.stringify(auditLog)
+  };
 
-  private createNoteObject = (): INoteObject => {
+  private createEcommitteeObject = (
+    status: string,
+    statusNumber: any
+  ): INoteObject => {
     console.log({
       Department: this.state.department,
       CommitteeName: this.state.committeeNameFeildValue,
       Subject: this.state.subjectFeildValue,
       natureOfNote: this.state.natureOfNoteFeildValue,
-      NatuerOfApprovalSanction:
-        this.state.natureOfApprovalOrSanctionFeildValue,
+      NatuerOfApprovalSanction: this.state.natureOfApprovalOrSanctionFeildValue,
       NoteType: this.state.noteTypeFeildValue,
-      TypeOfFinancialNote:
-        this.state.typeOfFinancialNoteFeildValue,
+      TypeOfFinancialNote: this.state.typeOfFinancialNoteFeildValue,
       Amount: this.state.amountFeildValue,
       Search_x0020_Keyword: this.state.searchTextFeildValue,
       Purpose: this.state.puroposeFeildValue,
-      ApproverDetails:this._getApproverDetails(this.state.peoplePickerData,this.state.peoplePickerApproverData)
+      ApproverDetails: this._getApproverDetails(
+        this.state.peoplePickerData,
+        this.state.peoplePickerApproverData
+      ),
+      Status: status,
+      statusNumber: statusNumber,
+      AuditTrail: this._getAuditTrail(status)
     });
     return {
       Department: this.state.department,
       CommitteeName: this.state.committeeNameFeildValue,
       Subject: this.state.subjectFeildValue,
       natureOfNote: this.state.natureOfNoteFeildValue,
-      NatuerOfApprovalSanction:
-        this.state.natureOfApprovalOrSanctionFeildValue,
+      NatuerOfApprovalSanction: this.state.natureOfApprovalOrSanctionFeildValue,
       NoteType: this.state.noteTypeFeildValue,
-      TypeOfFinancialNote:
-        this.state.typeOfFinancialNoteFeildValue,
+      TypeOfFinancialNote: this.state.typeOfFinancialNoteFeildValue,
       Amount: this.state.amountFeildValue,
       Search_x0020_Keyword: this.state.searchTextFeildValue,
       Purpose: this.state.puroposeFeildValue,
-      ApproverDetails:this._getApproverDetails(this.state.peoplePickerData,this.state.peoplePickerApproverData)
+      ApproverDetails: this._getApproverDetails(
+        this.state.peoplePickerData,
+        this.state.peoplePickerApproverData
+      ),
+      Status: status,
+      statusNumber: statusNumber,
+      AuditTrail: this._getAuditTrail(status)
     };
   };
 
@@ -1106,9 +1155,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
           // this.isNatureOfApprovalOrSanction()
         ) {
+          this.setState({ status: "Submitted", statusNumber: "1000" });
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createNoteObject());
+            .items.add(this.createEcommitteeObject("Submitted", 1000));
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
@@ -1190,9 +1240,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.supportingDocumentfiles.length > 0 &&
           this.state.peoplePickerData.length > 0
         ) {
+          this.setState({ status: "Submitted", statusNumber: "1000" });
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createNoteObject());
+            .items.add(this.createEcommitteeObject("Submitted", "1000"));
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
@@ -1274,9 +1325,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.supportingDocumentfiles.length > 0 &&
           this.state.peoplePickerData.length > 0
         ) {
+          this.setState({ status: "Submitted", statusNumber: "1000" });
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createNoteObject());
+            .items.add(this.createEcommitteeObject("Submitted", "1000"));
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
@@ -1346,6 +1398,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         }
       } else {
         console.log("final else");
+        this.setState({ status: "Submitted", statusNumber: "1000" });
         // eslint-disable-next-line no-constant-condition
         if (this.state.natureOfNoteFeildValue === "Approval" || "Sanction") {
           this.setState({
@@ -1366,7 +1419,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log("else entered");
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createNoteObject());
+            .items.add(this.createEcommitteeObject("Submitted", "1000"));
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
@@ -1470,7 +1523,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // this.setState((prev) => ({
       //   noteTofiles: [...prev.noteTofiles, ...filesArray],
       // }));
-      this.setState({noteTofiles:[...filesArray]})
+      this.setState({ noteTofiles: [...filesArray] });
     }
   };
 
@@ -1494,7 +1547,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       //     ...filesArray,
       //   ],
       // }));
-      this.setState({supportingDocumentfiles:[...filesArray]})
+      this.setState({ supportingDocumentfiles: [...filesArray] });
     }
   };
 
@@ -1515,7 +1568,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // this.setState((prev) => ({
       //   wordDocumentfiles: [...prev.wordDocumentfiles, ...filesArray],
       // }));
-      this.setState({wordDocumentfiles:[...filesArray]})
+      this.setState({ wordDocumentfiles: [...filesArray] });
     }
   };
 
@@ -1529,9 +1582,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ isApproverOrReviewerDialogHandel: true });
   };
 
-  public checkUserIsIBTes2 = (peoplePickerData: any,peoplePickerApproverData:any): boolean => {
+  public checkUserIsIBTes2 = (
+    peoplePickerData: any,
+    peoplePickerApproverData: any
+  ): boolean => {
     // console.log(peoplePickerData)
-    const allData = [...peoplePickerData,...peoplePickerApproverData]
+    const allData = [...peoplePickerData, ...peoplePickerApproverData];
     const booleanCheck = allData?.some((each: any) => {
       if (each.text === "IB Test2") {
         return true;
@@ -1545,32 +1601,39 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
     // console.log(this.checkUserIsIBTes2(this.state.peoplePickerData))
 
-    console.log(
-      this.state.peoplePickerData,
-      "Data..........Reviewer PeoplePicker"
-    );
-    console.log(
-      this.state.peoplePickerApproverData,
-      "Data..........Approver PeoplePicker"
-    );
+    // console.log(
+    //   this.state.peoplePickerData,
+    //   "Data..........Reviewer PeoplePicker"
+    // );
+    // console.log(
+    //   this.state.peoplePickerApproverData,
+    //   "Data..........Approver PeoplePicker"
+    // );
 
     return (
       <div>
         {this.state.isLoading ? (
           <Stack
-          tokens={stackTokens}
-          style={{ height: '100vh' }}
-          horizontalAlign="center"
-          verticalAlign="center"
-        >
-          <div style={{height:'100%',display:'flex',justifyContent:'center',alignItems:'center'}}>
-            <Spinner
-              label="Wait, wait..."
-              ariaLive="assertive"
-              labelPosition="right"
-            />
-          </div>
-        </Stack>
+            tokens={stackTokens}
+            style={{ height: "100vh", width: "100vw", border: "1px solid red" }}
+            horizontalAlign="center"
+            verticalAlign="center"
+          >
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Spinner
+                label="Wait, wait..."
+                ariaLive="assertive"
+                labelPosition="right"
+              />
+            </div>
+          </Stack>
         ) : (
           <div className={styles.form}>
             {/* <Header /> */}
@@ -2275,7 +2338,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 </p>
               </div>
 
-              {this.checkUserIsIBTes2(this.state.peoplePickerData,this.state.peoplePickerApproverData) ? (
+              {this.checkUserIsIBTes2(
+                this.state.peoplePickerData,
+                this.state.peoplePickerApproverData
+              ) ? (
                 <div className={`${styles.fileInputContainers}`}>
                   <p className={styles.label} style={{ margin: "0px" }}>
                     Word Document <span className={styles.warning}>*</span>
