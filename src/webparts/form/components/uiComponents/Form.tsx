@@ -218,10 +218,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     let designation = "NA";
     // const loginName = this.state.peoplePickerData[0]
     const profile = await this.props.sp.profiles.getPropertiesFor(loginName);
-    console.log(profile.DisplayName);
-    console.log(profile.Email);
-    console.log(profile.Title);
-    console.log(profile.UserProfileProperties.length);
+    // console.log(profile.DisplayName);
+    // console.log(profile.Email);
+    // console.log(profile.Title);
+    // console.log(profile.UserProfileProperties.length);
     designation = profile.Title;
     // Properties are stored in inconvenient Key/Value pairs,
     // so parse into an object called userProperties
@@ -233,7 +233,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     );
 
     profile.userProperties = props;
-    console.log("Account Name: " + profile.userProperties.AccountName);
+    // console.log("Account Name: " + profile.userProperties.AccountName);
     return designation;
   };
 
@@ -348,10 +348,34 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   private  _fetchApproverDetails =async (): Promise<void> => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items: any[] = await this.props.sp.web.lists
-        .getByTitle(this.props.listId)
-        .items.select("*","Approvers/Title","Approvers/EMail").expand("Approvers")();
-      console.log(items);
+      const items: any[] = await (await this.props.sp.web.lists
+        .getByTitle("ApprovalConfiguration")
+        .items.select("*", "Approvers/Title", "Approvers/EMail").expand("Approvers")()).map((each:any)=>{
+          console.log(each)
+          
+              const newObj = {text:each.Approvers.Title,email:each.Approvers.EMail,ApproversId:each.ApproversId,approverType:each.approverType,approversOrder:each.approversOrder,Title:each.Title}
+              return newObj
+
+         
+          
+        }).filter((each:any)=>each.Title === 'Development');
+      // console.log(items)
+
+      items.map((e:any)=>{
+        if (e.approverType === 1){
+          this.setState({peoplePickerData:[e]})
+        }else{
+          this.setState({peoplePickerApproverData:[e]})
+        }
+      })
+
+
+
+
+
+
+
+
       // this.setState({ itemsFromSpList:items });
       // this.setState(prevState => ({
       //   itemsFromSpList: [...prevState.itemsFromSpList, ...items]
@@ -1466,6 +1490,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   public render(): React.ReactElement<IFormProps> {
     // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
     // console.log(this.checkUserIsIBTes2(this.state.peoplePickerData))
+
+        // console.log(this.state.peoplePickerData, "Data..........Reviewer PeoplePicker");
+        // console.log(this.state.peoplePickerApproverData, "Data..........Approver PeoplePicker");
 
     return (
       <div className={styles.form}>
