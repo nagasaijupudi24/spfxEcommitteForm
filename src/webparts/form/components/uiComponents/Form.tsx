@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
@@ -60,6 +61,7 @@ interface INoteObject {
   Amount: string | number | readonly string[];
   Search_x0020_Keyword: string | number | readonly string[];
   Purpose: string | number | readonly string[];
+  ApproverDetails:any;
 }
 
 interface IMainFormState {
@@ -124,6 +126,7 @@ interface IMainFormState {
   peoplePickerApproverData: any;
   approverInfo: any;
   reviewerInfo: any;
+  
 }
 
 // let fetchedData:any[];
@@ -230,13 +233,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private _getUserProperties = async (loginName: any): Promise<any> => {
     let designation = "NA";
+    let email = 'NA'
     // const loginName = this.state.peoplePickerData[0]
     const profile = await this.props.sp.profiles.getPropertiesFor(loginName);
     // console.log(profile.DisplayName);
     // console.log(profile.Email);
     // console.log(profile.Title);
     // console.log(profile.UserProfileProperties.length);
-    designation = profile.Title;
+    designation = profile.Title
+    email = profile.Email
     // Properties are stored in inconvenient Key/Value pairs,
     // so parse into an object called userProperties
     const props: any = {};
@@ -248,7 +253,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
     profile.userProperties = props;
     // console.log("Account Name: " + profile.userProperties.AccountName);
-    return designation;
+    return [designation,email];
   };
 
   private getfield = async () => {
@@ -429,15 +434,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // });
     // console.log(typeof dataRec?.toString());
 
-    if (typeof dataRec?.toString() === "undefined") {
+    if (typeof dataRec[0]?.toString() === "undefined") {
       const newItemsDataNA = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: "N/A" };
+        return { ...obj, optionalText: "N/A",approverType:1 };
       });
       console.log(newItemsDataNA);
       this.setState({ reviewerInfo: newItemsDataNA });
     } else {
       const newItemsData = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: dataRec };
+        return { ...obj, optionalText: dataRec[0],approverType:1 ,email:dataRec[1]};
       });
       // console.log(newItemsData)
       this.setState({ reviewerInfo: newItemsData });
@@ -462,15 +467,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // });
     // console.log(typeof dataRec?.toString());
 
-    if (typeof dataRec?.toString() === "undefined") {
+    if (typeof dataRec[0]?.toString() === "undefined") {
       const newItemsDataNA = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: "N/A" };
+        return { ...obj, optionalText: "N/A",approverType:2 };
       });
       console.log(newItemsDataNA);
       this.setState({ approverInfo: newItemsDataNA });
     } else {
       const newItemsData = items.map((obj: { loginName: any }) => {
-        return { ...obj, optionalText: dataRec };
+        return { ...obj, optionalText: dataRec[0] ,approverType:2,email:dataRec[1]};
       });
       // console.log(newItemsData)
       this.setState({ approverInfo: newItemsData });
@@ -535,7 +540,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private handleOnAdd = async (event: any, type: string): Promise<void> => {
     if (type === "reveiwer") {
-      console.log(this.checkReviewer());
+      // console.log(this.checkReviewer());
       // this.checkReviewer()
 
       // console.log(event)
@@ -979,34 +984,59 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   //     });
   //   }
 
+  private _getApproverDetails =(reveiwerData:any, apporverData:any):any=>{
+    const dataOfReveiwerAndApprover = [...reveiwerData,...apporverData]
+    const finalData = dataOfReveiwerAndApprover.map((each:any)=>{
+      console.log(each)
+      return {
+        approverType:"approverType",
+        approverEmail: "selectedReveiwer.userPrincipalName",
+        approverOrder: "notereviewerData.length + 1",
+        approverStatus: 1,
+        
+        srNo: "selectedReveiwer.srNo",
+        designation: "selectedReveiwer.jobTitle",
+        approverEmailName: each.email,
+
+      }
+
+    })
+
+    return JSON.stringify(finalData)
+
+
+  }
+
   private createNoteObject = (): INoteObject => {
     console.log({
       Department: this.state.department,
-      CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
-      Subject: this.state.eCommitteData.subjectFeildValue,
-      natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
+      CommitteeName: this.state.committeeNameFeildValue,
+      Subject: this.state.subjectFeildValue,
+      natureOfNote: this.state.natureOfNoteFeildValue,
       NatuerOfApprovalSanction:
-        this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
-      NoteType: this.state.eCommitteData.noteTypeFeildValue,
+        this.state.natureOfApprovalOrSanctionFeildValue,
+      NoteType: this.state.noteTypeFeildValue,
       TypeOfFinancialNote:
-        this.state.eCommitteData.typeOfFinancialNoteFeildValue,
-      Amount: this.state.eCommitteData.amountFeildValue,
-      Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
-      Purpose: this.state.eCommitteData.puroposeFeildValue,
+        this.state.typeOfFinancialNoteFeildValue,
+      Amount: this.state.amountFeildValue,
+      Search_x0020_Keyword: this.state.searchTextFeildValue,
+      Purpose: this.state.puroposeFeildValue,
+      ApproverDetails:this._getApproverDetails(this.state.peoplePickerData,this.state.peoplePickerApproverData)
     });
     return {
       Department: this.state.department,
-      CommitteeName: this.state.eCommitteData.committeeNameFeildValue,
-      Subject: this.state.eCommitteData.subjectFeildValue,
-      natureOfNote: this.state.eCommitteData.natureOfNoteFeildValue,
+      CommitteeName: this.state.committeeNameFeildValue,
+      Subject: this.state.subjectFeildValue,
+      natureOfNote: this.state.natureOfNoteFeildValue,
       NatuerOfApprovalSanction:
-        this.state.eCommitteData.natureOfApprovalOrSanctionFeildValue,
-      NoteType: this.state.eCommitteData.noteTypeFeildValue,
+        this.state.natureOfApprovalOrSanctionFeildValue,
+      NoteType: this.state.noteTypeFeildValue,
       TypeOfFinancialNote:
-        this.state.eCommitteData.typeOfFinancialNoteFeildValue,
-      Amount: this.state.eCommitteData.amountFeildValue,
-      Search_x0020_Keyword: this.state.eCommitteData.searchTextFeildValue,
-      Purpose: this.state.eCommitteData.puroposeFeildValue,
+        this.state.typeOfFinancialNoteFeildValue,
+      Amount: this.state.amountFeildValue,
+      Search_x0020_Keyword: this.state.searchTextFeildValue,
+      Purpose: this.state.puroposeFeildValue,
+      ApproverDetails:this._getApproverDetails(this.state.peoplePickerData,this.state.peoplePickerApproverData)
     };
   };
 
@@ -1082,13 +1112,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
-            const listItem = await this.props.sp.web.lists
-              .getByTitle(this.props.listId)
-              .items.add({
-                Title: `${each.id}`,
-                // Approvers:each.text
-              });
-            console.log(listItem);
+            // const listItem = await this.props.sp.web.lists
+            //   .getByTitle(this.props.listId)
+            //   .items.add({
+            //     Title: `${each.id}`,
+            //     // Approvers:each.text
+            //   });
+            // console.log(listItem);
           });
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
@@ -1166,13 +1196,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
-            const listItem = await this.props.sp.web.lists
-              .getByTitle(this.props.listId)
-              .items.add({
-                Title: `${each.id}`,
-                // Approvers:each.text
-              });
-            console.log(listItem);
+            // const listItem = await this.props.sp.web.lists
+            //   .getByTitle(this.props.listId)
+            //   .items.add({
+            //     Title: `${each.id}`,
+            //     // Approvers:each.text
+            //   });
+            // console.log(listItem);
           });
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this._generateRequsterNumber(id.Id);
@@ -1252,13 +1282,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this._generateRequsterNumber(id.Id);
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
-            const listItem = await this.props.sp.web.lists
-              .getByTitle(this.props.listId)
-              .items.add({
-                Title: `${each.id}`,
-                // Approvers:each.text
-              });
-            console.log(listItem);
+            // const listItem = await this.props.sp.web.lists
+            //   .getByTitle(this.props.listId)
+            //   .items.add({
+            //     Title: `${each.id}`,
+            //     // Approvers:each.text
+            //   });
+            // console.log(listItem);
           });
 
           // console.log(id)
@@ -1342,13 +1372,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this._generateRequsterNumber(id.Id);
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
-            const listItem = await this.props.sp.web.lists
-              .getByTitle(this.props.listId)
-              .items.add({
-                Title: `${each.id}`,
-                // // Approvers:each.text
-              });
-            console.log(listItem);
+            // const listItem = await this.props.sp.web.lists
+            //   .getByTitle(this.props.listId)
+            //   .items.add({
+            //     Title: `${each.id}`,
+            //     // // Approvers:each.text
+            //   });
+            // console.log(listItem);
           });
 
           // console.log(id)
@@ -1496,9 +1526,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ isApproverOrReviewerDialogHandel: true });
   };
 
-  public checkUserIsIBTes2 = (peoplePickerData: any): boolean => {
+  public checkUserIsIBTes2 = (peoplePickerData: any,peoplePickerApproverData:any): boolean => {
     // console.log(peoplePickerData)
-    const booleanCheck = peoplePickerData?.some((each: any) => {
+    const allData = [...peoplePickerData,...peoplePickerApproverData]
+    const booleanCheck = allData?.some((each: any) => {
       if (each.text === "IB Test2") {
         return true;
       }
@@ -2241,7 +2272,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 </p>
               </div>
 
-              {this.checkUserIsIBTes2(this.state.peoplePickerData) ? (
+              {this.checkUserIsIBTes2(this.state.peoplePickerData,this.state.peoplePickerApproverData) ? (
                 <div className={`${styles.fileInputContainers}`}>
                   <p className={styles.label} style={{ margin: "0px" }}>
                     Word Document <span className={styles.warning}>*</span>
