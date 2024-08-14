@@ -986,17 +986,17 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private _getApproverDetails =(reveiwerData:any, apporverData:any):any=>{
     const dataOfReveiwerAndApprover = [...reveiwerData,...apporverData]
-    const finalData = dataOfReveiwerAndApprover.map((each:any)=>{
+    const finalData = dataOfReveiwerAndApprover.map((each:any,index:number)=>{
       console.log(each)
       return {
-        approverType:"approverType",
-        approverEmail: "selectedReveiwer.userPrincipalName",
-        approverOrder: "notereviewerData.length + 1",
+        approverType:each.approverType,
+        approverEmail: each.email,
+        approverOrder: index+1,
         approverStatus: 1,
         
         srNo: "selectedReveiwer.srNo",
-        designation: "selectedReveiwer.jobTitle",
-        approverEmailName: each.email,
+        designation: each.optionalText,
+        approverEmailName: each.text,
 
       }
 
@@ -1467,9 +1467,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       console.log(files);
       // Convert FileList to an array of File objects
       const filesArray = Array.from(files);
-      this.setState((prev) => ({
-        noteTofiles: [...prev.noteTofiles, ...filesArray],
-      }));
+      // this.setState((prev) => ({
+      //   noteTofiles: [...prev.noteTofiles, ...filesArray],
+      // }));
+      this.setState({noteTofiles:[...filesArray]})
     }
   };
 
@@ -1487,12 +1488,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       console.log(files);
       // Convert FileList to an array of File objects
       const filesArray = Array.from(files);
-      this.setState((prev) => ({
-        supportingDocumentfiles: [
-          ...prev.supportingDocumentfiles,
-          ...filesArray,
-        ],
-      }));
+      // this.setState((prev) => ({
+      //   supportingDocumentfiles: [
+      //     ...prev.supportingDocumentfiles,
+      //     ...filesArray,
+      //   ],
+      // }));
+      this.setState({supportingDocumentfiles:[...filesArray]})
     }
   };
 
@@ -1510,9 +1512,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       console.log(files);
       // Convert FileList to an array of File objects
       const filesArray = Array.from(files);
-      this.setState((prev) => ({
-        wordDocumentfiles: [...prev.wordDocumentfiles, ...filesArray],
-      }));
+      // this.setState((prev) => ({
+      //   wordDocumentfiles: [...prev.wordDocumentfiles, ...filesArray],
+      // }));
+      this.setState({wordDocumentfiles:[...filesArray]})
     }
   };
 
