@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import * as React from "react";
+import React from "react";
 import styles from "../Form.module.scss";
 // import { SPFI } from "@pnp/sp";
 import { IFormProps } from "../IFormProps";
@@ -10,6 +10,12 @@ import { IDropdownOption } from "office-ui-fabric-react";
 // import {  InputChangeEvent } from '@progress/kendo-react-inputs';
 import { TextBox, TextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { DropDownList } from "@progress/kendo-react-dropdowns";
+
+//spinner related
+
+import { Spinner } from "@fluentui/react/lib/Spinner";
+import { IStackTokens, Stack } from "@fluentui/react/lib/Stack";
+// import { Label } from "@fluentui/react/lib/Label";
 // import TableComponent from "./tableSwap";
 import UploadFileComponent from "./uploadFile";
 // import Header from "./Header/header";
@@ -57,6 +63,7 @@ interface INoteObject {
 }
 
 interface IMainFormState {
+  isLoading: boolean;
   department: string;
   noteTypeValue?: IDropdownOption;
   isNoteType: boolean;
@@ -111,15 +118,21 @@ interface IMainFormState {
 
   isWarningPeoplePicker: boolean;
   isDialogHidden: boolean;
-  isApproverOrReviewerDialogHandel:boolean;
+  isApproverOrReviewerDialogHandel: boolean;
 
   peoplePickerData: any;
-  peoplePickerApproverData:any;
+  peoplePickerApproverData: any;
   approverInfo: any;
-  reviewerInfo:any;
+  reviewerInfo: any;
 }
 
 // let fetchedData:any[];
+
+//spinner
+const stackTokens: IStackTokens = {
+  childrenGap: 20,
+  maxWidth: 250,
+};
 
 export const FormContext = React.createContext<any>(null);
 
@@ -134,6 +147,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   constructor(props: IFormProps) {
     super(props);
     this.state = {
+      isLoading: true,
       department: "",
       isNoteType: false,
       noteTypeValue: undefined,
@@ -182,11 +196,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       supportingDocumentfiles: [],
       isWarningSupportingDocumentFiles: false,
       isDialogHidden: true,
-      isApproverOrReviewerDialogHandel:true,
+      isApproverOrReviewerDialogHandel: true,
       peoplePickerData: [],
       peoplePickerApproverData: [],
       approverInfo: [],
-      reviewerInfo:[]
+      reviewerInfo: [],
     };
 
     this._peopplePicker = {
@@ -329,13 +343,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // Assuming fieldDetails is an array of items you want to add
       this.setState((prevState) => ({
         itemsFromSpList: [...prevState.itemsFromSpList, ...finalList],
+        isLoading: false,
       }));
     } catch (error) {
       console.error("Error fetching field details: ", error);
     }
   };
 
-  public componentDidMount= (): void=> {
+  public componentDidMount = (): void => {
     this._fetchApproverDetails()
       .then(() => {
         console.log("List items fetched successfully.");
@@ -343,38 +358,40 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       .catch((error) => {
         console.error("Error fetching list items: ", error);
       });
-  }
+  };
 
-  private  _fetchApproverDetails =async (): Promise<void> => {
+  private _fetchApproverDetails = async (): Promise<void> => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items: any[] = await (await this.props.sp.web.lists
-        .getByTitle("ApprovalConfiguration")
-        .items.select("*", "Approvers/Title", "Approvers/EMail").expand("Approvers")()).map((each:any)=>{
-          console.log(each)
-          
-              const newObj = {text:each.Approvers.Title,email:each.Approvers.EMail,ApproversId:each.ApproversId,approverType:each.approverType,approversOrder:each.approversOrder,Title:each.Title}
-              return newObj
+      const items: any[] = await (
+        await this.props.sp.web.lists
+          .getByTitle("ApprovalConfiguration")
+          .items.select("*", "Approvers/Title", "Approvers/EMail")
+          .expand("Approvers")()
+      )
+        .map((each: any) => {
+          // console.log(each)
 
-         
-          
-        }).filter((each:any)=>each.Title === 'Development');
+          const newObj = {
+            text: each.Approvers.Title,
+            email: each.Approvers.EMail,
+            ApproversId: each.ApproversId,
+            approverType: each.approverType,
+            approversOrder: each.approversOrder,
+            Title: each.Title,
+          };
+          return newObj;
+        })
+        .filter((each: any) => each.Title === "Development");
       // console.log(items)
 
-      items.map((e:any)=>{
-        if (e.approverType === 1){
-          this.setState({peoplePickerData:[e]})
-        }else{
-          this.setState({peoplePickerApproverData:[e]})
+      items.map((e: any) => {
+        if (e.approverType === 1) {
+          this.setState({ peoplePickerData: [e] });
+        } else {
+          this.setState({ peoplePickerApproverData: [e] });
         }
-      })
-
-
-
-
-
-
-
+      });
 
       // this.setState({ itemsFromSpList:items });
       // this.setState(prevState => ({
@@ -383,7 +400,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     } catch (error) {
       console.error("Error fetching list items: ", error);
     }
-  }
+  };
 
   // private handleDropdownChange = (event: React.FormEvent<HTMLDivElement>, item?: IDropdownOption): void => {
   //   console.log(typeof item);
@@ -430,10 +447,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   private _getPeoplePickerItemsApporvers = async (items: any[]) => {
     console.log("Items:", items);
     // fetchedData = items
-    console.log(items[0].loginName);
+    // console.log(items[0].loginName);
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    console.log(items, "this._getUserProperties(items[0].loginName)");
+    // console.log(items, "this._getUserProperties(items[0].loginName)");
 
     // this.setState({approverInfo:items})
 
@@ -464,52 +481,61 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     this.setState({ peoplePickerData: reOrderData });
   };
 
-  public removeDataFromGrid = (dataItem: any,typeOfTable:string): void => {
-
-    if (typeOfTable === "Reviewer"){
-
+  public removeDataFromGrid = (dataItem: any, typeOfTable: string): void => {
+    if (typeOfTable === "Reviewer") {
       console.log("Remove triggered from Reviewer Table");
-      console.log(dataItem);
+      // console.log(dataItem);
       const filterData = this.state.peoplePickerData.filter(
         (item: any) => item.id !== dataItem.id
       );
       this.setState({ peoplePickerData: filterData });
-    }else{
+    } else {
       console.log("Remove triggered Approver Table");
-      console.log(dataItem);
+      // console.log(dataItem);
       const filterData = this.state.peoplePickerApproverData.filter(
         (item: any) => item.id !== dataItem.id
       );
       this.setState({ peoplePickerApproverData: filterData });
     }
-  
   };
 
-  private checkReviewer = ()=>{
-    const approverTitles = this.state.peoplePickerApproverData.map((each:any) =>each.text)
-    console.log(approverTitles)
+  private checkReviewer = () => {
+    const approverTitles = this.state.peoplePickerApproverData.map(
+      (each: any) => each.text
+    );
+    console.log(approverTitles);
 
-    const reveiwerTitles = this.state.peoplePickerData.map((each:any)=>each.text)
-    console.log(reveiwerTitles)
+    const reveiwerTitles = this.state.peoplePickerData.map(
+      (each: any) => each.text
+    );
+    console.log(reveiwerTitles);
 
-    const returnBoolean = reveiwerTitles.includes(this.state.reviewerInfo[0].text) || approverTitles.includes(this.state.reviewerInfo[0].text)
-    return returnBoolean
-  }
+    const returnBoolean =
+      reveiwerTitles.includes(this.state.reviewerInfo[0].text) ||
+      approverTitles.includes(this.state.reviewerInfo[0].text);
+    return returnBoolean;
+  };
 
-  private checkApprover= ()=>{
-    const approverTitles = this.state.peoplePickerApproverData.map((each:any) =>each.text)
-    console.log(approverTitles)
+  private checkApprover = () => {
+    const approverTitles = this.state.peoplePickerApproverData.map(
+      (each: any) => each.text
+    );
+    console.log(approverTitles);
 
-    const reveiwerTitles = this.state.peoplePickerData.map((each:any)=>each.text)
-    console.log(reveiwerTitles)
+    const reveiwerTitles = this.state.peoplePickerData.map(
+      (each: any) => each.text
+    );
+    console.log(reveiwerTitles);
 
-    const returnBoolean = reveiwerTitles.includes(this.state.approverInfo[0].text) || approverTitles.includes(this.state.approverInfo[0].text)
-    return returnBoolean
-  }
+    const returnBoolean =
+      reveiwerTitles.includes(this.state.approverInfo[0].text) ||
+      approverTitles.includes(this.state.approverInfo[0].text);
+    return returnBoolean;
+  };
 
   private handleOnAdd = async (event: any, type: string): Promise<void> => {
     if (type === "reveiwer") {
-      console.log(this.checkReviewer())
+      console.log(this.checkReviewer());
       // this.checkReviewer()
 
       // console.log(event)
@@ -519,11 +545,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
 
       // console.log(type,newItemsData,"test",designation)
-      if(this.checkReviewer()){
-        console.log("Data already Exist in Reviewer Table or Approver Table")
-        this.setState({isApproverOrReviewerDialogHandel:false})
-
-      }else{
+      if (this.checkReviewer()) {
+        console.log("Data already Exist in Reviewer Table or Approver Table");
+        this.setState({ isApproverOrReviewerDialogHandel: false });
+      } else {
         console.log(this.state.reviewerInfo, "Reviewer Info");
         this.setState((prev) => ({
           peoplePickerData: [
@@ -531,14 +556,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             ...this.state.reviewerInfo,
           ],
         }));
-
       }
-      
 
       // console.log(fetchedData)
       // this._getPeoplePickerItems()
       console.log(this.state.reviewerInfo, "handle On Add-reveiwer section");
-    }else{
+    } else {
       // console.log(event)
       // let designation=""
       // eslint-disable-next-line no-return-assign
@@ -546,11 +569,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // console.log(this._getUserProperties(this.state.approverInfo[0].loginName).then(x),"title")
 
       // console.log(type,newItemsData,"test",designation)
-      if(this.checkApprover()){
-        console.log("Data already Exist in Reviewer Table or Approver Table")
-        this.setState({isApproverOrReviewerDialogHandel:false})
-
-      }else{
+      if (this.checkApprover()) {
+        console.log("Data already Exist in Reviewer Table or Approver Table");
+        this.setState({ isApproverOrReviewerDialogHandel: false });
+      } else {
         console.log(this.state.approverInfo, "Approver Info");
         this.setState((prev) => ({
           peoplePickerApproverData: [
@@ -558,9 +580,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             ...this.state.approverInfo,
           ],
         }));
-
       }
-      
 
       // console.log(fetchedData)
       // this._getPeoplePickerItems()
@@ -1491,303 +1511,325 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
     // console.log(this.checkUserIsIBTes2(this.state.peoplePickerData))
 
-        // console.log(this.state.peoplePickerData, "Data..........Reviewer PeoplePicker");
-        // console.log(this.state.peoplePickerApproverData, "Data..........Approver PeoplePicker");
+    console.log(
+      this.state.peoplePickerData,
+      "Data..........Reviewer PeoplePicker"
+    );
+    console.log(
+      this.state.peoplePickerApproverData,
+      "Data..........Approver PeoplePicker"
+    );
 
     return (
-      <div className={styles.form}>
-        {/* <Header /> */}
-        <Title />
-        {/* {this.state.isDialogHidden&&<MyDialog  />} */}
-        <MyDialog
-          hidden={this.state.isDialogHidden}
-          data={this.state.eCommitteData}
-          handleDialogBox={this.handleDialogBox}
-        />
-        <ApproverOrReviewerDialog 
-        hidden={this.state.isApproverOrReviewerDialogHandel}
-        
-        handleDialogBox={this.handleApproverOrReviewerDialogBox}/>
-
-
-        <div className={`${styles.generalSectionMainContainer}`}>
-          <h1 style={{ textAlign: "center", fontSize: "16px" }}>
-            General Section
-          </h1>
-        </div>
-        <div className={`${styles.generalSection}`}>
-          {/* <div className={`${styles.generalSectionContainer1}`}> */}
-          <div className={styles.halfWidth}>
-            Department<span className={styles.warning}>*</span>
-            <h4 style={{ marginLeft: "20px" }}>{this.state.department}</h4>
+      <div>
+        {this.state.isLoading ? (
+          <Stack
+          tokens={stackTokens}
+          style={{ height: '100vh' }}
+          horizontalAlign="center"
+          verticalAlign="center"
+        >
+          <div style={{height:'100%',display:'flex',justifyContent:'center',alignItems:'center'}}>
+            <Spinner
+              label="Wait, wait..."
+              ariaLive="assertive"
+              labelPosition="right"
+            />
           </div>
-          <div
-            className={styles.halfWidth}
-            style={{ margin: "4px", marginTop: "18px" }}
-          >
-            <label>
-              Committee Name
-              <SpanComponent />
-            </label>
+        </Stack>
+        ) : (
+          <div className={styles.form}>
+            {/* <Header /> */}
+            <Title />
+            {/* {this.state.isDialogHidden&&<MyDialog  />} */}
+            <MyDialog
+              hidden={this.state.isDialogHidden}
+              data={this.state.eCommitteData}
+              handleDialogBox={this.handleDialogBox}
+            />
+            <ApproverOrReviewerDialog
+              hidden={this.state.isApproverOrReviewerDialogHandel}
+              handleDialogBox={this.handleApproverOrReviewerDialogBox}
+            />
 
-            {this.state.isWarningCommittteeName ? (
-              this.state.committeeNameFeildValue !== "" ? (
-                <DropDownList
-                  // data={committename}
-                  style={{
-                    borderRadius: "5px", // Rounded corners
-                  }}
-                  data={this.state.committename}
-                  onChange={this.handleCommittename}
-                />
-              ) : (
-                <DropDownList
-                  // data={committename}
-                  style={{
-                    // border: '2px solid #4CAF50',
-                    border: "2px solid red",
-                    borderRadius: "5px", // Rounded corners
-                  }}
-                  data={this.state.committename}
-                  onChange={this.handleCommittenameRedBorder}
-                />
-              )
-            ) : (
-              <DropDownList
-                // data={committename}
-                style={{
-                  borderRadius: "5px", // Rounded corners
-                }}
-                data={this.state.committename}
-                onChange={this.handleCommittename}
-              />
-            )}
-          </div>
+            <div className={`${styles.generalSectionMainContainer}`}>
+              <h1 style={{ textAlign: "center", fontSize: "16px" }}>
+                General Section
+              </h1>
+            </div>
+            <div className={`${styles.generalSection}`}>
+              {/* <div className={`${styles.generalSectionContainer1}`}> */}
+              <div className={styles.halfWidth}>
+                Department<span className={styles.warning}>*</span>
+                <h4 style={{ marginLeft: "20px" }}>{this.state.department}</h4>
+              </div>
+              <div
+                className={styles.halfWidth}
+                style={{ margin: "4px", marginTop: "18px" }}
+              >
+                <label>
+                  Committee Name
+                  <SpanComponent />
+                </label>
 
-          <div
-            className={styles.halfWidth}
-            style={{ margin: "4px", marginTop: "18px" }}
-          >
-            <label style={{ fontWeight: "600" }}>
-              Subject <SpanComponent />
-            </label>
-            {/* <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
-            {this.state.isWarningSubject ? (
-              this.state.subjectFeildValue ? (
-                <TextBox
-                  value={this.state.subjectFeildValue}
-                  onChange={this.handleSubject}
-                />
-              ) : (
-                <TextBox
-                  // id="Subject"
-                  // eslint-disable-next-line dot-notation
-                  // value={this.state.eCommitteData["Subject"] ||""}
-                  value={this.state.subjectFeildValue}
-                  onChange={this.handleSubjectRed}
-                  // onChange={(e)=>this.handletextBoxChange(e,"Subject")}
-                  style={{
-                    // border: '2px solid #4CAF50',
-                    border: "2px solid red",
-
-                    borderRadius: "5px", // Rounded corners
-                  }}
-                />
-              )
-            ) : (
-              <TextBox
-                value={this.state.subjectFeildValue}
-                onChange={this.handleSubject}
-              />
-            )}
-          </div>
-
-          <div
-            className={styles.halfWidth}
-            style={{ margin: "4px", marginTop: "18px" }}
-          >
-            <label>
-              Nature of Note
-              <SpanComponent />
-            </label>
-            {this.state.isWarningNatureOfNote ? (
-              this.state.natureOfNoteFeildValue !== "" ? (
-                <DropDownList
-                  // data={committename}
-                  data={this.state.natureOfNote}
-                  onChange={this.handleNatureOfNote}
-                />
-              ) : (
-                <DropDownList
-                  // data={committename}
-                  data={this.state.natureOfNote}
-                  onChange={this.handleNatureOfNoteRed}
-                  style={{
-                    // border: '2px solid #4CAF50',
-                    border: "2px solid red",
-                    borderRadius: "5px", // Rounded corners
-                  }}
-                />
-              )
-            ) : (
-              <DropDownList
-                // data={committename}
-                data={this.state.natureOfNote}
-                onChange={this.handleNatureOfNote}
-              />
-            )}
-          </div>
-          {this.state.isNatureOfApprovalOrSanction ? (
-            <div
-              className={styles.halfWidth}
-              style={{ margin: "4px", marginTop: "18px" }}
-            >
-              <label>
-                Nature of Approval/Sanction
-                <SpanComponent />
-              </label>
-              {this.state.isWarningNatureOfApporvalOrSanction ? (
-                this.state.natureOfApprovalOrSanctionFeildValue !== "" ? (
+                {this.state.isWarningCommittteeName ? (
+                  this.state.committeeNameFeildValue !== "" ? (
+                    <DropDownList
+                      // data={committename}
+                      style={{
+                        borderRadius: "5px", // Rounded corners
+                      }}
+                      data={this.state.committename}
+                      onChange={this.handleCommittename}
+                    />
+                  ) : (
+                    <DropDownList
+                      // data={committename}
+                      style={{
+                        // border: '2px solid #4CAF50',
+                        border: "2px solid red",
+                        borderRadius: "5px", // Rounded corners
+                      }}
+                      data={this.state.committename}
+                      onChange={this.handleCommittenameRedBorder}
+                    />
+                  )
+                ) : (
                   <DropDownList
-                    data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
+                    // data={committename}
+                    style={{
+                      borderRadius: "5px", // Rounded corners
+                    }}
+                    data={this.state.committename}
+                    onChange={this.handleCommittename}
+                  />
+                )}
+              </div>
+
+              <div
+                className={styles.halfWidth}
+                style={{ margin: "4px", marginTop: "18px" }}
+              >
+                <label style={{ fontWeight: "600" }}>
+                  Subject <SpanComponent />
+                </label>
+                {/* <TextField onChange={this.handleSubject} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
+                {this.state.isWarningSubject ? (
+                  this.state.subjectFeildValue ? (
+                    <TextBox
+                      value={this.state.subjectFeildValue}
+                      onChange={this.handleSubject}
+                    />
+                  ) : (
+                    <TextBox
+                      // id="Subject"
+                      // eslint-disable-next-line dot-notation
+                      // value={this.state.eCommitteData["Subject"] ||""}
+                      value={this.state.subjectFeildValue}
+                      onChange={this.handleSubjectRed}
+                      // onChange={(e)=>this.handletextBoxChange(e,"Subject")}
+                      style={{
+                        // border: '2px solid #4CAF50',
+                        border: "2px solid red",
+
+                        borderRadius: "5px", // Rounded corners
+                      }}
+                    />
+                  )
+                ) : (
+                  <TextBox
+                    value={this.state.subjectFeildValue}
+                    onChange={this.handleSubject}
+                  />
+                )}
+              </div>
+
+              <div
+                className={styles.halfWidth}
+                style={{ margin: "4px", marginTop: "18px" }}
+              >
+                <label>
+                  Nature of Note
+                  <SpanComponent />
+                </label>
+                {this.state.isWarningNatureOfNote ? (
+                  this.state.natureOfNoteFeildValue !== "" ? (
+                    <DropDownList
+                      // data={committename}
+                      data={this.state.natureOfNote}
+                      onChange={this.handleNatureOfNote}
+                    />
+                  ) : (
+                    <DropDownList
+                      // data={committename}
+                      data={this.state.natureOfNote}
+                      onChange={this.handleNatureOfNoteRed}
+                      style={{
+                        // border: '2px solid #4CAF50',
+                        border: "2px solid red",
+                        borderRadius: "5px", // Rounded corners
+                      }}
+                    />
+                  )
+                ) : (
+                  <DropDownList
+                    // data={committename}
+                    data={this.state.natureOfNote}
+                    onChange={this.handleNatureOfNote}
+                  />
+                )}
+              </div>
+              {this.state.isNatureOfApprovalOrSanction ? (
+                <div
+                  className={styles.halfWidth}
+                  style={{ margin: "4px", marginTop: "18px" }}
+                >
+                  <label>
+                    Nature of Approval/Sanction
+                    <SpanComponent />
+                  </label>
+                  {this.state.isWarningNatureOfApporvalOrSanction ? (
+                    this.state.natureOfApprovalOrSanctionFeildValue !== "" ? (
+                      <DropDownList
+                        data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
+                        // textField="text"  // The field from data items to display in the dropdown
+                        // dataItemKey="value"  // The field from data items to use as the key
+                        onChange={this.handleNatureOfApprovalOrSanction}
+                        // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                        style={{
+                          border: "1px solid rgb(211, 211, 211)",
+                          borderRadius: "8px",
+                        }} // Inline styles
+                      />
+                    ) : (
+                      <DropDownList
+                        data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
+                        // textField="text"  // The field from data items to display in the dropdown
+                        // dataItemKey="value"  // The field from data items to use as the key
+                        onChange={this.handleNatureOfApprovalOrSanctionRed}
+                        // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                        style={{
+                          border: "1px solid red",
+                          borderRadius: "8px",
+                        }} // Inline styles
+                      />
+                    )
+                  ) : (
+                    <DropDownList
+                      data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
+                      // textField="text"  // The field from data items to display in the dropdown
+                      // dataItemKey="value"  // The field from data items to use as the key
+                      onChange={this.handleNatureOfApprovalOrSanction}
+                      // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                      style={{
+                        border: "1px solid rgb(211, 211, 211)",
+                        borderRadius: "8px",
+                      }} // Inline styles
+                    />
+                  )}
+                </div>
+              ) : (
+                ""
+              )}
+              <div
+                className={styles.halfWidth}
+                style={{ margin: "4px", marginTop: "18px" }}
+              >
+                <label>
+                  Note Type
+                  <SpanComponent />
+                </label>
+                {this.state.isWarningNoteType ? (
+                  this.state.noteTypeFeildValue ? (
+                    <DropDownList
+                      data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                      // textField="text"  // The field from data items to display in the dropdown
+                      // dataItemKey="value"  // The field from data items to use as the key
+                      onChange={this.handleNoteType}
+                      // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                      style={{
+                        border: "1px solid rgb(211, 211, 211)",
+                        borderRadius: "8px",
+                      }} // Inline styles
+                    />
+                  ) : (
+                    <DropDownList
+                      data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                      // textField="text"  // The field from data items to display in the dropdown
+                      // dataItemKey="value"  // The field from data items to use as the key
+                      onChange={this.handleNoteTypeRed}
+                      // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                      style={{
+                        border: "1px solid red",
+                        borderRadius: "8px",
+                      }} // Inline styles
+                    />
+                  )
+                ) : (
+                  <DropDownList
+                    data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
                     // textField="text"  // The field from data items to display in the dropdown
                     // dataItemKey="value"  // The field from data items to use as the key
-                    onChange={this.handleNatureOfApprovalOrSanction}
+                    onChange={this.handleNoteType}
                     // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                     style={{
                       border: "1px solid rgb(211, 211, 211)",
                       borderRadius: "8px",
                     }} // Inline styles
                   />
-                ) : (
-                  <DropDownList
-                    data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
-                    // textField="text"  // The field from data items to display in the dropdown
-                    // dataItemKey="value"  // The field from data items to use as the key
-                    onChange={this.handleNatureOfApprovalOrSanctionRed}
-                    // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                    style={{
-                      border: "1px solid red",
-                      borderRadius: "8px",
-                    }} // Inline styles
-                  />
-                )
-              ) : (
-                <DropDownList
-                  data={this.state.natureOfApprovalSancation} // This should be an array of objects with `text` and `value` properties
-                  // textField="text"  // The field from data items to display in the dropdown
-                  // dataItemKey="value"  // The field from data items to use as the key
-                  onChange={this.handleNatureOfApprovalOrSanction}
-                  // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                  style={{
-                    border: "1px solid rgb(211, 211, 211)",
-                    borderRadius: "8px",
-                  }} // Inline styles
-                />
+                )}
+              </div>
+              {this.state.noteTypeFeildValue === "Finanical" && (
+                <div
+                  className={styles.halfWidth}
+                  style={{ margin: "4px", marginTop: "18px" }}
+                >
+                  <label>
+                    Type of Financial Note
+                    <SpanComponent />
+                  </label>
+                  {this.state.isWarningTypeOfFinancialNote ? (
+                    this.state.typeOfFinancialNoteFeildValue !== "" ? (
+                      <DropDownList
+                        data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
+                        // textField="text"  // The field from data items to display in the dropdown
+                        // dataItemKey="value"  // The field from data items to use as the key
+                        onChange={this.handleTypeOfFinanicalNote}
+                        // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                        style={{
+                          border: "1px solid rgb(211, 211, 211)",
+                          borderRadius: "8px",
+                        }} // Inline styles
+                      />
+                    ) : (
+                      <DropDownList
+                        data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
+                        // textField="text"  // The field from data items to display in the dropdown
+                        // dataItemKey="value"  // The field from data items to use as the key
+                        onChange={this.handleTypeOfFinanicalNoteRed}
+                        // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                        style={{
+                          border: "1px solid red",
+                          borderRadius: "8px",
+                        }} // Inline styles
+                      />
+                    )
+                  ) : (
+                    <DropDownList
+                      data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
+                      // textField="text"  // The field from data items to display in the dropdown
+                      // dataItemKey="value"  // The field from data items to use as the key
+                      onChange={this.handleTypeOfFinanicalNote}
+                      // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                      style={{
+                        border: "1px solid rgb(211, 211, 211)",
+                        borderRadius: "8px",
+                      }} // Inline styles
+                    />
+                  )}
+                </div>
               )}
-            </div>
-          ) : (
-            ""
-          )}
-          <div
-            className={styles.halfWidth}
-            style={{ margin: "4px", marginTop: "18px" }}
-          >
-            <label>
-              Note Type
-              <SpanComponent />
-            </label>
-            {this.state.isWarningNoteType ? (
-              this.state.noteTypeFeildValue ? (
-                <DropDownList
-                  data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
-                  // textField="text"  // The field from data items to display in the dropdown
-                  // dataItemKey="value"  // The field from data items to use as the key
-                  onChange={this.handleNoteType}
-                  // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                  style={{
-                    border: "1px solid rgb(211, 211, 211)",
-                    borderRadius: "8px",
-                  }} // Inline styles
-                />
-              ) : (
-                <DropDownList
-                  data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
-                  // textField="text"  // The field from data items to display in the dropdown
-                  // dataItemKey="value"  // The field from data items to use as the key
-                  onChange={this.handleNoteTypeRed}
-                  // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                  style={{
-                    border: "1px solid red",
-                    borderRadius: "8px",
-                  }} // Inline styles
-                />
-              )
-            ) : (
-              <DropDownList
-                data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
-                // textField="text"  // The field from data items to display in the dropdown
-                // dataItemKey="value"  // The field from data items to use as the key
-                onChange={this.handleNoteType}
-                // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                style={{
-                  border: "1px solid rgb(211, 211, 211)",
-                  borderRadius: "8px",
-                }} // Inline styles
-              />
-            )}
-          </div>
-          {this.state.noteTypeFeildValue === "Finanical" && (
-            <div
-              className={styles.halfWidth}
-              style={{ margin: "4px", marginTop: "18px" }}
-            >
-              <label>
-                Type of Financial Note
-                <SpanComponent />
-              </label>
-              {this.state.isWarningTypeOfFinancialNote ? (
-                this.state.typeOfFinancialNoteFeildValue !== "" ? (
-                  <DropDownList
-                    data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
-                    // textField="text"  // The field from data items to display in the dropdown
-                    // dataItemKey="value"  // The field from data items to use as the key
-                    onChange={this.handleTypeOfFinanicalNote}
-                    // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                    style={{
-                      border: "1px solid rgb(211, 211, 211)",
-                      borderRadius: "8px",
-                    }} // Inline styles
-                  />
-                ) : (
-                  <DropDownList
-                    data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
-                    // textField="text"  // The field from data items to display in the dropdown
-                    // dataItemKey="value"  // The field from data items to use as the key
-                    onChange={this.handleTypeOfFinanicalNoteRed}
-                    // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                    style={{
-                      border: "1px solid red",
-                      borderRadius: "8px",
-                    }} // Inline styles
-                  />
-                )
-              ) : (
-                <DropDownList
-                  data={this.state.typeOfFinancialNote} // This should be an array of objects with `text` and `value` properties
-                  // textField="text"  // The field from data items to display in the dropdown
-                  // dataItemKey="value"  // The field from data items to use as the key
-                  onChange={this.handleTypeOfFinanicalNote}
-                  // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-                  style={{
-                    border: "1px solid rgb(211, 211, 211)",
-                    borderRadius: "8px",
-                  }} // Inline styles
-                />
-              )}
-            </div>
-          )}
-          {/* {this.state.isTypeOfFinacialNote? 
+              {/* {this.state.isTypeOfFinacialNote? 
             <div className={styles.halfWidth} style={{ margin: '4px', marginTop: '18px' }}>
               <label>
                 Type of Financial Note<SpanComponent />
@@ -1803,78 +1845,78 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                {this.state.isWarning?<AlertComponent/>:''}
             </div>:""} */}
 
-          <div
-            className={styles.halfWidth}
-            style={{ margin: "4px", marginTop: "18px" }}
-          >
-            <label style={{ fontWeight: "600" }}>
-              Search Text
-              <SpanComponent />
-            </label>
-            {/* <TextField onChange={this.handleSearchText} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
-            {this.state.isWarningSearchText ? (
-              this.state.searchTextFeildValue !== "" ? (
-                <TextBox
-                  onChange={this.handleSearchText}
-                  style={{
-                    borderRadius: "8px",
-                  }}
-                />
-              ) : (
-                <TextBox
-                  onChange={this.handleSearchTextRed}
-                  style={{
-                    border: "1px solid red",
-                    borderRadius: "8px",
-                  }}
-                />
-              )
-            ) : (
-              <TextBox
-                onChange={this.handleSearchText}
-                style={{
-                  borderRadius: "8px",
-                }}
-              />
-            )}
-          </div>
-          {this.state.noteTypeFeildValue === "Finanical" && (
-            <div
-              className={styles.halfWidth}
-              style={{ margin: "4px", marginTop: "18px" }}
-            >
-              <label style={{ fontWeight: "600" }}>
-                Amount
-                <SpanComponent />
-              </label>
-              {this.state.isWarningAmountField ? (
-                this.state.amountFeildValue !== 0 ? (
-                  <TextBox
-                    onChange={this.handleAmount}
-                    style={{
-                      borderRadius: "8px",
-                    }}
-                  />
+              <div
+                className={styles.halfWidth}
+                style={{ margin: "4px", marginTop: "18px" }}
+              >
+                <label style={{ fontWeight: "600" }}>
+                  Search Text
+                  <SpanComponent />
+                </label>
+                {/* <TextField onChange={this.handleSearchText} styles={{ fieldGroup: { borderRadius: '8px', border: '1px solid rgb(211, 211, 211)' } }} /> */}
+                {this.state.isWarningSearchText ? (
+                  this.state.searchTextFeildValue !== "" ? (
+                    <TextBox
+                      onChange={this.handleSearchText}
+                      style={{
+                        borderRadius: "8px",
+                      }}
+                    />
+                  ) : (
+                    <TextBox
+                      onChange={this.handleSearchTextRed}
+                      style={{
+                        border: "1px solid red",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  )
                 ) : (
                   <TextBox
-                    onChange={this.handleAmountRed}
+                    onChange={this.handleSearchText}
                     style={{
-                      border: "1px solid red",
                       borderRadius: "8px",
                     }}
                   />
-                )
-              ) : (
-                <TextBox
-                  onChange={this.handleAmount}
-                  style={{
-                    borderRadius: "8px",
-                  }}
-                />
+                )}
+              </div>
+              {this.state.noteTypeFeildValue === "Finanical" && (
+                <div
+                  className={styles.halfWidth}
+                  style={{ margin: "4px", marginTop: "18px" }}
+                >
+                  <label style={{ fontWeight: "600" }}>
+                    Amount
+                    <SpanComponent />
+                  </label>
+                  {this.state.isWarningAmountField ? (
+                    this.state.amountFeildValue !== 0 ? (
+                      <TextBox
+                        onChange={this.handleAmount}
+                        style={{
+                          borderRadius: "8px",
+                        }}
+                      />
+                    ) : (
+                      <TextBox
+                        onChange={this.handleAmountRed}
+                        style={{
+                          border: "1px solid red",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    )
+                  ) : (
+                    <TextBox
+                      onChange={this.handleAmount}
+                      style={{
+                        borderRadius: "8px",
+                      }}
+                    />
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          {/* {this.state.isAmountVisable ? (
+              {/* {this.state.isAmountVisable ? (
             <div
               className={styles.halfWidth}
               style={{ margin: "4px", marginTop: "18px" }}
@@ -1891,431 +1933,431 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             ""
           )} */}
 
-          {this.state.isPuroposeVisable ? (
-            // (this.state.natureOfNoteFeildValue === 'Approval' || 'Information'?
-            //   <div
-            //   className={styles.halfWidth}
-            //   style={{ margin: "4px", marginTop: "18px" }}
-            // >
-            //   <label>
-            //     Note Type
-            //     <SpanComponent />
-            //   </label>
-            //   {this.state.isWarningNoteType ? (
-            //     this.state.noteTypeFeildValue ? (
-            //       <DropDownList
-            //         data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
-            //         // textField="text"  // The field from data items to display in the dropdown
-            //         // dataItemKey="value"  // The field from data items to use as the key
-            //         onChange={this.handleNoteType}
-            //         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-            //         style={{
-            //           border: "1px solid rgb(211, 211, 211)",
-            //           borderRadius: "8px",
-            //         }} // Inline styles
-            //       />
-            //     ) : (
-            //       <DropDownList
-            //         data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
-            //         // textField="text"  // The field from data items to display in the dropdown
-            //         // dataItemKey="value"  // The field from data items to use as the key
-            //         onChange={this.handleNoteTypeRed}
-            //         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-            //         style={{
-            //           border: "1px solid red",
-            //           borderRadius: "8px",
-            //         }} // Inline styles
-            //       />
-            //     )
-            //   ) : (
-            //     <DropDownList
-            //       data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
-            //       // textField="text"  // The field from data items to display in the dropdown
-            //       // dataItemKey="value"  // The field from data items to use as the key
-            //       onChange={this.handleNoteType}
-            //       // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
-            //       style={{
-            //         border: "1px solid rgb(211, 211, 211)",
-            //         borderRadius: "8px",
-            //       }} // Inline styles
-            //     />
-            //   )}
-            // </div>:
+              {this.state.isPuroposeVisable ? (
+                // (this.state.natureOfNoteFeildValue === 'Approval' || 'Information'?
+                //   <div
+                //   className={styles.halfWidth}
+                //   style={{ margin: "4px", marginTop: "18px" }}
+                // >
+                //   <label>
+                //     Note Type
+                //     <SpanComponent />
+                //   </label>
+                //   {this.state.isWarningNoteType ? (
+                //     this.state.noteTypeFeildValue ? (
+                //       <DropDownList
+                //         data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                //         // textField="text"  // The field from data items to display in the dropdown
+                //         // dataItemKey="value"  // The field from data items to use as the key
+                //         onChange={this.handleNoteType}
+                //         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                //         style={{
+                //           border: "1px solid rgb(211, 211, 211)",
+                //           borderRadius: "8px",
+                //         }} // Inline styles
+                //       />
+                //     ) : (
+                //       <DropDownList
+                //         data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                //         // textField="text"  // The field from data items to display in the dropdown
+                //         // dataItemKey="value"  // The field from data items to use as the key
+                //         onChange={this.handleNoteTypeRed}
+                //         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                //         style={{
+                //           border: "1px solid red",
+                //           borderRadius: "8px",
+                //         }} // Inline styles
+                //       />
+                //     )
+                //   ) : (
+                //     <DropDownList
+                //       data={this.state.noteType} // This should be an array of objects with `text` and `value` properties
+                //       // textField="text"  // The field from data items to display in the dropdown
+                //       // dataItemKey="value"  // The field from data items to use as the key
+                //       onChange={this.handleNoteType}
+                //       // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
+                //       style={{
+                //         border: "1px solid rgb(211, 211, 211)",
+                //         borderRadius: "8px",
+                //       }} // Inline styles
+                //     />
+                //   )}
+                // </div>:
 
-            // )
-            <div
-              className={styles.halfWidth}
-              style={{ margin: "4px", marginTop: "18px" }}
-            >
-              <label style={{ fontWeight: "600" }}>
-                Purpose
-                <SpanComponent />
-              </label>
-              {this.state.isWarningPurposeField ? (
-                this.state.puroposeFeildValue !== "" ? (
-                  <TextBox
-                    onChange={this.handlePurpose}
-                    style={{
-                      borderRadius: "8px",
-                    }}
-                  />
-                ) : (
-                  <TextBox
-                    onChange={this.handlePurposeRed}
-                    style={{
-                      border: "1px solid red",
-                      borderRadius: "8px",
-                    }}
-                  />
-                )
-              ) : (
-                <TextBox
-                  onChange={this.handlePurpose}
-                  style={{
-                    borderRadius: "8px",
-                  }}
-                />
-              )}
-            </div>
-          ) : (
-            ""
-          )}
-
-          {/* </div> */}
-        </div>
-        <div className={`${styles.generalSectionMainContainer}`}>
-          <h1 style={{ textAlign: "center", fontSize: "16px" }}>
-            Approver Details
-          </h1>
-        </div>
-        <div className={`${styles.generalSectionApproverDetails}`}>
-          <div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                marginTop: "8px",
-                marginBottom: "8px",
-              }}
-            >
-              <div style={{ display: "flex" }}>
-                <PeoplePicker
-                  
-                  placeholder="Reviewer Details"
-                  context={this._peopplePicker}
-                  // titleText="People Picker"
-                  personSelectionLimit={1}
-                  groupName={""} // Leave this blank in case you want to filter from all users
-                  showtooltip={true}
-                  defaultSelectedUsers={[""]}
-                  disabled={false}
-                  ensureUser={true}
-                  onChange={this._getPeoplePickerItems}
-                  // showHiddenInUI={false}
-                  principalTypes={[PrincipalType.User]}
-                  resolveDelay={1000}
-                />
-                {/* <PeoplePicker /> */}
-                <DefaultButton
-                  type="button"
-                  className={`${styles.commonBtn2} ${styles.addBtn}`}
-                  onClick={(e) => this.handleOnAdd(e, "reveiwer")}
-                  iconProps={{ iconName: "Add" }}
+                // )
+                <div
+                  className={styles.halfWidth}
+                  style={{ margin: "4px", marginTop: "18px" }}
                 >
-                  Add
-                </DefaultButton>
-              </div>
-              <span style={{ color: "blue" }}>
-                (Please enter minimum character to search)
-              </span>
-            </div>
-          </div>
-          <div className={`${styles.tableContainer}`}>
-            {/* <TableComponent /> */}
-            {this.state.isWarningPeoplePicker ? (
-              this.state.peoplePickerData.length === 0 ? (
-                <div style={{ border: "1px solid red" }}>
-                  <DraggableTable
-                    data={this.state.peoplePickerData}
-                    reOrderData={this.reOrderData}
-                    removeDataFromGrid={this.removeDataFromGrid}
-                    type="Reviewer"
-                  />
-                </div>
-              ) : (
-                <div>
-                  <DraggableTable
-                    data={this.state.peoplePickerData}
-                    reOrderData={this.reOrderData}
-                    removeDataFromGrid={this.removeDataFromGrid}
-                    type="Reviewer"
-                  />
-                </div>
-              )
-            ) : (
-              <div>
-                <DraggableTable
-                  data={this.state.peoplePickerData}
-                  reOrderData={this.reOrderData}
-                  removeDataFromGrid={this.removeDataFromGrid}
-                  type="Reviewer"
-                />
-              </div>
-            )}
-
-            {/* <MultiComboBoxTable/>/ */}
-          </div>
-          <div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                marginTop: "8px",
-                marginBottom: "8px",
-              }}
-            >
-              <div style={{ display: "flex" }}>
-                <PeoplePicker
-                  
-                  placeholder="Approver Details"
-                  context={this._peopplePicker}
-                  // titleText="People Picker"
-                  personSelectionLimit={1}
-                  groupName={""} // Leave this blank in case you want to filter from all users
-                  showtooltip={true}
-                  defaultSelectedUsers={[""]}
-                  disabled={false}
-                  ensureUser={true}
-                  onChange={this._getPeoplePickerItemsApporvers}
-                  // showHiddenInUI={false}
-                  principalTypes={[PrincipalType.User]}
-                  resolveDelay={1000}
-                />
-                {/* <PeoplePicker /> */}
-                <DefaultButton
-                  type="button"
-                  className={`${styles.commonBtn2} ${styles.addBtn}`}
-                  onClick={(e) => this.handleOnAdd(e, "approver")}
-                  iconProps={{ iconName: "Add" }}
-                >
-                  Add
-                </DefaultButton>
-              </div>
-              <span style={{ color: "blue" }}>
-                (Please enter minimum character to search)
-              </span>
-            </div>
-          </div>
-          <div className={`${styles.tableContainer}`}>
-            <div className={`${styles.tableContainer}`}>
-              {/* <TableComponent /> */}
-              {this.state.isWarningPeoplePicker ? (
-                this.state.peoplePickerData.length === 0 ? (
-                  <div style={{ border: "1px solid red" }}>
-                    <DraggableTable
-                      data={this.state.peoplePickerApproverData}
-                      reOrderData={this.reOrderData}
-                      removeDataFromGrid={this.removeDataFromGrid}
-                      type="Approver"
+                  <label style={{ fontWeight: "600" }}>
+                    Purpose
+                    <SpanComponent />
+                  </label>
+                  {this.state.isWarningPurposeField ? (
+                    this.state.puroposeFeildValue !== "" ? (
+                      <TextBox
+                        onChange={this.handlePurpose}
+                        style={{
+                          borderRadius: "8px",
+                        }}
+                      />
+                    ) : (
+                      <TextBox
+                        onChange={this.handlePurposeRed}
+                        style={{
+                          border: "1px solid red",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    )
+                  ) : (
+                    <TextBox
+                      onChange={this.handlePurpose}
+                      style={{
+                        borderRadius: "8px",
+                      }}
                     />
+                  )}
+                </div>
+              ) : (
+                ""
+              )}
+
+              {/* </div> */}
+            </div>
+            <div className={`${styles.generalSectionMainContainer}`}>
+              <h1 style={{ textAlign: "center", fontSize: "16px" }}>
+                Approver Details
+              </h1>
+            </div>
+            <div className={`${styles.generalSectionApproverDetails}`}>
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginTop: "8px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <div style={{ display: "flex" }}>
+                    <PeoplePicker
+                      placeholder="Reviewer Details"
+                      context={this._peopplePicker}
+                      // titleText="People Picker"
+                      personSelectionLimit={1}
+                      groupName={""} // Leave this blank in case you want to filter from all users
+                      showtooltip={true}
+                      defaultSelectedUsers={[""]}
+                      disabled={false}
+                      ensureUser={true}
+                      onChange={this._getPeoplePickerItems}
+                      // showHiddenInUI={false}
+                      principalTypes={[PrincipalType.User]}
+                      resolveDelay={1000}
+                    />
+                    {/* <PeoplePicker /> */}
+                    <DefaultButton
+                      type="button"
+                      className={`${styles.commonBtn2} ${styles.addBtn}`}
+                      onClick={(e) => this.handleOnAdd(e, "reveiwer")}
+                      iconProps={{ iconName: "Add" }}
+                    >
+                      Add
+                    </DefaultButton>
                   </div>
+                  <span style={{ color: "blue" }}>
+                    (Please enter minimum character to search)
+                  </span>
+                </div>
+              </div>
+              <div className={`${styles.tableContainer}`}>
+                {/* <TableComponent /> */}
+                {this.state.isWarningPeoplePicker ? (
+                  this.state.peoplePickerData.length === 0 ? (
+                    <div style={{ border: "1px solid red" }}>
+                      <DraggableTable
+                        data={this.state.peoplePickerData}
+                        reOrderData={this.reOrderData}
+                        removeDataFromGrid={this.removeDataFromGrid}
+                        type="Reviewer"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <DraggableTable
+                        data={this.state.peoplePickerData}
+                        reOrderData={this.reOrderData}
+                        removeDataFromGrid={this.removeDataFromGrid}
+                        type="Reviewer"
+                      />
+                    </div>
+                  )
                 ) : (
                   <div>
                     <DraggableTable
-                      data={this.state.peoplePickerApproverData}
+                      data={this.state.peoplePickerData}
                       reOrderData={this.reOrderData}
                       removeDataFromGrid={this.removeDataFromGrid}
-                      type="Approver"
+                      type="Reviewer"
                     />
                   </div>
-                )
-              ) : (
-                <div>
-                  <DraggableTable
-                    data={this.state.peoplePickerApproverData}
-                    reOrderData={this.reOrderData}
-                    removeDataFromGrid={this.removeDataFromGrid}
-                    type="Approver"
-                  />
-                </div>
-              )}
+                )}
 
-              {/* <MultiComboBoxTable/>/ */}
-            </div>
-          </div>
-        </div>
-        <div className={`${styles.generalSectionMainContainer}`}>
-          <h1 style={{ textAlign: "center", fontSize: "16px" }}>
-            File Attachments
-          </h1>
-        </div>
-        <div
-          style={{
-            display: "flex",
-
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            flexWrap: "wrap",
-          }}
-          className={`${styles.generalSectionApproverDetails}`}
-        >
-          <div className={`${styles.fileInputContainers}`}>
-            <p className={styles.label} style={{ margin: "0px" }}>
-              Note PDF<span className={styles.warning}>*</span>
-            </p>
-            {this.state.isWarningNoteToFiles ? (
-              <div
-                style={{
-                  width: "100%",
-                  border: "1px solid red",
-                  margin: "0px",
-                }}
-              >
-                <UploadFileComponent
-                  typeOfDoc="notePdF"
-                  onChange={this.handleNoteToFileChange}
-                  accept=".pdf"
-                  multiple={false}
-                  maxFileSizeMB={10}
-                  maxTotalSizeMB={10}
-                />
+                {/* <MultiComboBoxTable/>/ */}
               </div>
-            ) : (
-              <div style={{ width: "100%", margin: "0px" }}>
-                <UploadFileComponent
-                  typeOfDoc="notePdF"
-                  onChange={this.handleNoteToFileChange}
-                  accept=".pdf"
-                  multiple={false}
-                  maxFileSizeMB={10}
-                  maxTotalSizeMB={10}
-                />
-              </div>
-            )}
-
-            <p
-              className={styles.message}
-              style={{ textAlign: "right", margin: "0px" }}
-            >
-              Allowed only one PDF. Up to 10MB max.
-            </p>
-          </div>
-
-          {this.checkUserIsIBTes2(this.state.peoplePickerData) ? (
-            <div className={`${styles.fileInputContainers}`}>
-              <p className={styles.label} style={{ margin: "0px" }}>
-                Word Document <span className={styles.warning}>*</span>
-              </p>
-              {this.state.isWarningWordDocumentFiles ? (
+              <div>
                 <div
                   style={{
-                    width: "100%",
-                    border: "1px solid red",
-                    margin: "0px",
+                    display: "flex",
+                    flexDirection: "column",
+                    marginTop: "8px",
+                    marginBottom: "8px",
                   }}
                 >
-                  <UploadFileComponent
-                    typeOfDoc="supportingDocument"
-                    onChange={this.handleWordDocumentFileChange}
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    multiple={false}
-                    maxFileSizeMB={10}
-                    maxTotalSizeMB={10}
-                  />
+                  <div style={{ display: "flex" }}>
+                    <PeoplePicker
+                      placeholder="Approver Details"
+                      context={this._peopplePicker}
+                      // titleText="People Picker"
+                      personSelectionLimit={1}
+                      groupName={""} // Leave this blank in case you want to filter from all users
+                      showtooltip={true}
+                      defaultSelectedUsers={[""]}
+                      disabled={false}
+                      ensureUser={true}
+                      onChange={this._getPeoplePickerItemsApporvers}
+                      // showHiddenInUI={false}
+                      principalTypes={[PrincipalType.User]}
+                      resolveDelay={1000}
+                    />
+                    {/* <PeoplePicker /> */}
+                    <DefaultButton
+                      type="button"
+                      className={`${styles.commonBtn2} ${styles.addBtn}`}
+                      onClick={(e) => this.handleOnAdd(e, "approver")}
+                      iconProps={{ iconName: "Add" }}
+                    >
+                      Add
+                    </DefaultButton>
+                  </div>
+                  <span style={{ color: "blue" }}>
+                    (Please enter minimum character to search)
+                  </span>
+                </div>
+              </div>
+              <div className={`${styles.tableContainer}`}>
+                <div className={`${styles.tableContainer}`}>
+                  {/* <TableComponent /> */}
+                  {this.state.isWarningPeoplePicker ? (
+                    this.state.peoplePickerData.length === 0 ? (
+                      <div style={{ border: "1px solid red" }}>
+                        <DraggableTable
+                          data={this.state.peoplePickerApproverData}
+                          reOrderData={this.reOrderData}
+                          removeDataFromGrid={this.removeDataFromGrid}
+                          type="Approver"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <DraggableTable
+                          data={this.state.peoplePickerApproverData}
+                          reOrderData={this.reOrderData}
+                          removeDataFromGrid={this.removeDataFromGrid}
+                          type="Approver"
+                        />
+                      </div>
+                    )
+                  ) : (
+                    <div>
+                      <DraggableTable
+                        data={this.state.peoplePickerApproverData}
+                        reOrderData={this.reOrderData}
+                        removeDataFromGrid={this.removeDataFromGrid}
+                        type="Approver"
+                      />
+                    </div>
+                  )}
+
+                  {/* <MultiComboBoxTable/>/ */}
+                </div>
+              </div>
+            </div>
+            <div className={`${styles.generalSectionMainContainer}`}>
+              <h1 style={{ textAlign: "center", fontSize: "16px" }}>
+                File Attachments
+              </h1>
+            </div>
+            <div
+              style={{
+                display: "flex",
+
+                justifyContent: "flex-start",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+              }}
+              className={`${styles.generalSectionApproverDetails}`}
+            >
+              <div className={`${styles.fileInputContainers}`}>
+                <p className={styles.label} style={{ margin: "0px" }}>
+                  Note PDF<span className={styles.warning}>*</span>
+                </p>
+                {this.state.isWarningNoteToFiles ? (
+                  <div
+                    style={{
+                      width: "100%",
+                      border: "1px solid red",
+                      margin: "0px",
+                    }}
+                  >
+                    <UploadFileComponent
+                      typeOfDoc="notePdF"
+                      onChange={this.handleNoteToFileChange}
+                      accept=".pdf"
+                      multiple={false}
+                      maxFileSizeMB={10}
+                      maxTotalSizeMB={10}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ width: "100%", margin: "0px" }}>
+                    <UploadFileComponent
+                      typeOfDoc="notePdF"
+                      onChange={this.handleNoteToFileChange}
+                      accept=".pdf"
+                      multiple={false}
+                      maxFileSizeMB={10}
+                      maxTotalSizeMB={10}
+                    />
+                  </div>
+                )}
+
+                <p
+                  className={styles.message}
+                  style={{ textAlign: "right", margin: "0px" }}
+                >
+                  Allowed only one PDF. Up to 10MB max.
+                </p>
+              </div>
+
+              {this.checkUserIsIBTes2(this.state.peoplePickerData) ? (
+                <div className={`${styles.fileInputContainers}`}>
+                  <p className={styles.label} style={{ margin: "0px" }}>
+                    Word Document <span className={styles.warning}>*</span>
+                  </p>
+                  {this.state.isWarningWordDocumentFiles ? (
+                    <div
+                      style={{
+                        width: "100%",
+                        border: "1px solid red",
+                        margin: "0px",
+                      }}
+                    >
+                      <UploadFileComponent
+                        typeOfDoc="supportingDocument"
+                        onChange={this.handleWordDocumentFileChange}
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        multiple={false}
+                        maxFileSizeMB={10}
+                        maxTotalSizeMB={10}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ width: "100%", margin: "0px" }}>
+                      <UploadFileComponent
+                        typeOfDoc="supportingDocument"
+                        onChange={this.handleWordDocumentFileChange}
+                        accept=".doc,.docx"
+                        multiple={false}
+                        maxFileSizeMB={10}
+                        maxTotalSizeMB={10}
+                      />
+                    </div>
+                  )}
+
+                  <p className={styles.message} style={{ margin: "0px" }}>
+                    Allowed Formats (doc,docx only) Upto 10MB max.
+                  </p>
                 </div>
               ) : (
-                <div style={{ width: "100%", margin: "0px" }}>
-                  <UploadFileComponent
-                    typeOfDoc="supportingDocument"
-                    onChange={this.handleWordDocumentFileChange}
-                    accept=".doc,.docx"
-                    multiple={false}
-                    maxFileSizeMB={10}
-                    maxTotalSizeMB={10}
-                  />
-                </div>
+                ""
               )}
 
-              <p className={styles.message} style={{ margin: "0px" }}>
-                Allowed Formats (doc,docx only) Upto 10MB max.
-              </p>
+              <div className={`${styles.fileInputContainers}`}>
+                <p className={styles.label} style={{ margin: "0px" }}>
+                  Supporting Documents
+                </p>
+                {this.state.isWarningSupportingDocumentFiles ? (
+                  <div
+                    style={{
+                      width: "100%",
+                      border: "1px solid red",
+                      margin: "0px",
+                    }}
+                  >
+                    <UploadFileComponent
+                      typeOfDoc="supportingDocument"
+                      onChange={this.handleSupportingFileChange}
+                      accept=".xlsx,.pdf,.doc,.docx"
+                      multiple={true}
+                      maxFileSizeMB={25}
+                      maxTotalSizeMB={25}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ width: "100%", margin: "0px" }}>
+                    <UploadFileComponent
+                      typeOfDoc="supportingDocument"
+                      onChange={this.handleSupportingFileChange}
+                      accept=".xlsx,.pdf,.doc,.docx"
+                      multiple={true}
+                      maxFileSizeMB={25}
+                      maxTotalSizeMB={25}
+                    />
+                  </div>
+                )}
+
+                <p className={styles.message} style={{ margin: "0px" }}>
+                  Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
+                </p>
+              </div>
             </div>
-          ) : (
-            ""
-          )}
 
-          <div className={`${styles.fileInputContainers}`}>
-            <p className={styles.label} style={{ margin: "0px" }}>
-              Supporting Documents
-            </p>
-            {this.state.isWarningSupportingDocumentFiles ? (
-              <div
-                style={{
-                  width: "100%",
-                  border: "1px solid red",
-                  margin: "0px",
-                }}
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <button
+                type="button"
+                className={`${styles.commonBtn1} ${styles.commonBtn}`}
               >
-                <UploadFileComponent
-                  typeOfDoc="supportingDocument"
-                  onChange={this.handleSupportingFileChange}
-                  accept=".xlsx,.pdf,.doc,.docx"
-                  multiple={true}
-                  maxFileSizeMB={25}
-                  maxTotalSizeMB={25}
-                />
-              </div>
-            ) : (
-              <div style={{ width: "100%", margin: "0px" }}>
-                <UploadFileComponent
-                  typeOfDoc="supportingDocument"
-                  onChange={this.handleSupportingFileChange}
-                  accept=".xlsx,.pdf,.doc,.docx"
-                  multiple={true}
-                  maxFileSizeMB={25}
-                  maxTotalSizeMB={25}
-                />
-              </div>
-            )}
-
-            <p className={styles.message} style={{ margin: "0px" }}>
-              Allowed Formats (pdf,doc,docx,xlsx only) Upto 25MB max.
-            </p>
-          </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: "10px",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <button
-            type="button"
-            className={`${styles.commonBtn1} ${styles.commonBtn}`}
-          >
-            Save as Draft
-          </button>
-          <button
-            type="button"
-            className={`${styles.commonBtn1} ${styles.commonBtn}`}
-            onClick={this.handleSubmit}
-          >
-            Submit
-          </button>
-          <button
-            type="button"
-            className={`${styles.commonBtn2} ${styles.commonBtn}`}
-          >
-            Exit
-          </button>
-        </div>
-        {/* <ul>
+                Save as Draft
+              </button>
+              <button
+                type="button"
+                className={`${styles.commonBtn1} ${styles.commonBtn}`}
+                onClick={this.handleSubmit}
+              >
+                Submit
+              </button>
+              <button
+                type="button"
+                className={`${styles.commonBtn2} ${styles.commonBtn}`}
+              >
+                Exit
+              </button>
+            </div>
+            {/* <ul>
             {this.state.files.map((file, index) => (
               <li key={index}>{file.name}</li>
             ))}
           </ul> */}
+          </div>
+        )}
       </div>
     );
   }
