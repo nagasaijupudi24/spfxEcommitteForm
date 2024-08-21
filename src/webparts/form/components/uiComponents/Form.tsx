@@ -16,7 +16,7 @@ import { DropDownList } from "@progress/kendo-react-dropdowns";
 //spinner related
 
 import { Spinner } from "@fluentui/react/lib/Spinner";
-import { IStackTokens, Stack } from "@fluentui/react/lib/Stack";
+// import { IStackTokens } from "@fluentui/react/lib/Stack";
 // import { Label } from "@fluentui/react/lib/Label";
 // import TableComponent from "./tableSwap";
 import UploadFileComponent from "./uploadFile";
@@ -66,6 +66,8 @@ interface INoteObject {
   Status: string;
   statusNumber: any;
   AuditTrail: any;
+  ReviewerId:any;
+  ApproverId:any
 }
 
 interface IMainFormState {
@@ -138,10 +140,10 @@ interface IMainFormState {
 // let fetchedData:any[];
 
 //spinner
-const stackTokens: IStackTokens = {
-  childrenGap: 20,
-  maxWidth: 250,
-};
+// const stackTokens: IStackTokens = {
+//   childrenGap: 20,
+//   maxWidth: 250,
+// };
 
 export const FormContext = React.createContext<any>(null);
 
@@ -397,6 +399,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             approverType: each.approverType,
             approversOrder: each.approversOrder,
             Title: each.Title,
+            id:each.ApproversId
           };
           return newObj;
         })
@@ -1045,6 +1048,44 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     return JSON.stringify(auditLog)
   };
 
+  private _getReviewerId = ()=>{
+    const arr = this.state.peoplePickerData.map((each:any)=>{
+      if( each.id !== 'undefined'){
+        return each.id
+      }
+
+    }
+      
+      )
+      
+      const nw = arr.filter((each:any)=>{
+        if (each !== undefined){
+          return `${each}`
+        }
+      })
+    console.log(nw)
+    return nw
+  }
+
+  private _getApproverId = ()=>{
+    const arr = this.state.peoplePickerApproverData.map((each:any)=>{
+      if( each.id !== 'undefined'){
+        return each.id
+      }
+
+    }
+      
+      )
+      
+      const nw = arr.filter((each:any)=>{
+        if (each !== undefined){
+          return `${each}`
+        }
+      })
+    console.log(nw)
+    return nw
+  }
+
   private createEcommitteeObject = (
     status: string,
     statusNumber: any
@@ -1066,7 +1107,11 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       ),
       Status: status,
       statusNumber: statusNumber,
-      AuditTrail: this._getAuditTrail(status)
+      AuditTrail: this._getAuditTrail(status),
+      // Reviewer:{result:this._getReviewerId()}
+      ReviewerId:this._getReviewerId(),
+      ApproverId:this._getApproverId()
+
     });
     return {
       Department: this.state.department,
@@ -1085,7 +1130,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       ),
       Status: status,
       statusNumber: statusNumber,
-      AuditTrail: this._getAuditTrail(status)
+      AuditTrail: this._getAuditTrail(status),
+      ReviewerId:this._getReviewerId(),
+      ApproverId:this._getApproverId()
     };
   };
 
@@ -1261,6 +1308,20 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           // console.log(id)
           console.log("Item added successfully");
           this.setState({
+            committeeNameFeildValue:'',
+            subjectFeildValue:'',
+            natureOfNoteFeildValue:'',
+            natureOfApprovalOrSanctionFeildValue:'',
+            noteTypeFeildValue:'',
+            searchTextFeildValue:'',
+            puroposeFeildValue:'',
+            noteTofiles:[],
+            supportingDocumentfiles:[],
+            wordDocumentfiles:[],
+            peoplePickerApproverData:[],
+            peoplePickerData:[]
+          })
+          this.setState({
             isWarning: false,
             isWarningCommittteeName: false,
             isWarningSubject: false,
@@ -1345,6 +1406,22 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
           // console.log(id)
           console.log("Item added successfully");
+          this.setState({
+            committeeNameFeildValue:'',
+            subjectFeildValue:'',
+            natureOfNoteFeildValue:'',
+            natureOfApprovalOrSanctionFeildValue:'',
+            noteTypeFeildValue:'',
+            typeOfFinancialNoteFeildValue:'',
+            amountFeildValue:0,
+            searchTextFeildValue:'',
+            puroposeFeildValue:'',
+            noteTofiles:[],
+            supportingDocumentfiles:[],
+            wordDocumentfiles:[],
+            peoplePickerApproverData:[],
+            peoplePickerData:[]
+          })
           this.setState({
             isWarning: false,
             isWarningCommittteeName: false,
@@ -1433,6 +1510,18 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             //   });
             // console.log(listItem);
           });
+
+          this.setState({committeeNameFeildValue:'',
+            subjectFeildValue:'',
+            natureOfNoteFeildValue:'',
+            noteTypeFeildValue:'',
+            searchTextFeildValue:'',
+            noteTofiles:[],
+            supportingDocumentfiles:[],
+            wordDocumentfiles:[],
+            peoplePickerApproverData:[],
+            peoplePickerData:[]
+          })
 
           // console.log(id)
           console.log("Item added successfully");
@@ -1613,15 +1702,17 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     return (
       <div>
         {this.state.isLoading ? (
-          <Stack
-            tokens={stackTokens}
-            style={{ height: "100vh", width: "100vw", border: "1px solid red" }}
-            horizontalAlign="center"
-            verticalAlign="center"
-          >
+          // <Stack
+          //   tokens={stackTokens}
+          //   style={{ height: "100vh", width: "100", border: "1px solid red" }}
+          //   horizontalAlign="center"
+          //   verticalAlign="center"
+          // >
             <div
+              // tokens={stackTokens}
               style={{
-                height: "100%",
+                height: "100vh",
+                width:'100vw',
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -1630,10 +1721,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               <Spinner
                 label="Wait, wait..."
                 ariaLive="assertive"
-                labelPosition="right"
+                // labelPosition="right"
               />
             </div>
-          </Stack>
+          // </Stack>
         ) : (
           <div className={styles.form}>
             {/* <Header /> */}
