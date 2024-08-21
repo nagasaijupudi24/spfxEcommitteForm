@@ -9,6 +9,7 @@ interface UploadFileProps {
   maxFileSizeMB: number;
   multiple: boolean;
   maxTotalSizeMB?: number;
+  // value:any
 }
 
 interface FileWithError {
@@ -39,6 +40,7 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
   maxFileSizeMB,
   multiple,
   maxTotalSizeMB,
+  // value
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<FileWithError[]>([]);
@@ -118,6 +120,7 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
           accept={accept}
           style={{ padding: "10px" }}
           multiple={multiple}
+          // value={value}
         />
       </li>
 

@@ -163,8 +163,10 @@
 
 
 .responsiveTitle {
+  color: "[theme: themePrimary, default: #0078d7]";
   text-align: center;
   font-size: 14px; /* Default for desktop */
+  flex-grow: 1;
 }
 
 @media (max-width: 750px) {
@@ -179,6 +181,13 @@
   }
 }
 
+
+// .eCommitteeHeader{
+//   // width: 70%;
+//   border: 1px solid red;
+//   // text-align: right;
+// }
+
 .noteHeader{
   display:flex;
   justify-content: space-between;
@@ -190,7 +199,7 @@
 
 .noteTitle {
   display: flex;
-  justify-content: space-between;
+  // justify-content: space-between;
   align-items: center;
 }
 

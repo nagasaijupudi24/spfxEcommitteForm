@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-lines */
@@ -12,6 +13,7 @@ import { IDropdownOption } from "office-ui-fabric-react";
 // import {  InputChangeEvent } from '@progress/kendo-react-inputs';
 import { TextBox, TextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { DropDownList } from "@progress/kendo-react-dropdowns";
+import {  PrimaryButton } from '@fluentui/react/lib/Button';
 
 //spinner related
 
@@ -32,6 +34,7 @@ import ApproverOrReviewerDialog from "./ApproverOrReviewerDialog/approverOrRevie
 // import AlertComponent from "./alter/alter";
 import DraggableTable from "./draggableGridKendo/draggableGridKendo";
 import "@progress/kendo-theme-default/dist/all.css";
+import "@pnp/sp/site-users/web";
 
 import "@pnp/sp/fields";
 import "@pnp/sp/webs";
@@ -135,6 +138,7 @@ interface IMainFormState {
 
   status: string;
   statusNumber: any;
+  filesClear:any;
 }
 
 // let fetchedData:any[];
@@ -153,11 +157,21 @@ export const FormContext = React.createContext<any>(null);
 //    'committeeC'
 // ];
 
+const getIdFromUrl = (): any => {
+  const params = new URLSearchParams(window.location.search);
+  const Id = params.get('id');
+  // console.log(Id);
+  return Id;
+};
+
 export default class Form extends React.Component<IFormProps, IMainFormState> {
   private _peopplePicker: IPeoplePickerContext;
   private _userName: string;
   private _role: string;
+  private _itemId: number = Number(getIdFromUrl());
+  
   constructor(props: IFormProps) {
+    
     super(props);
     this.state = {
       isLoading: true,
@@ -216,7 +230,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       reviewerInfo: [],
       status: "",
       statusNumber: null,
+      filesClear:[]
     };
+    console.log(this._itemId)
 
     this._peopplePicker = {
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
@@ -226,6 +242,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     };
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
+    this._getItemData(this._itemId)
     // eslint-disable-next-line no-void
     // void this.createFolder();
   }
@@ -267,6 +284,86 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // console.log("Account Name: " + profile.userProperties.AccountName);
     return [designation, email];
   };
+
+  private _extractValueFromHtml = (htmlString: string): string => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    const extractedValue = doc.querySelector('div')?.textContent || '';
+    console.log(extractedValue)
+    return extractedValue;
+  }
+
+  private _getApproversData =(data:any,userId:any):any=>{
+    console.log(
+      {
+        id:userId,
+        text:data.DisplayName,
+        srNo:data.Email.split("@")[0],
+        optionalText:this._getUserProperties(data.LoginName).then((res)=>res)
+      }
+    )
+    return {
+      id:userId,
+      text:data.DisplayName,
+      srNo:data.Email.split("@")[0],
+      optionalText:this._getUserProperties(data.LoginName).then((res)=>res)
+    }
+
+
+  }
+
+  private _getUserDetailsById = async (userIds: any[],ApporverType:string): Promise<any[]> => {
+    try {
+      const userDetails = await Promise.all(
+        userIds.map(async (userId) => {
+          const user = await this.props.sp.web.getUserById(userId)();
+          console.log(user)
+          const userProperties =await this.props.sp.profiles.getPropertiesFor(user.LoginName).then((result)=>this._getApproversData(result,userId))
+          console.log(userProperties)
+          
+          
+          return userProperties;
+        })
+      );
+      console.log(userDetails)
+      if (ApporverType === 'Reviewer'){
+        this.setState({peoplePickerData:userDetails,peoplePickerApproverData:[]})
+
+      }else{
+        this.setState({peoplePickerApproverData:userDetails})
+
+      }
+      
+      return userDetails;
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      return [];
+    }
+  };
+  
+
+  private _getItemData =async (id:any) =>{
+    const item: any = await this.props.sp.web.lists.getByTitle(this.props.listId).items.getById(id)();
+    console.log(`${id} ------Details`,item);
+    this.setState(
+      {
+        committeeNameFeildValue:item.CommitteeName!==null?item.CommitteeName:'',
+        subjectFeildValue:item.Subject!==null?item.Subject:'',
+        natureOfNoteFeildValue:item.natureOfNote!==null?item.natureOfNote:'',
+        noteTypeFeildValue:item.NoteType!==null?item.NoteType:'',
+        natureOfApprovalOrSanctionFeildValue:item.NatuerOfApprovalSanction!==null?item.NatuerOfApprovalSanction:'',
+        typeOfFinancialNoteFeildValue:item.TypeOfFinancialNote!==null?item.TypeOfFinancialNote:'',
+        searchTextFeildValue:item.Search_x0020_Keyword!==null?this._extractValueFromHtml(item.Search_x0020_Keyword):'',
+        amountFeildValue:item.Amount!==null?item.Amount:'',
+        puroposeFeildValue:item.Purpose!==null?item.Purpose:'',
+        peoplePickerData:this._getUserDetailsById(item.ReviewerId,"Reviewer"),
+        // peoplePickerApproverData:this._getUserDetailsById(item.ApproverId,"Approver")
+
+
+
+      }
+    )
+  }
 
   private getfield = async () => {
     try {
@@ -1520,7 +1617,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             supportingDocumentfiles:[],
             wordDocumentfiles:[],
             peoplePickerApproverData:[],
-            peoplePickerData:[]
+            peoplePickerData:[],
+            filesClear:[]
           })
 
           // console.log(id)
@@ -1687,6 +1785,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   };
 
   public render(): React.ReactElement<IFormProps> {
+    console.log(this.state)
     // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
     // console.log(this.checkUserIsIBTes2(this.state.peoplePickerData))
 
@@ -1710,13 +1809,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           // >
             <div
               // tokens={stackTokens}
-              style={{
-                height: "100vh",
-                width:'100vw',
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
+              // style={{
+              //   // height: "100vh",
+              //   // width:'100vw',
+              //   // display: "flex",
+              //   // justifyContent: "center",
+              //   // alignItems: "center",
+              // }}
             >
               <Spinner
                 label="Wait, wait..."
@@ -1769,6 +1868,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       }}
                       data={this.state.committename}
                       onChange={this.handleCommittename}
+                      value={this.state.committeeNameFeildValue}
                     />
                   ) : (
                     <DropDownList
@@ -1779,6 +1879,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         borderRadius: "5px", // Rounded corners
                       }}
                       data={this.state.committename}
+                      value={this.state.committeeNameFeildValue}
                       onChange={this.handleCommittenameRedBorder}
                     />
                   )
@@ -1790,6 +1891,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     }}
                     data={this.state.committename}
                     onChange={this.handleCommittename}
+                    value={this.state.committeeNameFeildValue}
                   />
                 )}
               </div>
@@ -1846,6 +1948,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       // data={committename}
                       data={this.state.natureOfNote}
                       onChange={this.handleNatureOfNote}
+                      value={this.state.natureOfNoteFeildValue}
                     />
                   ) : (
                     <DropDownList
@@ -1857,6 +1960,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         border: "2px solid red",
                         borderRadius: "5px", // Rounded corners
                       }}
+                      value={this.state.natureOfNoteFeildValue}
                     />
                   )
                 ) : (
@@ -1864,6 +1968,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     // data={committename}
                     data={this.state.natureOfNote}
                     onChange={this.handleNatureOfNote}
+                    value={this.state.natureOfNoteFeildValue}
                   />
                 )}
               </div>
@@ -1888,6 +1993,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                           border: "1px solid rgb(211, 211, 211)",
                           borderRadius: "8px",
                         }} // Inline styles
+                        value={this.state.natureOfApprovalOrSanctionFeildValue}
                       />
                     ) : (
                       <DropDownList
@@ -1895,6 +2001,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         // textField="text"  // The field from data items to display in the dropdown
                         // dataItemKey="value"  // The field from data items to use as the key
                         onChange={this.handleNatureOfApprovalOrSanctionRed}
+                        value={this.state.natureOfApprovalOrSanctionFeildValue}
                         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                         style={{
                           border: "1px solid red",
@@ -1908,6 +2015,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       // textField="text"  // The field from data items to display in the dropdown
                       // dataItemKey="value"  // The field from data items to use as the key
                       onChange={this.handleNatureOfApprovalOrSanction}
+                      value={this.state.natureOfApprovalOrSanctionFeildValue}
                       // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                       style={{
                         border: "1px solid rgb(211, 211, 211)",
@@ -1934,6 +2042,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       // textField="text"  // The field from data items to display in the dropdown
                       // dataItemKey="value"  // The field from data items to use as the key
                       onChange={this.handleNoteType}
+                      value={this.state.noteTypeFeildValue}
                       // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                       style={{
                         border: "1px solid rgb(211, 211, 211)",
@@ -1946,6 +2055,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       // textField="text"  // The field from data items to display in the dropdown
                       // dataItemKey="value"  // The field from data items to use as the key
                       onChange={this.handleNoteTypeRed}
+                      value={this.state.noteTypeFeildValue}
                       // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                       style={{
                         border: "1px solid red",
@@ -1959,6 +2069,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     // textField="text"  // The field from data items to display in the dropdown
                     // dataItemKey="value"  // The field from data items to use as the key
                     onChange={this.handleNoteType}
+                    value={this.state.noteTypeFeildValue}
                     // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                     style={{
                       border: "1px solid rgb(211, 211, 211)",
@@ -1988,6 +2099,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                           border: "1px solid rgb(211, 211, 211)",
                           borderRadius: "8px",
                         }} // Inline styles
+                        value={this.state.typeOfFinancialNoteFeildValue}
                       />
                     ) : (
                       <DropDownList
@@ -1995,6 +2107,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         // textField="text"  // The field from data items to display in the dropdown
                         // dataItemKey="value"  // The field from data items to use as the key
                         onChange={this.handleTypeOfFinanicalNoteRed}
+                        value={this.state.typeOfFinancialNoteFeildValue}
                         // value={this.state.noteTypeValue}  // Assuming noteTypeValue is an object with a `value` field
                         style={{
                           border: "1px solid red",
@@ -2013,6 +2126,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         border: "1px solid rgb(211, 211, 211)",
                         borderRadius: "8px",
                       }} // Inline styles
+                      value={this.state.typeOfFinancialNoteFeildValue}
                     />
                   )}
                 </div>
@@ -2049,6 +2163,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       style={{
                         borderRadius: "8px",
                       }}
+                      value={this.state.searchTextFeildValue}
                     />
                   ) : (
                     <TextBox
@@ -2057,6 +2172,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         border: "1px solid red",
                         borderRadius: "8px",
                       }}
+                      value={this.state.searchTextFeildValue}
                     />
                   )
                 ) : (
@@ -2065,6 +2181,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     style={{
                       borderRadius: "8px",
                     }}
+                    value={this.state.searchTextFeildValue}
                   />
                 )}
               </div>
@@ -2084,6 +2201,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         style={{
                           borderRadius: "8px",
                         }}
+                        value={this.state.amountFeildValue}
                       />
                     ) : (
                       <TextBox
@@ -2092,6 +2210,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                           border: "1px solid red",
                           borderRadius: "8px",
                         }}
+                        value={this.state.amountFeildValue}
                       />
                     )
                   ) : (
@@ -2100,6 +2219,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       style={{
                         borderRadius: "8px",
                       }}
+                      value={this.state.amountFeildValue}
                     />
                   )}
                 </div>
@@ -2188,6 +2308,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         style={{
                           borderRadius: "8px",
                         }}
+                        value={this.state.puroposeFeildValue}
                       />
                     ) : (
                       <TextBox
@@ -2196,6 +2317,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                           border: "1px solid red",
                           borderRadius: "8px",
                         }}
+                        value={this.state.puroposeFeildValue}
                       />
                     )
                   ) : (
@@ -2204,6 +2326,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       style={{
                         borderRadius: "8px",
                       }}
+                      value={this.state.puroposeFeildValue}
                     />
                   )}
                 </div>
@@ -2406,6 +2529,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={false}
                       maxFileSizeMB={10}
                       maxTotalSizeMB={10}
+                      // value={this.state.noteTofiles}
+                      
                     />
                   </div>
                 ) : (
@@ -2417,6 +2542,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={false}
                       maxFileSizeMB={10}
                       maxTotalSizeMB={10}
+                      // value={this.state.noteTofiles}
                     />
                   </div>
                 )}
@@ -2446,23 +2572,25 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       }}
                     >
                       <UploadFileComponent
-                        typeOfDoc="supportingDocument"
+                        typeOfDoc="Word Document"
                         onChange={this.handleWordDocumentFileChange}
                         accept=".jpg,.jpeg,.png,.pdf"
                         multiple={false}
                         maxFileSizeMB={10}
                         maxTotalSizeMB={10}
+                        // value={this.state.wordDocumentfiles}
                       />
                     </div>
                   ) : (
                     <div style={{ width: "100%", margin: "0px" }}>
                       <UploadFileComponent
-                        typeOfDoc="supportingDocument"
+                        typeOfDoc="Word Document"
                         onChange={this.handleWordDocumentFileChange}
                         accept=".doc,.docx"
                         multiple={false}
                         maxFileSizeMB={10}
                         maxTotalSizeMB={10}
+                        // value={this.state.wordDocumentfiles}
                       />
                     </div>
                   )}
@@ -2494,6 +2622,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={true}
                       maxFileSizeMB={25}
                       maxTotalSizeMB={25}
+                      // value={this.state.supportingDocumentfiles}
                     />
                   </div>
                 ) : (
@@ -2505,6 +2634,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={true}
                       maxFileSizeMB={25}
                       maxTotalSizeMB={25}
+                      // value={this.state.supportingDocumentfiles}
                     />
                   </div>
                 )}
@@ -2517,30 +2647,32 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
             <div
               style={{
-                marginTop: "10px",
+                margin: "10px 0px",
                 display: "flex",
                 justifyContent: "center",
+                gap:"5px"
               }}
             >
-              <button
+              <PrimaryButton
                 type="button"
-                className={`${styles.commonBtn1} ${styles.commonBtn}`}
+                // className={`${styles.commonBtn1} ${styles.commonBtn}`}
+                iconProps={{iconName:"Save"}}
               >
                 Save as Draft
-              </button>
-              <button
+              </PrimaryButton>
+              <PrimaryButton
                 type="button"
-                className={`${styles.commonBtn1} ${styles.commonBtn}`}
+                // className={`${styles.commonBtn1} ${styles.commonBtn}`}
                 onClick={this.handleSubmit}
               >
                 Submit
-              </button>
-              <button
-                type="button"
-                className={`${styles.commonBtn2} ${styles.commonBtn}`}
+              </PrimaryButton>
+              <PrimaryButton
+                // type="button"
+                // className={`${styles.commonBtn2} ${styles.commonBtn}`}
               >
                 Exit
-              </button>
+              </PrimaryButton>
             </div>
             {/* <ul>
             {this.state.files.map((file, index) => (
