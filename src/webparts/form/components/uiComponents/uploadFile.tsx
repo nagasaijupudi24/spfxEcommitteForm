@@ -9,7 +9,7 @@ interface UploadFileProps {
   maxFileSizeMB: number;
   multiple: boolean;
   maxTotalSizeMB?: number;
-  data:File[]
+  data:any[]
 }
 
 interface FileWithError {
@@ -53,6 +53,42 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
 
   useEffect(()=>{
     console.log(data)
+    const files = data;
+      const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
+      const maxTotalSizeBytes = maxTotalSizeMB
+        ? maxTotalSizeMB * 1024 * 1024
+        : undefined;
+  
+      let validFiles: FileWithError[] = [];
+      let currentTotalSize = selectedFiles.reduce(
+        (acc, fileWithError) => acc + fileWithError.file.size,
+        0
+      );
+  
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        let error: string | null = null;
+  
+        if (file.size > maxFileSizeBytes) {
+          error = `File size exceeds ${maxFileSizeMB}MB`;
+        } else if (!isFileNameValid(file.name)) {
+          error = "File name contains invalid characters";
+        } else if (
+          maxTotalSizeBytes &&
+          currentTotalSize + file.size > maxTotalSizeBytes
+        ) {
+          error = `Total file size exceeds ${maxTotalSizeMB}MB`;
+        }
+  
+        currentTotalSize += file.size;
+        validFiles.push({ file, error });
+      }
+  
+      const updatedFiles = multiple
+        ? [...selectedFiles, ...validFiles]
+        : validFiles;
+  
+      setSelectedFiles(updatedFiles);
     // setSelectedFiles(data)
   },[selectedFiles])
 
@@ -128,6 +164,8 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
 
     onChange(fileInputRef.current?.files || null, typeOfDoc);
   };
+
+  console.log(selectedFiles)
 
   return (
     <ul className={`${styles.fileAttachementsUl}`}>

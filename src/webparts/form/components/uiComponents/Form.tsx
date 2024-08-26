@@ -130,13 +130,13 @@ interface IMainFormState {
   isWarningAmountField: boolean;
   isWarningPurposeField: boolean;
   eCommitteData: any;
-  noteTofiles: File[];
+  noteTofiles: any[] ;
   isWarningNoteToFiles: boolean;
 
   wordDocumentfiles: File[];
   isWarningWordDocumentFiles: boolean;
 
-  supportingDocumentfiles: File[];
+  supportingDocumentfiles: any[];
   isWarningSupportingDocumentFiles: boolean;
 
   isWarningPeoplePicker: boolean;
@@ -407,14 +407,17 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private _getItemDocumentsData = async ()=>{
     try{
-      console.log(`${this._folderName}/Pdf`)
-      const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/Pdf`)
-      .files().then(res => res);    
+      console.log(`${this._folderName}/SupportingDocument`)
+      const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/SupportingDocument`)
+      .files().then(res => res); 
+      console.log(folderItem)   
       console.log(folderItem[0])
       // this.setState({noteTofiles:[folderItem]})
       const tenantUrl = window.location.protocol + "//" + window.location.host;
+      console.log(tenantUrl)
       const tempFiles: IFileDetails[] = []
       folderItem.forEach(values => {
+
             const filesObj = {
                 "name": values.Name,
                 "content": null as unknown as File,
@@ -427,7 +430,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             }
             tempFiles.push(filesObj);
         });
-        // this.setState({ noteTofiles: tempFiles });
+        console.log(tempFiles)
+        this.setState({ supportingDocumentfiles: tempFiles });
 
     }catch{
       console.log("failed to fetch")
