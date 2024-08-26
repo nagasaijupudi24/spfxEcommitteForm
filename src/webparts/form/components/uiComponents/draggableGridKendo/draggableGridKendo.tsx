@@ -76,6 +76,8 @@ const DraggableTable = (props:any) => {
         
       };
 
+    console.log(gridData,`----${type} Of Grid-----------`)
+
     return (
       <ReorderContext.Provider value={{ reorder, dragStart }}>
         <DragAndDrop>

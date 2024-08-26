@@ -133,7 +133,7 @@ interface IMainFormState {
   noteTofiles: any[] ;
   isWarningNoteToFiles: boolean;
 
-  wordDocumentfiles: File[];
+  wordDocumentfiles: any[];
   isWarningWordDocumentFiles: boolean;
 
   supportingDocumentfiles: any[];
@@ -314,56 +314,97 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     return extractedValue;
   }
 
-  private _getApproversData =(data:any,userId:any):any=>{
-    // console.log(data)
-    console.log(
-      {
-        id:userId,
-        text:data.DisplayName,
-        srNo:data.Email.split("@")[0],
-        optionalText:this._getUserProperties(data.AccountName).then((res)=>res)
-      }
-    )
-    return {
-      id:userId,
-      text:data.DisplayName,
-      srNo:data.Email.split("@")[0],
-      optionalText:this._getUserProperties(data.LoginName).then((res)=>res)
-    }
+  // private _getApproversData =(data:any,userId:any):any=>{
+  //   // console.log(data)
+  //   console.log(
+  //     {
+  //       id:userId,
+  //       text:data.DisplayName,
+  //       srNo:data.Email.split("@")[0],
+  //       optionalText:this._getUserProperties(data.AccountName).then((res)=>res)!==null?this._getUserProperties(data.AccountName).then((res)=>res):''
+  //     }
+  //   )
+  //   return {
+  //     id:userId,
+  //     text:data.DisplayName,
+  //     srNo:data.Email.split("@")[0],
+  //     optionalText:this._getUserProperties(data.LoginName).then((res)=>res)
+  //   }
 
 
-  }
+  // }
 
-  private _getUserDetailsById = async (userIds: any[],ApporverType:string): Promise<any[]> => {
-    try {
-      const userDetails = await Promise.all(
-        userIds.map(async (userId) => {
-          const user = await this.props.sp.web.getUserById(userId)();
-          // console.log(user)
-          const userProperties =await this.props.sp.profiles.getPropertiesFor(user.LoginName).then((result)=>this._getApproversData(result,userId))
-          // console.log(userProperties)
+  // private _getUserDetailsById = async (userIds: any[],ApporverType:string): Promise<any> => {
+  //   try {
+  //     const userDetails = await Promise.all(
+  //       userIds.map(async (userId) => {
+  //         const user = await this.props.sp.web.getUserById(userId)();
+  //         // console.log(user)
+  //         const userProperties =await this.props.sp.profiles.getPropertiesFor(user.LoginName).then((result)=>this._getApproversData(result,userId))
+  //         // console.log(userProperties)
           
           
-          return userProperties;
-        })
-      );
-      console.log(userDetails)
-      if (ApporverType === 'Reviewer'){
-        this.setState({peoplePickerData:userDetails,peoplePickerApproverData:[]})
+  //         return userProperties;
+  //       })
+  //     );
+  //     console.log(userDetails)
+  //     if (ApporverType === 'Reviewer'){
+  //       this.setState({peoplePickerData:userDetails})
 
-      }else{
-        this.setState({peoplePickerApproverData:userDetails})
+  //     }
+  //     // else{
+  //     //   this.setState({peoplePickerApproverData:userDetails})
 
+  //     // }
+      
+  //     // return userDetails;
+  //   } catch (error) {
+  //     console.error("Error fetching user details:", error);
+  //     // return [];
+  //   }
+  // };
+
+
+  private _getJsonifyReviewer = (item:any,type:string):any[] =>{
+    console.log(item)
+    console.log(JSON.parse(item))
+    const parseItem = JSON.parse(item)
+    const approverfilterData = parseItem.filter((each:any)=>{
+      if(each.approverType === 1){
+        console.log(each,"Reviewer data.................parsed item")
+        return each
+        
+        // this.setState(prev =>(
+        //   {peoplePickerData:[...prev.peoplePickerData,{
+        //     text:each.approverEmailName,
+        //     srNo:each.approverEmailName,
+        //     designation:each.designation,
+
+        //   }]}
+        // ))
       }
       
-      return userDetails;
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      return [];
-    }
-  };
+    })
+    console.log(approverfilterData)
+    const approverData = approverfilterData.map((each:any)=>(
+       {
+        text:each.approverEmailName,
+        srNo:each.approverEmailName,
+        optionalText:each.designation,
+      }
+    ))
+    console.log(approverData)
+    // this.setState(()=>{
+    //   console.log("State updated")
+    //   return {peoplePickerApproverData:approverData}
+    // })
+    // if ()
+    return approverData
 
-  private _getJsonifyApprover = (item:any,type:string):any =>{
+  }
+  
+
+  private _getJsonifyApprover = (item:any,type:string):any[] =>{
     console.log(item)
     console.log(JSON.parse(item))
     const parseItem = JSON.parse(item)
@@ -389,9 +430,6 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         text:each.approverEmailName,
         srNo:each.approverEmailName,
         designation:each.designation,
-
-
-
       }
     ))
     console.log(approverData)
@@ -407,16 +445,18 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   private _getItemDocumentsData = async ()=>{
     try{
-      console.log(`${this._folderName}/SupportingDocument`)
-      const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/SupportingDocument`)
+      console.log("------------------Pdf-----------------------------------")
+
+      console.log(`${this._folderName}/Pdf`)
+      const folderItemsPdf =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/Pdf`)
       .files().then(res => res); 
-      console.log(folderItem)   
-      console.log(folderItem[0])
+      console.log(folderItemsPdf)   
+      console.log(folderItemsPdf[0])
       // this.setState({noteTofiles:[folderItem]})
       const tenantUrl = window.location.protocol + "//" + window.location.host;
       console.log(tenantUrl)
-      const tempFiles: IFileDetails[] = []
-      folderItem.forEach(values => {
+      const tempFilesPdf: IFileDetails[] = []
+      folderItemsPdf.forEach(values => {
 
             const filesObj = {
                 "name": values.Name,
@@ -428,10 +468,66 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 "Modified": "",
                 "isSelected": false
             }
-            tempFiles.push(filesObj);
+            tempFilesPdf.push(filesObj);
         });
-        console.log(tempFiles)
-        this.setState({ supportingDocumentfiles: tempFiles });
+        console.log(tempFilesPdf)
+        this.setState({ noteTofiles: tempFilesPdf });
+
+        //Word Documents
+        console.log("------------------Word Document-----------------------------------")
+      console.log(`${this._folderName}/WordDocument`)
+      const folderItemsWordDocument =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/WordDocument`)
+      .files().then(res => res); 
+      console.log(folderItemsWordDocument)   
+      console.log(folderItemsWordDocument[0])
+      
+      
+      const tempFilesWordDocument: IFileDetails[] = []
+      folderItemsWordDocument.forEach(values => {
+
+            const filesObj = {
+                "name": values.Name,
+                "content": null as unknown as File,
+                "index": 0,
+                "fileUrl": tenantUrl + values.ServerRelativeUrl,
+                "ServerRelativeUrl": "",
+                "isExists": true,
+                "Modified": "",
+                "isSelected": false
+            }
+            tempFilesWordDocument.push(filesObj);
+        });
+        console.log(tempFilesWordDocument)
+        this.setState({ wordDocumentfiles: tempFilesWordDocument });
+
+
+      //supporting documents
+      console.log("------------------Supporting Document-----------------------------------")
+
+      console.log(`${this._folderName}/SupportingDocument`)
+      const SupportingDocument =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/SupportingDocument`)
+      .files().then(res => res); 
+      console.log(SupportingDocument)   
+      console.log(SupportingDocument[0])
+     
+      
+      const tempFilesSupportingDocument: IFileDetails[] = []
+      SupportingDocument.forEach(values => {
+
+            const filesObj = {
+                "name": values.Name,
+                "content": null as unknown as File,
+                "index": 0,
+                "fileUrl": tenantUrl + values.ServerRelativeUrl,
+                "ServerRelativeUrl": "",
+                "isExists": true,
+                "Modified": "",
+                "isSelected": false
+            }
+            tempFilesSupportingDocument.push(filesObj);
+        });
+        console.log(tempFilesSupportingDocument)
+        this.setState({ supportingDocumentfiles: tempFilesSupportingDocument });
 
     }catch{
       console.log("failed to fetch")
@@ -447,6 +543,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${folderPath}/Pdf`)
     // .files().then(res => res);    
     // console.log(folderItem)
+    console.log(this._getJsonifyReviewer(item.ApproverDetails,"Reviewer"))
+    console.log(this._getJsonifyApprover(item.ApproverDetails,"Approver"))
+  
     this.setState(
       {
         committeeNameFeildValue:item.CommitteeName!==null?item.CommitteeName:'',
@@ -458,7 +557,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         searchTextFeildValue:item.Search_x0020_Keyword!==null?this._extractValueFromHtml(item.Search_x0020_Keyword):'',
         amountFeildValue:item.Amount!==null?item.Amount:'',
         puroposeFeildValue:item.Purpose!==null?item.Purpose:'',
-        peoplePickerData:this._getUserDetailsById(item.ReviewerId,"Reviewer"),  
+        // peoplePickerData:this._getUserDetailsById(item.ReviewerId,"Reviewer"),  
+        peoplePickerData:this._getJsonifyReviewer(item.ApproverDetails,"Reviewer"),
         peoplePickerApproverData:this._getJsonifyApprover(item.ApproverDetails,"Approver")
 
 
@@ -570,7 +670,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   };
 
   public componentDidMount = (): void => {
-    this._fetchApproverDetails()
+    console.log(this._itemId > 0)
+    this._itemId === 0 && this._fetchApproverDetails()
       .then(() => {
         console.log("List items fetched successfully.");
       })
