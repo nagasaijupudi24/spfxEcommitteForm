@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IconButton, Icon } from "@fluentui/react";
 import styles from "../Form.module.scss";
 
@@ -9,7 +9,7 @@ interface UploadFileProps {
   maxFileSizeMB: number;
   multiple: boolean;
   maxTotalSizeMB?: number;
-  // value:any
+  data:File[]
 }
 
 interface FileWithError {
@@ -40,33 +40,40 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
   maxFileSizeMB,
   multiple,
   maxTotalSizeMB,
-  // value
+  data
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<FileWithError[]>([]);
+  // const [selected, setSelected] = useState<any>([]);
 
   const isFileNameValid = (name: string): boolean => {
     const regex = /^[a-zA-Z0-9._-]+$/;
     return regex.test(name);
   };
 
-  const handleFileChange = () => {
+  useEffect(()=>{
+    console.log(data)
+    // setSelectedFiles(data)
+  },[selectedFiles])
+
+  const handleFileChange = (e: any) => {
     if (fileInputRef.current && fileInputRef.current.files) {
       const files = fileInputRef.current.files;
       const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
       const maxTotalSizeBytes = maxTotalSizeMB
         ? maxTotalSizeMB * 1024 * 1024
         : undefined;
+  
       let validFiles: FileWithError[] = [];
       let currentTotalSize = selectedFiles.reduce(
         (acc, fileWithError) => acc + fileWithError.file.size,
         0
       );
-
+  
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         let error: string | null = null;
-
+  
         if (file.size > maxFileSizeBytes) {
           error = `File size exceeds ${maxFileSizeMB}MB`;
         } else if (!isFileNameValid(file.name)) {
@@ -77,19 +84,31 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
         ) {
           error = `Total file size exceeds ${maxTotalSizeMB}MB`;
         }
-
+  
         currentTotalSize += file.size;
         validFiles.push({ file, error });
       }
-
-      setSelectedFiles((prevFiles) =>
-        multiple ? [...prevFiles, ...validFiles] : validFiles
+  
+      const updatedFiles = multiple
+        ? [...selectedFiles, ...validFiles]
+        : validFiles;
+  
+      setSelectedFiles(updatedFiles);
+  
+      // Combine previous and current files into a new FileList
+      const dataTransfer = new DataTransfer();
+      updatedFiles.forEach((fileWithError) =>
+        dataTransfer.items.add(fileWithError.file)
       );
-      onChange(fileInputRef.current?.files, typeOfDoc);
-
+  
+      // Pass the combined files to the onChange method
+      onChange(dataTransfer.files, typeOfDoc);
+  
+      // Clear the input field after processing
       fileInputRef.current.value = "";
     }
   };
+  // console.log(selected)
 
   const handleDeleteFile = (fileName: string) => {
     const updatedFiles = selectedFiles.filter(
@@ -120,66 +139,76 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
           accept={accept}
           style={{ padding: "10px" }}
           multiple={multiple}
-          // value={value}
+          
         />
       </li>
 
       {selectedFiles.length > 0 &&
-        selectedFiles.map(({ file, error }) => (
-          <li
-            key={file.name}
-            style={{ display: "flex", alignItems: "center" }}
-            className={`${styles.basicLi} ${styles.attachementli}`}
-          >
-            <div
-              style={{
-                padding: "2px",
-                marginBottom: "4px",
-                display: "flex",
-                justifyContent: "flex-start",
-                alignContent: "center",
-                flexGrow: "1",
-              }}
+        selectedFiles.map(({ file, error }) =>{
+          console.log(selectedFiles)
+
+          return (
+            <li
+              key={file.name}
+              style={{ display: "flex", alignItems: "center" }}
+              className={`${styles.basicLi} ${styles.attachementli}`}
             >
-              <Icon
-                iconName={getFileTypeIcon(file.name)}
-                style={{ fontSize: "24px", marginTop: "14px" }}
-              />
-              <div>
-                <p
-                  style={{
-                    paddingBottom: "0px",
-                    marginBottom: "0px",
-                    paddingLeft: "4px",
-                  }}
-                >
-                  {file.name}
-                </p>
-                {error && (
-                  <span
+              <div
+                style={{
+                  padding: "2px",
+                  marginBottom: "4px",
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignContent: "center",
+                  flexGrow: "1",
+                }}
+              >
+                <Icon
+                  iconName={getFileTypeIcon(file.name)}
+                  style={{ fontSize: "24px", marginTop: "14px" }}
+                />
+                <div>
+                  <p
                     style={{
-                      color: "red",
-                      fontSize: "10px",
+                      paddingBottom: "0px",
+                      marginBottom: "0px",
                       paddingLeft: "4px",
-                      margin: "0px",
                     }}
                   >
-                    {error}
-                  </span>
-                )}
+                    {file.name}
+                  </p>
+                  {error && (
+                    <span
+                      style={{
+                        color: "red",
+                        fontSize: "10px",
+                        paddingLeft: "4px",
+                        margin: "0px",
+                      }}
+                    >
+                      {error}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
+  
+              <IconButton
+                iconProps={{ iconName: "Cancel" }}
+                title="Delete File"
+                ariaLabel="Delete File"
+                onClick={() => handleDeleteFile(file.name)}
+              />
+            </li>
+          )
 
-            <IconButton
-              iconProps={{ iconName: "Cancel" }}
-              title="Delete File"
-              ariaLabel="Delete File"
-              onClick={() => handleDeleteFile(file.name)}
-            />
-          </li>
-        ))}
+        } 
+        
+        )}
     </ul>
   );
 };
 
 export default UploadFileComponent;
+
+
+//////////////////////////////////////

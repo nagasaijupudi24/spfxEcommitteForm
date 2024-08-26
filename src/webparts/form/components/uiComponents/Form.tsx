@@ -73,6 +73,18 @@ interface INoteObject {
   ApproverId:any
 }
 
+
+export interface IFileDetails {
+  name?: string,
+  content?: File,
+  index?: number,
+  fileUrl?: string,
+  ServerRelativeUrl?: string,
+  isExists?: boolean,
+  Modified?: string,
+  isSelected?: boolean
+}
+
 interface IMainFormState {
   isLoading: boolean;
   department: string;
@@ -169,6 +181,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   private _userName: string;
   private _role: string;
   private _itemId: number = Number(getIdFromUrl());
+  private _absUrl:any = this.props.context.pageContext.web.serverRelativeUrl;
+  private _folderName:string = `${this._absUrl}/${this.props.libraryId}/${this._folderNameGenerate(this._itemId)}`;
+  // private _folderName:string;
   
   constructor(props: IFormProps) {
     
@@ -233,6 +248,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       filesClear:[]
     };
     console.log(this._itemId)
+    console.log(this._folderName)
+    this._generateRequsterNumber = this._generateRequsterNumber.bind(this);
+    this._folderNameGenerate = this._folderNameGenerate.bind(this);
 
     this._peopplePicker = {
       absoluteUrl: this.props.context.pageContext.web.absoluteUrl,
@@ -242,7 +260,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     };
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getfield();
-    this._getItemData(this._itemId)
+    this._getItemData(this._itemId,this._folderName)
+    this._getItemDocumentsData()
     // eslint-disable-next-line no-void
     // void this.createFolder();
   }
@@ -261,10 +280,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   // };
 
   private _getUserProperties = async (loginName: any): Promise<any> => {
+    // console.log(loginName)
     let designation = "NA";
     let email = "NA";
     // const loginName = this.state.peoplePickerData[0]
     const profile = await this.props.sp.profiles.getPropertiesFor(loginName);
+    // console.log(profile)
     // console.log(profile.DisplayName);
     // console.log(profile.Email);
     // console.log(profile.Title);
@@ -294,12 +315,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   }
 
   private _getApproversData =(data:any,userId:any):any=>{
+    // console.log(data)
     console.log(
       {
         id:userId,
         text:data.DisplayName,
         srNo:data.Email.split("@")[0],
-        optionalText:this._getUserProperties(data.LoginName).then((res)=>res)
+        optionalText:this._getUserProperties(data.AccountName).then((res)=>res)
       }
     )
     return {
@@ -317,9 +339,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       const userDetails = await Promise.all(
         userIds.map(async (userId) => {
           const user = await this.props.sp.web.getUserById(userId)();
-          console.log(user)
+          // console.log(user)
           const userProperties =await this.props.sp.profiles.getPropertiesFor(user.LoginName).then((result)=>this._getApproversData(result,userId))
-          console.log(userProperties)
+          // console.log(userProperties)
           
           
           return userProperties;
@@ -340,11 +362,87 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       return [];
     }
   };
+
+  private _getJsonifyApprover = (item:any,type:string):any =>{
+    console.log(item)
+    console.log(JSON.parse(item))
+    const parseItem = JSON.parse(item)
+    const approverfilterData = parseItem.filter((each:any)=>{
+      if(each.approverType === 2){
+        console.log(each,"Approver data.................parsed item")
+        return each
+        
+        // this.setState(prev =>(
+        //   {peoplePickerData:[...prev.peoplePickerData,{
+        //     text:each.approverEmailName,
+        //     srNo:each.approverEmailName,
+        //     designation:each.designation,
+
+        //   }]}
+        // ))
+      }
+      
+    })
+    console.log(approverfilterData)
+    const approverData = approverfilterData.map((each:any)=>(
+       {
+        text:each.approverEmailName,
+        srNo:each.approverEmailName,
+        designation:each.designation,
+
+
+
+      }
+    ))
+    console.log(approverData)
+    // this.setState(()=>{
+    //   console.log("State updated")
+    //   return {peoplePickerApproverData:approverData}
+    // })
+    // if ()
+    return approverData
+
+  }
   
 
-  private _getItemData =async (id:any) =>{
+  private _getItemDocumentsData = async ()=>{
+    try{
+      console.log(`${this._folderName}/Pdf`)
+      const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${this._folderName}/Pdf`)
+      .files().then(res => res);    
+      console.log(folderItem[0])
+      // this.setState({noteTofiles:[folderItem]})
+      const tenantUrl = window.location.protocol + "//" + window.location.host;
+      const tempFiles: IFileDetails[] = []
+      folderItem.forEach(values => {
+            const filesObj = {
+                "name": values.Name,
+                "content": null as unknown as File,
+                "index": 0,
+                "fileUrl": tenantUrl + values.ServerRelativeUrl,
+                "ServerRelativeUrl": "",
+                "isExists": true,
+                "Modified": "",
+                "isSelected": false
+            }
+            tempFiles.push(filesObj);
+        });
+        // this.setState({ noteTofiles: tempFiles });
+
+    }catch{
+      console.log("failed to fetch")
+    }
+    
+
+  }
+
+  private _getItemData =async (id:any,folderPath:any) =>{
     const item: any = await this.props.sp.web.lists.getByTitle(this.props.listId).items.getById(id)();
     console.log(`${id} ------Details`,item);
+    console.log(folderPath)
+    // const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${folderPath}/Pdf`)
+    // .files().then(res => res);    
+    // console.log(folderItem)
     this.setState(
       {
         committeeNameFeildValue:item.CommitteeName!==null?item.CommitteeName:'',
@@ -356,8 +454,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         searchTextFeildValue:item.Search_x0020_Keyword!==null?this._extractValueFromHtml(item.Search_x0020_Keyword):'',
         amountFeildValue:item.Amount!==null?item.Amount:'',
         puroposeFeildValue:item.Purpose!==null?item.Purpose:'',
-        peoplePickerData:this._getUserDetailsById(item.ReviewerId,"Reviewer"),
-        // peoplePickerApproverData:this._getUserDetailsById(item.ApproverId,"Approver")
+        peoplePickerData:this._getUserDetailsById(item.ReviewerId,"Reviewer"),  
+        peoplePickerApproverData:this._getJsonifyApprover(item.ApproverDetails,"Approver")
 
 
 
@@ -560,6 +658,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           optionalText: dataRec[0],
           approverType: 1,
           email: dataRec[1],
+          srNo: dataRec[1].split("@")[0],
+          
         };
       });
       // console.log(newItemsData)
@@ -1039,6 +1139,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       // const url = "/sites/uco/Shared Documents/MyFolder"
       console.log(this.props.context.pageContext.web.serverRelativeUrl);
       const absUrl = this.props.context.pageContext.web.serverRelativeUrl;
+      this._folderName = `${absUrl}/${this.props.libraryId}/${folderName}`
+      
+
       const siteUrl = `${absUrl}/${this.props.libraryId}/${folderName}`;
       console.log(siteUrl);
       // const filesData = this.state.files;
@@ -1613,9 +1716,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             natureOfNoteFeildValue:'',
             noteTypeFeildValue:'',
             searchTextFeildValue:'',
-            noteTofiles:[],
-            supportingDocumentfiles:[],
-            wordDocumentfiles:[],
+            // noteTofiles:[],
+            // supportingDocumentfiles:[],
+            // wordDocumentfiles:[],
             peoplePickerApproverData:[],
             peoplePickerData:[],
             filesClear:[]
@@ -1676,7 +1779,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   };
 
   // Generate Request Number
-  private _generateRequsterNumber = async (id: number) => {
+  private   async _generateRequsterNumber(id: number){
     const currentyear = new Date().getFullYear();
     const nextYear = (currentyear + 1).toString().slice(-2);
     const requesterNo = `AD1/${currentyear}-${nextYear}/C${id}`;
@@ -1691,13 +1794,32 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     console.log(requesterNo);
     // eslint-disable-next-line no-void
     void this.createFolder(requesterNo);
+    
   };
 
+
+  public _folderNameGenerate(id:any):any{
+    const currentyear = new Date().getFullYear();
+    const nextYear = (currentyear + 1).toString().slice(-2);
+    const requesterNo = `AD1/${currentyear}-${nextYear}/C${id}`;
+    const folderName = requesterNo.replace(/\//g, "-");
+    return folderName
+
+
+
+  }
+
   private handleNoteToFileChange = (
-    files: FileList | null,
+    files: FileList ,
     typeOfDoc: string
   ) => {
-    console.log(typeOfDoc);
+    console.log(typeOfDoc,files);
+
+    for (let i=0; i <files.length;i++){
+      console.log(files[i])
+
+    }
+
 
     if (this.state.isWarningNoteToFiles) {
       this.setState({ isWarningNoteToFiles: false });
@@ -1715,10 +1837,15 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   };
 
   private handleSupportingFileChange = (
-    files: FileList | null,
+    files: FileList ,
     typeOfDoc: string
   ) => {
     console.log(typeOfDoc);
+    console.log(files)
+    for (let i=0; i <files.length;i++){
+      console.log(files[i])
+
+    }
 
     if (this.state.isWarningSupportingDocumentFiles) {
       this.setState({ isWarningSupportingDocumentFiles: false });
@@ -1739,10 +1866,17 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   };
 
   private handleWordDocumentFileChange = (
-    files: FileList | null,
+    files: FileList ,
     typeOfDoc: string
   ) => {
-    console.log(typeOfDoc);
+    console.log(typeOfDoc,files);
+
+    for (let i=0; i <files.length;i++){
+      console.log(files[i])
+
+    }
+
+    
 
     if (this.state.isWarningWordDocumentFiles) {
       this.setState({ isWarningWordDocumentFiles: false });
@@ -2529,6 +2663,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={false}
                       maxFileSizeMB={10}
                       maxTotalSizeMB={10}
+                      data ={this.state.noteTofiles}
                       // value={this.state.noteTofiles}
                       
                     />
@@ -2542,6 +2677,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={false}
                       maxFileSizeMB={10}
                       maxTotalSizeMB={10}
+                      data ={this.state.noteTofiles}
                       // value={this.state.noteTofiles}
                     />
                   </div>
@@ -2578,6 +2714,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         multiple={false}
                         maxFileSizeMB={10}
                         maxTotalSizeMB={10}
+                        data ={this.state.wordDocumentfiles}
                         // value={this.state.wordDocumentfiles}
                       />
                     </div>
@@ -2590,6 +2727,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                         multiple={false}
                         maxFileSizeMB={10}
                         maxTotalSizeMB={10}
+                        data ={this.state.wordDocumentfiles}
                         // value={this.state.wordDocumentfiles}
                       />
                     </div>
@@ -2622,6 +2760,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={true}
                       maxFileSizeMB={25}
                       maxTotalSizeMB={25}
+                      data ={this.state.supportingDocumentfiles}
                       // value={this.state.supportingDocumentfiles}
                     />
                   </div>
@@ -2634,6 +2773,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       multiple={true}
                       maxFileSizeMB={25}
                       maxTotalSizeMB={25}
+                      data ={this.state.supportingDocumentfiles}
                       // value={this.state.supportingDocumentfiles}
                     />
                   </div>
