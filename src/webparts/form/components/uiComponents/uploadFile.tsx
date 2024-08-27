@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect,useRef, useState } from "react";
 import { IconButton, Icon } from "@fluentui/react";
 import styles from "../Form.module.scss";
 
 interface UploadFileProps {
   typeOfDoc: string;
-  onChange: (files: FileList | null, typeOfDoc: string) => void;
+  onChange: (files: File[] | null, typeOfDoc: string) => void;
   accept?: string;
   maxFileSizeMB: number;
   multiple: boolean;
   maxTotalSizeMB?: number;
-  data: any[];
+  data: File[];
 }
 
 interface FileWithError {
@@ -52,6 +52,7 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
     return regex.test(name);
   };
 
+
   useEffect(() => {
     const files = data || [];
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
@@ -87,9 +88,9 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
     setSelectedFiles(validFiles);
   }, [data, maxFileSizeMB, maxTotalSizeMB, multiple]);
 
-  const handleFileChange = (e: any) => {
-    if (fileInputRef.current && fileInputRef.current.files) {
-      const files = fileInputRef.current.files;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
       const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
       const maxTotalSizeBytes = maxTotalSizeMB
         ? maxTotalSizeMB * 1024 * 1024
@@ -101,8 +102,7 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
         0
       );
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      files.forEach((file) => {
         let error: string | null = null;
 
         if (file.size > maxFileSizeBytes) {
@@ -118,22 +118,22 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
 
         currentTotalSize += file.size;
         validFiles.push({ file, error });
-      }
+      });
 
       const updatedFiles = multiple
         ? [...selectedFiles, ...validFiles]
         : validFiles;
 
       setSelectedFiles(updatedFiles);
-
-      const dataTransfer = new DataTransfer();
-      updatedFiles.forEach((fileWithError) =>
-        dataTransfer.items.add(fileWithError.file)
+      onChange(
+        updatedFiles.filter((fileWithError) => !fileWithError.error).map((f) => f.file),
+        typeOfDoc
       );
 
-      onChange(dataTransfer.files, typeOfDoc);
-
-      fileInputRef.current.value = "";
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -143,15 +143,10 @@ const UploadFileComponent: React.FC<UploadFileProps> = ({
     );
     setSelectedFiles(updatedFiles);
 
-    const dataTransfer = new DataTransfer();
-    updatedFiles.forEach((fileWithError) =>
-      dataTransfer.items.add(fileWithError.file)
+    onChange(
+      updatedFiles.filter((fileWithError) => !fileWithError.error).map((f) => f.file),
+      typeOfDoc
     );
-    if (fileInputRef.current) {
-      fileInputRef.current.files = dataTransfer.files;
-    }
-
-    onChange(fileInputRef.current?.files || null, typeOfDoc);
   };
 
   return (
