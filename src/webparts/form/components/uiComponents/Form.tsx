@@ -175,11 +175,20 @@ const getIdFromUrl = (): any => {
   return Id;
 };
 
+const getFromType = (): any => {
+  const params = new URLSearchParams(window.location.search);
+  const formType = params.get("type");
+  // console.log(Id);
+  return formType;
+};
+
 export default class Form extends React.Component<IFormProps, IMainFormState> {
   private _peopplePicker: IPeoplePickerContext;
   private _userName: string;
   private _role: string;
   private _itemId: number = Number(getIdFromUrl());
+  private _formType: string = getFromType();
+  
   private _absUrl: any = this.props.context.pageContext.web.serverRelativeUrl;
   private _folderName: string = `${this._absUrl}/${
     this.props.libraryId
@@ -248,6 +257,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       filesClear: [],
     };
     console.log(this._itemId);
+    console.log(this._formType)
     console.log(this._folderName);
     this._generateRequsterNumber = this._generateRequsterNumber.bind(this);
     this._folderNameGenerate = this._folderNameGenerate.bind(this);
@@ -1392,7 +1402,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     status: string,
     statusNumber: any
   ): INoteObject => {
-    console.log({
+    const ecommitteObject:any = {
       Department: this.state.department,
       CommitteeName: this.state.committeeNameFeildValue,
       Subject: this.state.subjectFeildValue,
@@ -1408,33 +1418,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         this.state.peoplePickerApproverData
       ),
       Status: status,
-      statusNumber: statusNumber,
-      AuditTrail: this._getAuditTrail(status),
-      // Reviewer:{result:this._getReviewerId()}
-      ReviewerId: this._getReviewerId(),
-      ApproverId: this._getApproverId(),
-    });
-    return {
-      Department: this.state.department,
-      CommitteeName: this.state.committeeNameFeildValue,
-      Subject: this.state.subjectFeildValue,
-      natureOfNote: this.state.natureOfNoteFeildValue,
-      NatuerOfApprovalSanction: this.state.natureOfApprovalOrSanctionFeildValue,
-      NoteType: this.state.noteTypeFeildValue,
-      TypeOfFinancialNote: this.state.typeOfFinancialNoteFeildValue,
-      Amount: this.state.amountFeildValue,
-      Search_x0020_Keyword: this.state.searchTextFeildValue,
-      Purpose: this.state.puroposeFeildValue,
-      ApproverDetails: this._getApproverDetails(
-        this.state.peoplePickerData,
-        this.state.peoplePickerApproverData
-      ),
-      Status: status,
-      statusNumber: statusNumber,
+      statusNumber: status==="Submitted"?statusNumber:'3000',
       AuditTrail: this._getAuditTrail(status),
       ReviewerId: this._getReviewerId(),
       ApproverId: this._getApproverId(),
-    };
+    }
+    console.log(ecommitteObject);
+    return ecommitteObject;
   };
 
   // private isNatureOfApprovalOrSanction=()=>{
@@ -1446,7 +1436,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
   // }
 
   private handleSubmit = async (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    event:React.MouseEvent<HTMLButtonElement, MouseEvent>,statusOfForm:string
   ): Promise<void> => {
     event.preventDefault();
     console.log(event);
@@ -1498,15 +1488,17 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.amountFeildValue &&
           this.state.searchTextFeildValue &&
           this.state.noteTofiles.length > 0 &&
-          this.state.supportingDocumentfiles.length > 0 &&
-          this.state.peoplePickerData.length > 0
+          this.state.supportingDocumentfiles.length > 0 
+          // this.state.wordDocumentfiles.length>0 &&
+          // this.state.peoplePickerData.length > 0&&
+          // this.state.peoplePickerApproverData.length > 0
 
           // this.isNatureOfApprovalOrSanction()
         ) {
           this.setState({ status: "Submitted", statusNumber: "1000" });
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createEcommitteeObject("Submitted", 1000));
+            .items.add(this.createEcommitteeObject(statusOfForm, 1000));
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
@@ -1519,10 +1511,24 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             // console.log(listItem);
           });
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this._generateRequsterNumber(id.Id);
+          await this._generateRequsterNumber(id.Id);
 
           // console.log(id)
           console.log("Item added successfully");
+          this.setState({
+            committeeNameFeildValue:'',
+            subjectFeildValue:'',
+            natureOfNoteFeildValue:'',
+            noteTypeFeildValue:'',
+            typeOfFinancialNoteFeildValue:'',
+            amountFeildValue:'',
+            searchTextFeildValue:'',
+            noteTofiles:[],
+            wordDocumentfiles:[],
+            supportingDocumentfiles:[],
+            peoplePickerData:[],
+            peoplePickerApproverData:[]
+          })
           this.setState({
             isWarning: false,
             isWarningCommittteeName: false,
@@ -1538,6 +1544,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSupportingDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
+          console.log(`Form with ${id.Id} is Successfully Created in SP List - ********* ${statusOfForm} ********`)
         } else {
           this.setState({
             isWarning: true,
@@ -1591,7 +1598,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.setState({ status: "Submitted", statusNumber: "1000" });
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createEcommitteeObject("Submitted", "1000"));
+            .items.add(this.createEcommitteeObject(statusOfForm, "1000"));
           console.log(id.Id, "id");
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
@@ -1604,7 +1611,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             // console.log(listItem);
           });
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this._generateRequsterNumber(id.Id);
+          await this._generateRequsterNumber(id.Id);
 
           // console.log(id)
           console.log("Item added successfully");
@@ -1622,6 +1629,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             peoplePickerApproverData: [],
             peoplePickerData: [],
           });
+          this._fetchApproverDetails()
           this.setState({
             isWarning: false,
             isWarningCommittteeName: false,
@@ -1635,7 +1643,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSupportingDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
-        } else {
+          console.log(`Form with ${id.Id} is Successfully Created in SP List - ********* ${statusOfForm} ********`)        } else {
           this.setState({
             isWarning: true,
             isWarningCommittteeName: true,
@@ -1690,10 +1698,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.setState({ status: "Submitted", statusNumber: "1000" });
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createEcommitteeObject("Submitted", "1000"));
+            .items.add(this.createEcommitteeObject(statusOfForm, "1000"));
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this._generateRequsterNumber(id.Id);
+          await this._generateRequsterNumber(id.Id);
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
             // const listItem = await this.props.sp.web.lists
@@ -1723,6 +1731,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             peoplePickerApproverData: [],
             peoplePickerData: [],
           });
+          this._fetchApproverDetails()
           this.setState({
             isWarning: false,
             isWarningCommittteeName: false,
@@ -1738,7 +1747,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSupportingDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
-        } else {
+          console.log(`Form with ${id.Id} is Successfully Created in SP List - ********* ${statusOfForm} ********`)        } else {
           this.setState({
             isWarning: true,
             isWarningCommittteeName: true,
@@ -1797,10 +1806,10 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           console.log("else entered");
           const id = await this.props.sp.web.lists
             .getByTitle(this.props.listId)
-            .items.add(this.createEcommitteeObject("Submitted", "1000"));
+            .items.add(this.createEcommitteeObject(statusOfForm, "1000"));
           console.log(id.Id, "id");
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this._generateRequsterNumber(id.Id);
+          await this._generateRequsterNumber(id.Id);
           this.state.peoplePickerData.map(async (each: any) => {
             console.log(each);
             // const listItem = await this.props.sp.web.lists
@@ -1818,13 +1827,14 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             natureOfNoteFeildValue: "",
             noteTypeFeildValue: "",
             searchTextFeildValue: "",
-            // noteTofiles:[],
-            // supportingDocumentfiles:[],
-            // wordDocumentfiles:[],
+            noteTofiles:[],
+            supportingDocumentfiles:[],
+            wordDocumentfiles:[],
             peoplePickerApproverData: [],
             peoplePickerData: [],
             filesClear: [],
           });
+          this._fetchApproverDetails()
 
           // console.log(id)
           console.log("Item added successfully");
@@ -1841,7 +1851,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSupportingDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
-        } else {
+          console.log(`Form with ${id.Id} is Successfully Created in SP List - ********* ${statusOfForm} ********`)        } else {
           // alert("Required Fields")
 
           this.setState({
@@ -1874,7 +1884,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             },
           });
         }
+        
       }
+
     } catch (error) {
       console.error("Error adding item: ", error);
     }
@@ -2166,7 +2178,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       .then((data) => console.log(data, "data"));
     console.log(requesterNo);
     // eslint-disable-next-line no-void
-    void this.createFolder(requesterNo);
+     await this.createFolder(requesterNo);
   }
 
   public _folderNameGenerate(id: any): any {
@@ -2273,6 +2285,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
   public render(): React.ReactElement<IFormProps> {
     console.log(this.state);
+    console.log(this._formType==='view')
     // console.log(this.state.peoplePickerData, "Data..........PeoplePicker");
     // console.log(this.checkUserIsIBTes2(this.state.peoplePickerData))
 
@@ -2314,7 +2327,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           // </Stack>
           <div className={styles.form}>
             {/* <Header /> */}
-            <Title />
+            <Title formStatus={this._formType}/>
             {/* {this.state.isDialogHidden&&<MyDialog  />} */}
             <MyDialog
               hidden={this.state.isDialogHidden}
@@ -3145,34 +3158,47 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                 gap: "5px",
               }}
             >
-              <PrimaryButton
-                type="button"
-                // className={`${styles.commonBtn1} ${styles.commonBtn}`}
-                iconProps={{ iconName: "Save" }}
-              >
-                Save as Draft
-              </PrimaryButton>
-              {this._itemId > 0 ? (
-                <PrimaryButton
-                  type="button"
-                  // className={`${styles.commonBtn1} ${styles.commonBtn}`}
-                  onClick={this.handleUpdate}
-                >
-                  Edit Submit
-                </PrimaryButton>
+              {this._formType === "view" ? (
+                ""
               ) : (
                 <PrimaryButton
                   type="button"
                   // className={`${styles.commonBtn1} ${styles.commonBtn}`}
-                  onClick={this.handleSubmit}
+                  iconProps={{ iconName: "Save" }}
+                  onClick={(
+                    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+                  ) => this.handleSubmit(e, "Draft")}
                 >
-                  Submit
+                  Save as Draft
                 </PrimaryButton>
               )}
+              {this._formType !== "view" &&
+                (this._itemId > 0 ? (
+                  <PrimaryButton
+                    type="button"
+                    // className={`${styles.commonBtn1} ${styles.commonBtn}`}
+                    onClick={this.handleUpdate}
+                    iconProps={{ iconName: "Send" }}
+                  >
+                    Edit Submit
+                  </PrimaryButton>
+                ) : (
+                  <PrimaryButton
+                    type="button"
+                    // className={`${styles.commonBtn1} ${styles.commonBtn}`}
+                    onClick={(
+                      e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+                    ) => this.handleSubmit(e, "Submitted")}
+                    iconProps={{ iconName: "Send" }}
+                  >
+                    Submit
+                  </PrimaryButton>
+                ))}
 
               <PrimaryButton
-              // type="button"
-              // className={`${styles.commonBtn2} ${styles.commonBtn}`}
+                // type="button"
+                // className={`${styles.commonBtn2} ${styles.commonBtn}`}
+                iconProps={{ iconName: "Cancel" }}
               >
                 Exit
               </PrimaryButton>
