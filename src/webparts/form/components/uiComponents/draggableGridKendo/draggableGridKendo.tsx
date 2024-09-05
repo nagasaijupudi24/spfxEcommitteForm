@@ -80,36 +80,37 @@ const DraggableTable = (props:any) => {
 
     return (
       <ReorderContext.Provider value={{ reorder, dragStart }}>
-        <DragAndDrop>
-          <Grid
-            //   style={{ height: '400px' }}
-            data={gridData}
-            dataItemKey={"ProductID"}
-            rowRender={(row, rowProps) => (
-              <DraggableRow elementProps={row.props} {...rowProps} />
-            )}
-          >
-            <Column title="" width="50px" cell={DragHandleCell} />
-            <Column field="id" title="ID" width="60px" />
-            <Column field="text" title={type} width="90px" />
-            <Column field='srNo' title="SR No" width="90px" />
-            <Column field="optionalText" title="Designation" />
-            <Column
-              cell={(props) => (
-                <td>
-                  <Button
-                  onClick={() =>
-                     remove(props.dataItem)
-                  }>Delete</Button>
-                </td>
-              )}
-              title="Actions"
-            />
-            {/* <Column field="UnitPrice" title="Price" width="80px" /> */}
-            {/* <Column field="UnitsInStock" title="In stock" width="80px" /> */}
-          </Grid>
-        </DragAndDrop>
-      </ReorderContext.Provider>
+            <div style={{ overflowX: 'auto' }}>
+                <DragAndDrop>
+                    <Grid
+                        style={{ minWidth: '800px' }} // Sets minimum width for scrolling
+                        data={gridData}
+                        dataItemKey={"ProductID"}
+                        rowRender={(row, rowProps) => (
+                            <DraggableRow elementProps={row.props} {...rowProps} />
+                        )}
+                    >
+                        <Column title="" width="50px" cell={DragHandleCell} />
+                        <Column field="id" title="ID" width="60px" />
+                        <Column field="text" title={type} width="90px" />
+                        <Column field='srNo' title="SR No" width="90px" />
+                        <Column field="optionalText" title="Designation" />
+                        <Column
+                            cell={(props) => (
+                                <td>
+                                    <Button
+                                        onClick={() => remove(props.dataItem)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </td>
+                            )}
+                            title="Actions"
+                        />
+                    </Grid>
+                </DragAndDrop>
+            </div>
+        </ReorderContext.Provider>
     );
 };
 

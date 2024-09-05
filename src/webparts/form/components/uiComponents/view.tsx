@@ -3,8 +3,12 @@
 import * as React from "react";
 import { IViewFormProps } from "../IViewFormProps"; // Ensure this file exists
 import { IDropdownOption } from "office-ui-fabric-react";
-import { Stack, IconButton, Text } from "@fluentui/react";
+import { Stack, IconButton, Text, PrimaryButton, DefaultButton } from "@fluentui/react";
 import styles from "../Form.module.scss";
+import DraggableTable from "./draggableGridKendo/draggableGridKendo";
+import CommentsLogTable from "./simpleTable/commentsTable";
+import WorkFlowLogsTable from "./simpleTable/workFlowLogsTable";
+import FileAttatchmentTable from "./simpleTable/fileAttatchmentsTable";
 
 export interface IFileDetails {
   name?: string;
@@ -174,7 +178,9 @@ export default class ViewForm extends React.Component<
       filesClear: [],
       expandSections: {}, // Keeps track of expanded sections
       pdfLink:
-        "https://xencia1.sharepoint.com/:b:/s/XenciaDemoApps/uco/EcFS2u_tQFhMmEy0LV6wx5wBEf8gycMjKYn0RIHHvCVzRw?e=de5FmB", // Link to the PDF
+        "https://xencia1.sharepoint.com/sites/XenciaDemoApps/uco/ECommitteeDocuments/AD1-2024-25-C147/Pdf/E0300SBIBZ.pdf",
+      //   "https://xencia1.sharepoint.com/sites/XenciaDemoApps/uco/ECommitteeDocuments/AD1-2024-25-C147/SupportingDocument/Export.xlsx?d=w5597c83c4c7744daab598c33704569bc"
+      // "https://xencia1.sharepoint.com/:b:/s/XenciaDemoApps/uco/EcFS2u_tQFhMmEy0LV6wx5wBEf8gycMjKYn0RIHHvCVzRw?e=de5FmB", // Link to the PDF
     };
     console.log(this._itemId);
     console.log(this._formType);
@@ -283,27 +289,52 @@ export default class ViewForm extends React.Component<
     console.log(this._getJsonifyApprover(item.ApproverDetails, "Approver"));
 
     this.setState({
-        eCommitteData:[
-            {
-                tableData:[
-                    item.CommitteeName !== null && {column1 : "CommitteeName",column2:`${item.CommitteeName}`},
-                    item.Subject !== null && {column1 : "Subject",column2:`${item.Subject}`},
-                    item.natureOfNote !== null && {column1 : "NatureOfNote",column2:`${item.natureOfNote}`},
-                    item.NoteType !== null && {column1 : "NoteType",column2:`${item.NoteType}`},
-                    item.NatuerOfApprovalSanction !== null && {column1 : "NatuerOfApprovalSanction",column2:`${item.NatuerOfApprovalSanction}`},
+      eCommitteData: [
+        {
+          tableData: [
+            item.CommitteeName !== null && {
+              column1: "CommitteeName",
+              column2: `${item.CommitteeName}`,
+            },
+            item.Subject !== null && {
+              column1: "Subject",
+              column2: `${item.Subject}`,
+            },
+            item.natureOfNote !== null && {
+              column1: "NatureOfNote",
+              column2: `${item.natureOfNote}`,
+            },
+            item.NoteType !== null && {
+              column1: "NoteType",
+              column2: `${item.NoteType}`,
+            },
+            item.NatuerOfApprovalSanction !== null && {
+              column1: "NatuerOfApprovalSanction",
+              column2: `${item.NatuerOfApprovalSanction}`,
+            },
 
-
-                    item.TypeOfFinancialNote !== null && {column1 : "TypeOfFinancialNote",column2:`${item.TypeOfFinancialNote}`},
-                    item.Search_x0020_Keyword !== null && {column1 : "Search Keyword",column2:`${this._extractValueFromHtml(item.Search_x0020_Keyword)}`},
-                    item.Amount !== null && {column1 : "Amount",column2:`${item.Amount}`},
-                    item.Purpose !== null && {column1 : "Purpose",column2:`${item.Purpose}`},
-                    
-
-                ]
-            }
-        ]
-    })
-
+            item.TypeOfFinancialNote !== null && {
+              column1: "TypeOfFinancialNote",
+              column2: `${item.TypeOfFinancialNote}`,
+            },
+            item.Search_x0020_Keyword !== null && {
+              column1: "Search Keyword",
+              column2: `${this._extractValueFromHtml(
+                item.Search_x0020_Keyword
+              )}`,
+            },
+            item.Amount !== null && {
+              column1: "Amount",
+              column2: `${item.Amount}`,
+            },
+            item.Purpose !== null && {
+              column1: "Purpose",
+              column2: `${item.Purpose}`,
+            },
+          ],
+        },
+      ],
+    });
 
     this.setState({
       committeeNameFeildValue:
@@ -428,27 +459,26 @@ export default class ViewForm extends React.Component<
   };
 
   private _renderTable = (tableData: any[]): JSX.Element => {
+    console.log(tableData);
     return (
       <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Column 1</th>
-            <th>Column 2</th>
-          </tr>
-        </thead>
         <tbody>
-          {tableData.map((row, index) =>{
-            console.log("-------------------------")
-            console.log(row.column1)
-            console.log(row.column2 !== null )
-            console.log("-------------------------")
+          {tableData.map((row, index) => {
+            console.log("-------------------------");
+            console.log(row.column1);
+            console.log(row.column2 !== null);
+            console.log("-------------------------");
             return (
-                row.column2 !==  undefined && <tr key={index}>
-                  <td><strong>{row.column1}</strong></td>
+              row.column2 !== undefined && (
+                <tr key={index}>
+                  <td>
+                    <strong>{row.column1}</strong>
+                  </td>
                   <td>{row.column2}</td>
                 </tr>
               )
-          } )}
+            );
+          })}
         </tbody>
       </table>
     );
@@ -467,6 +497,28 @@ export default class ViewForm extends React.Component<
         />
       </div>
     );
+  };
+
+  public reOrderData = (reOrderData: any[]): void => {
+    this.setState({ peoplePickerData: reOrderData });
+  };
+
+  public removeDataFromGrid = (dataItem: any, typeOfTable: string): void => {
+    if (typeOfTable === "Reviewer") {
+      console.log("Remove triggered from Reviewer Table");
+      // console.log(dataItem);
+      const filterData = this.state.peoplePickerData.filter(
+        (item: any) => item.id !== dataItem.id
+      );
+      this.setState({ peoplePickerData: filterData });
+    } else {
+      console.log("Remove triggered Approver Table");
+      // console.log(dataItem);
+      const filterData = this.state.peoplePickerApproverData.filter(
+        (item: any) => item.id !== dataItem.id
+      );
+      this.setState({ peoplePickerApproverData: filterData });
+    }
   };
 
   public render(): React.ReactElement<IViewFormProps> {
@@ -494,44 +546,210 @@ export default class ViewForm extends React.Component<
     return (
       <Stack tokens={{ childrenGap: 10 }} className={styles.viewForm}>
         <h2>View Form</h2>
-        <div style={{ display: "flex",justifyContent:'flex-start',alignItems:'center',gap:'10px',height:'100%',border:'1px solid yellow' }}>
-          
-          <div style={{width:'40%',height:'100%',border:'1px solid red'}}>
-            {this.state.eCommitteData?.map((item:any, index:any) => {
-              console.log(item);
-              return (
-                <div key={index} className={styles.sectionContainer}>
-                  <div
-                    className={styles.header}
-                    onClick={() => this._onToggleSection(`section${index}`)}
-                  >
-                    <Text className={styles.sectionText}>{`Section ${
-                      index + 1
-                    }`}</Text>
-                    <IconButton
-                      iconProps={{
-                        iconName: expandSections[`section${index}`]
-                          ? "ChevronUp"
-                          : "ChevronDown",
-                      }}
-                      title="Expand/Collapse"
-                      ariaLabel="Expand/Collapse"
-                      className={styles.chevronIcon}
-                    />
-                    
-                  </div>
-                  {expandSections[`section${index}`] && (
-                    <>
-                      {this._renderTable(item.tableData)}
-                     
-                    </>
-                  )}
-                </div>
-              );
-            })}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+            gap: "10px",
+            height: "100%",
+            border: "1px solid yellow",
+          }}
+        >
+          <div
+            style={{ width: "40%", height: "100%", border: "1px solid red",gap:'0px' }}
+          >
+            {/* General Section */}
+            <div className={styles.sectionContainer}>
+              <div
+                className={styles.header}
+                onClick={() => this._onToggleSection(`generalSection`)}
+              >
+                <Text className={styles.sectionText}>General Section</Text>
+                <IconButton
+                  iconProps={{
+                    iconName: expandSections.generalSection
+                      ? "ChevronUp"
+                      : "ChevronDown",
+                  }}
+                  title="Expand/Collapse"
+                  ariaLabel="Expand/Collapse"
+                  className={styles.chevronIcon}
+                />
+              </div>
+              {expandSections.generalSection && (
+                <>{this._renderTable(this.state.eCommitteData[0].tableData)}</>
+              )}
+            </div>
+            {/* Reviewers Section */}
+            <div className={styles.sectionContainer}>
+              <div
+                className={styles.header}
+                onClick={() => this._onToggleSection(`reviewersSection`)}
+              >
+                <Text className={styles.sectionText}>Reviewers Section</Text>
+                <IconButton
+                  iconProps={{
+                    iconName: expandSections.generalSection
+                      ? "ChevronUp"
+                      : "ChevronDown",
+                  }}
+                  title="Expand/Collapse"
+                  ariaLabel="Expand/Collapse"
+                  className={styles.chevronIcon}
+                />
+              </div>
+              {expandSections.reviewersSection && <div
+              //   style={{ overflowX: "scroll" }}
+              >
+               
+                <DraggableTable
+                  data={this.state.peoplePickerData}
+                  reOrderData={this.reOrderData}
+                  removeDataFromGrid={this.removeDataFromGrid}
+                  type="Reviewer"
+                  
+                />
+              </div>}
+              
+            </div>
+            {/* Approvers  Section */}
+            <div className={styles.sectionContainer}>
+              <div
+                className={styles.header}
+                onClick={() => this._onToggleSection(`approversSection`)}
+              >
+                <Text className={styles.sectionText}>Approvers Section</Text>
+                <IconButton
+                  iconProps={{
+                    iconName: expandSections.generalSection
+                      ? "ChevronUp"
+                      : "ChevronDown",
+                  }}
+                  title="Expand/Collapse"
+                  ariaLabel="Expand/Collapse"
+                  className={styles.chevronIcon}
+                />
+              </div>
+              {expandSections.approversSection &&<div
+              //   style={{ overflowX: "scroll" }}
+              >
+                <DraggableTable
+                  data={this.state.peoplePickerApproverData}
+                  reOrderData={this.reOrderData}
+                  removeDataFromGrid={this.removeDataFromGrid}
+                  type="Approver"
+                />
+              </div> }
+              
+            </div>
+            {/* Comments Log */}
+            <div className={styles.sectionContainer}>
+              <div
+                className={styles.header}
+                onClick={() => this._onToggleSection(`commentsLog`)}
+              >
+                <Text className={styles.sectionText}>Comments Log</Text>
+                <IconButton
+                  iconProps={{
+                    iconName: expandSections.commentsLog
+                      ? "ChevronUp"
+                      : "ChevronDown",
+                  }}
+                  title="Expand/Collapse"
+                  ariaLabel="Expand/Collapse"
+                  className={styles.chevronIcon}
+                />
+              </div>
+              {expandSections.commentsLog &&<div
+              //   style={{ overflowX: "scroll" }}
+              >
+                <CommentsLogTable
+                  data={this.state.peoplePickerApproverData}
+                  type="Approver"
+                  fieldData={["Page#","Doc Reference","Comments","Comment By"]}
+                />
+              </div> }
+              
+            </div>
+            {/* Workflow Log */}
+            <div className={styles.sectionContainer}>
+              <div
+                className={styles.header}
+                onClick={() => this._onToggleSection(`workflowLog`)}
+              >
+                <Text className={styles.sectionText}>Workflow Log</Text>
+                <IconButton
+                  iconProps={{
+                    iconName: expandSections.workflowLog
+                      ? "ChevronUp"
+                      : "ChevronDown",
+                  }}
+                  title="Expand/Collapse"
+                  ariaLabel="Expand/Collapse"
+                  className={styles.chevronIcon}
+                />
+              </div>
+              {expandSections.workflowLog &&<div
+              //   style={{ overflowX: "scroll" }}
+              >
+                
+                <WorkFlowLogsTable
+                  data={this.state.peoplePickerApproverData}
+                  type="Approver"
+                />
+              </div> }
+              
+            </div>
+            {/* File Attachments*/}
+            <div className={styles.sectionContainer}>
+              <div
+                className={styles.header}
+                onClick={() => this._onToggleSection(`fileAttachments`)}
+              >
+                <Text className={styles.sectionText}>File Attachments</Text>
+                <IconButton
+                  iconProps={{
+                    iconName: expandSections.fileAttachments
+                      ? "ChevronUp"
+                      : "ChevronDown",
+                  }}
+                  title="Expand/Collapse"
+                  ariaLabel="Expand/Collapse"
+                  className={styles.chevronIcon}
+                />
+              </div>
+              {expandSections.fileAttachments &&<div
+              //   style={{ overflowX: "scroll" }}
+              >
+                 <FileAttatchmentTable
+                  data={this.state.peoplePickerApproverData}
+                  type="Approver"
+                  fieldData={["Page#","Doc Reference","Comments","Comment By"]}
+                />
+              </div> }
+              
+            </div>
           </div>
-          <div style={{height:'100%',width:'60%',border:'1px solid blue'}}>{this.state.pdfLink && this._renderPDFView()}</div>
+          <div
+            style={{ height: "100vh", width: "60%", border: "1px solid blue" }}
+          >
+            {this.state.pdfLink && this._renderPDFView()}
+          </div>
         </div>
+        <div style={{alignSelf:'center',margin: "10px 0px",gap:"10px"}}>
+            <PrimaryButton>
+                Call Back
+            </PrimaryButton>
+            <DefaultButton
+                // type="button"
+                // className={`${styles.commonBtn2} ${styles.commonBtn}`}
+                iconProps={{ iconName: "Cancel" }}
+              >
+                Exit
+              </DefaultButton>
+        </div>
+
       </Stack>
     );
   }
