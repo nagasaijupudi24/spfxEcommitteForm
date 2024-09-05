@@ -387,3 +387,71 @@
     border-color: #004578;
   }
 }
+
+///view Form css
+
+
+.viewForm {
+  padding: 10px;
+  // background-color: #f4f4f4;
+  height: 100vh;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.table th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.pdfViewer {
+  width: 100%;
+  max-width: 100%;  // Ensure iframe doesn't exceed container width
+  overflow: hidden; // Prevent content overflow
+  position: relative; // Contain iframe within the container
+  padding-bottom: 56.25%; // Aspect ratio for responsive design (16:9 ratio)
+  height: 100%; // Initialize height to zero
+}
+
+// .pdfViewer iframe {
+//   position: absolute; // Position the iframe absolutely within the container
+//   top: 0;
+//   left: 0;
+//   width: 100%; // Full width of the container
+//   height: 100%; // Full height of the container
+//   border: none; // Remove default border
+// }
+
+.sectionContainer {
+  margin-bottom: 10px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer; // Make the header clickable
+  padding: 5px;
+  background-color: #f0f8ff; // Background color for the header
+  border-radius: 4px; // Rounded corners
+}
+
+.sectionText {
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.chevronIcon {
+  margin-right: 8px;
+}
+

@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -13,6 +14,8 @@ import { IDropdownOption } from "office-ui-fabric-react";
 // import {  InputChangeEvent } from '@progress/kendo-react-inputs';
 import { TextBox, TextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { DropDownList } from "@progress/kendo-react-dropdowns";
+import ExpandableList from "./expandalbeHeader/expandableHeader";
+// import PdfViewer from "../pdfVeiwer/pdfVeiwer";
 import { PrimaryButton } from "@fluentui/react/lib/Button";
 
 //spinner related
@@ -53,6 +56,24 @@ import {
   IPeoplePickerContext,
 } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 // import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
+
+
+const data:any = [
+  {
+    title: 'Section 1',
+    content: [
+      { key: 'Item 1.1', value: 'Description 1.1' },
+      { key: 'Item 1.2', value: 'Description 1.2' },
+    ],
+  },
+  {
+    title: 'Section 2',
+    content: [
+      { key: 'Item 2.1', value: 'Description 2.1' },
+      { key: 'Item 2.2', value: 'Description 2.2' },
+    ],
+  },
+];
 
 interface INoteObject {
   Department: string;
@@ -2327,7 +2348,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           // </Stack>
           <div className={styles.form}>
             {/* <Header /> */}
-            <Title formStatus={this._formType}/>
+            <Title formStatus={this._formType} />
             {/* {this.state.isDialogHidden&&<MyDialog  />} */}
             <MyDialog
               hidden={this.state.isDialogHidden}
@@ -2472,7 +2493,8 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                   />
                 )}
               </div>
-              {this.state.isNatureOfApprovalOrSanction ? (
+              {this.state.natureOfNoteFeildValue === "Approval" ||
+              this.state.natureOfNoteFeildValue === "Sanction" ? (
                 <div
                   className={styles.halfWidth}
                   style={{ margin: "4px", marginTop: "18px" }}
@@ -2741,7 +2763,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             ""
           )} */}
 
-              {this.state.isPuroposeVisable ? (
+              {this.state.noteTypeFeildValue === "Finanical" ? (
                 // (this.state.natureOfNoteFeildValue === 'Approval' || 'Information'?
                 //   <div
                 //   className={styles.halfWidth}
@@ -3210,6 +3232,16 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           </ul> */}
           </div>
         )}
+        <div>
+          {data.map((section:any, index:any) => (
+            <ExpandableList
+              key={index}
+              title={section.title}
+              content={section.content}
+            />
+          ))}
+        </div>
+        {/* <PdfViewer pdfUrl="https://xencia1.sharepoint.com/:b:/s/XenciaDemoApps/uco/EcFS2u_tQFhMmEy0LV6wx5wBEf8gycMjKYn0RIHHvCVzRw?e=de5FmB"/> */}
       </div>
     );
   }

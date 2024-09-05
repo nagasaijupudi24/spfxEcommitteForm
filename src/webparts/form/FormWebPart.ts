@@ -9,7 +9,9 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 import * as strings from 'FormWebPartStrings';
 import Form from './components/uiComponents/Form';
+import ViewForm from './components/uiComponents/view';
 import { IFormProps } from './components/IFormProps';
+import { IViewFormProps } from './components/IViewFormProps';
 
 import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs"; // Import webs functionality
@@ -17,10 +19,12 @@ import "@pnp/sp/lists"; // Import lists functionality
 import "@pnp/sp/items"; // Import items functionality
 
 export interface IFormWebPartProps {
+  FormType: string;
   description: string;
   listId:any;
   libraryId:any;
 }
+
 
 export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps> {
 
@@ -36,22 +40,47 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
   }
 
   public render(): void {
-    const element: React.ReactElement<IFormProps> = React.createElement(
-      Form,
-      {
-        description: this.properties.description,
-        isDarkTheme: this._isDarkTheme,
-        environmentMessage: this._environmentMessage,
-        hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName,
-        sp: this.sp, // Pass the configured sp object
-        context: this.context, // Pass the WebPartContext
-        listId:this.properties.listId,
-        libraryId:this.properties.libraryId
-      }
-    );
+    let element: React.ReactElement<IFormProps> | React.ReactElement<IViewFormProps> | null = null;
 
-    ReactDom.render(element, this.domElement);
+    if (this.properties.FormType === "New") {
+      element = React.createElement(
+        Form,
+        {
+          description: this.properties.description,
+          isDarkTheme: this._isDarkTheme,
+          environmentMessage: this._environmentMessage,
+          hasTeamsContext: !!this.context.sdks.microsoftTeams,
+          userDisplayName: this.context.pageContext.user.displayName,
+          sp: this.sp, // Pass the configured sp object
+          context: this.context, // Pass the WebPartContext
+          listId:this.properties.listId,
+          libraryId:this.properties.libraryId
+        }
+      );
+     
+    }
+    else if (this.properties.FormType === "View") {
+      element = React.createElement(
+        ViewForm,
+        {
+          description: this.properties.description,
+          isDarkTheme: this._isDarkTheme,
+          environmentMessage: this._environmentMessage,
+          hasTeamsContext: !!this.context.sdks.microsoftTeams,
+          userDisplayName: this.context.pageContext.user.displayName,
+          sp: this.sp, // Pass the configured sp object
+          context: this.context, // Pass the WebPartContext
+          listId:this.properties.listId,
+          libraryId:this.properties.libraryId
+        }
+      );
+     
+    }
+      
+
+    if (element !== null) {
+      ReactDom.render(element, this.domElement);
+    }
   }
 
   private _getEnvironmentMessage(): Promise<string> {
@@ -125,6 +154,17 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
       console.log(`"Entered into ${newValue.title}"`)
       // this._listId = newValue;
       this.properties.libraryId = newValue.title
+      // this.properties.customOptions = await this._spService.getcolumnInfo(this._listId.title);
+      
+      this.render();
+      console.log("render is triggered")
+      // this.context.propertyPane.refresh();
+      // console.log("refresh is triggered")
+    }
+    else if (propertyPath === "FormType" && newValue) {
+      console.log(`"Entered into ${newValue}"`)
+      // this._listId = newValue;
+      this.properties.libraryId = newValue
       // this.properties.customOptions = await this._spService.getcolumnInfo(this._listId.title);
       
       this.render();

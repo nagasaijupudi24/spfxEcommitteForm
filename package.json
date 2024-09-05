@@ -38,11 +38,14 @@
     "@progress/kendo-react-intl": "^8.2.0",
     "@progress/kendo-react-upload": "^8.2.0",
     "@progress/kendo-theme-default": "^8.2.1",
+    "@react-pdf-viewer/core": "^3.12.0",
     "bootstrap-icons": "^1.11.3",
     "fluentui-editable-grid": "^1.12.1",
+    "pdfjs-dist": "^3.0.279",
     "react": "17.0.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "17.0.1",
+    "react-pdf": "^9.1.0",
     "tslib": "2.3.1"
   },
   "devDependencies": {
@@ -59,6 +62,7 @@
     "ajv": "^6.12.5",
     "eslint": "8.7.0",
     "eslint-plugin-react-hooks": "4.3.0",
+    "file-loader": "^6.2.0",
     "gulp": "^4.0.2",
     "typescript": "4.7.4"
   }
