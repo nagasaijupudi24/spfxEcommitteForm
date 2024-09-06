@@ -24,10 +24,10 @@ const CommentsLogTable = (props: any) => {
             >
 
                
-                <Column field="id" title="Page#" width="60px" />
-                <Column field="text" title="Doc Reference" width="90px" />
-                <Column field='srNo' title="Comments" width="90px" />
-                <Column field="optionalText" title="Comment By" />
+                <Column title="Page#" width="60px" />
+                <Column title="Doc Reference" width="90px" />
+                <Column  title="Comments" width="90px" />
+                <Column  title="Comment By" />
                
             </Grid>
         </div>

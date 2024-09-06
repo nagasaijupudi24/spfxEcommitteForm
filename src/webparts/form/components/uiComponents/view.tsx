@@ -3,12 +3,24 @@
 import * as React from "react";
 import { IViewFormProps } from "../IViewFormProps"; // Ensure this file exists
 import { IDropdownOption } from "office-ui-fabric-react";
-import { Stack, IconButton, Text, PrimaryButton, DefaultButton } from "@fluentui/react";
+import {
+  Stack,
+  IconButton,
+  Text,
+  PrimaryButton,
+  DefaultButton,
+} from "@fluentui/react";
 import styles from "../Form.module.scss";
 import DraggableTable from "./draggableGridKendo/draggableGridKendo";
 import CommentsLogTable from "./simpleTable/commentsTable";
 import WorkFlowLogsTable from "./simpleTable/workFlowLogsTable";
 import FileAttatchmentTable from "./simpleTable/fileAttatchmentsTable";
+
+//spinner related
+
+import { Spinner } from "@fluentui/react/lib/Spinner";
+
+import { format } from "date-fns";
 
 export interface IFileDetails {
   name?: string;
@@ -88,6 +100,7 @@ export interface IViewFormState {
 
   status: string;
   statusNumber: any;
+  auditTrail: any;
   filesClear: any;
 }
 
@@ -175,10 +188,11 @@ export default class ViewForm extends React.Component<
       reviewerInfo: [],
       status: "",
       statusNumber: null,
+      auditTrail: [],
       filesClear: [],
       expandSections: {}, // Keeps track of expanded sections
-      pdfLink:
-        "https://xencia1.sharepoint.com/sites/XenciaDemoApps/uco/ECommitteeDocuments/AD1-2024-25-C147/Pdf/E0300SBIBZ.pdf",
+      pdfLink: "",
+      // "https://xencia1.sharepoint.com/sites/XenciaDemoApps/uco/ECommitteeDocuments/AD1-2024-25-C147/Pdf/E0300SBIBZ.pdf",
       //   "https://xencia1.sharepoint.com/sites/XenciaDemoApps/uco/ECommitteeDocuments/AD1-2024-25-C147/SupportingDocument/Export.xlsx?d=w5597c83c4c7744daab598c33704569bc"
       // "https://xencia1.sharepoint.com/:b:/s/XenciaDemoApps/uco/EcFS2u_tQFhMmEy0LV6wx5wBEf8gycMjKYn0RIHHvCVzRw?e=de5FmB", // Link to the PDF
     };
@@ -364,12 +378,22 @@ export default class ViewForm extends React.Component<
         item.ApproverDetails,
         "Approver"
       ),
+      auditTrail: JSON.parse(item.AuditTrail),
+      isLoading:false
     });
   };
 
   private _getFileObj = (data: any): any => {
     const tenantUrl = window.location.protocol + "//" + window.location.host;
     console.log(tenantUrl);
+
+    const formatDateTime = (date: string | number | Date) => {
+      const formattedDate = format(new Date(date), "dd-MMM-yyyy");
+      const formattedTime = format(new Date(), "hh:mm a");
+      return `${formattedDate} ${formattedTime}`;
+    };
+
+    const result = formatDateTime(data.TimeCreated);
 
     const filesObj = {
       name: data.Name,
@@ -382,7 +406,10 @@ export default class ViewForm extends React.Component<
       isSelected: false,
       size: parseInt(data.Length),
       type: `application/${data.Name.split(".")[1]}`,
+      modifiedBy: data.Author.Title,
+      createData: result,
     };
+    console.log(filesObj);
     return filesObj;
   };
 
@@ -393,7 +420,8 @@ export default class ViewForm extends React.Component<
       console.log(`${this._folderName}/Pdf`);
       const folderItemsPdf = await this.props.sp.web
         .getFolderByServerRelativePath(`${this._folderName}/Pdf`)
-        .files()
+        .files.select("*")
+        .expand("Author", "Editor")()
         .then((res) => res);
       console.log(folderItemsPdf);
       console.log(folderItemsPdf[0]);
@@ -402,7 +430,9 @@ export default class ViewForm extends React.Component<
       const tempFilesPdf: IFileDetails[] = [];
       folderItemsPdf.forEach((values) => {
         tempFilesPdf.push(this._getFileObj(values));
+        this.setState({ pdfLink: this._getFileObj(values).fileUrl });
       });
+
       console.log(tempFilesPdf);
       this.setState({ noteTofiles: tempFilesPdf });
 
@@ -413,7 +443,8 @@ export default class ViewForm extends React.Component<
       console.log(`${this._folderName}/WordDocument`);
       const folderItemsWordDocument = await this.props.sp.web
         .getFolderByServerRelativePath(`${this._folderName}/WordDocument`)
-        .files()
+        .files.select("*")
+        .expand("Author", "Editor")()
         .then((res) => res);
       console.log(folderItemsWordDocument);
       console.log(folderItemsWordDocument[0]);
@@ -433,7 +464,8 @@ export default class ViewForm extends React.Component<
       console.log(`${this._folderName}/SupportingDocument`);
       const SupportingDocument = await this.props.sp.web
         .getFolderByServerRelativePath(`${this._folderName}/SupportingDocument`)
-        .files()
+        .files.select("*")
+        .expand("Author", "Editor")()
         .then((res) => res);
       console.log(SupportingDocument);
       console.log(SupportingDocument[0]);
@@ -452,8 +484,10 @@ export default class ViewForm extends React.Component<
   private _onToggleSection = (section: string): void => {
     this.setState((prevState) => ({
       expandSections: {
-        ...prevState.expandSections,
         [section]: !prevState.expandSections[section],
+        ...Object.keys(prevState.expandSections)
+          .filter(key => key !== section)
+          .reduce((acc, key) => ({ ...acc, [key]: false }), {}),
       },
     }));
   };
@@ -545,211 +579,259 @@ export default class ViewForm extends React.Component<
 
     return (
       <Stack tokens={{ childrenGap: 10 }} className={styles.viewForm}>
-        <h2>View Form</h2>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            gap: "10px",
-            height: "100%",
-            border: "1px solid yellow",
-          }}
-        >
-          <div
-            style={{ width: "40%", height: "100%", border: "1px solid red",gap:'0px' }}
-          >
-            {/* General Section */}
-            <div className={styles.sectionContainer}>
-              <div
-                className={styles.header}
-                onClick={() => this._onToggleSection(`generalSection`)}
-              >
-                <Text className={styles.sectionText}>General Section</Text>
-                <IconButton
-                  iconProps={{
-                    iconName: expandSections.generalSection
-                      ? "ChevronUp"
-                      : "ChevronDown",
-                  }}
-                  title="Expand/Collapse"
-                  ariaLabel="Expand/Collapse"
-                  className={styles.chevronIcon}
-                />
-              </div>
-              {expandSections.generalSection && (
-                <>{this._renderTable(this.state.eCommitteData[0].tableData)}</>
-              )}
+        {this.state.isLoading ? (
+          <Spinner
+            label="Wait, wait..."
+            ariaLive="assertive"
+            // labelPosition="right"
+          />
+        ) : (
+          <Stack tokens={{ childrenGap: 10 }} className={styles.viewForm}>
+            <div className={`${styles.generalSectionMainContainer}`}>
+              <h1 style={{ textAlign: "center", fontSize: "16px" }}>
+                View Form
+              </h1>
             </div>
-            {/* Reviewers Section */}
-            <div className={styles.sectionContainer}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                alignItems: "flex-start",
+                gap: "10px",
+                height: "100%",
+                // border: "1px solid yellow",
+              }}
+            >
               <div
-                className={styles.header}
-                onClick={() => this._onToggleSection(`reviewersSection`)}
+                style={{
+                  width: "40%",
+                  height: "100%",
+                  //   border: "1px solid red",
+                  gap: "0px",
+                }}
               >
-                <Text className={styles.sectionText}>Reviewers Section</Text>
-                <IconButton
-                  iconProps={{
-                    iconName: expandSections.generalSection
-                      ? "ChevronUp"
-                      : "ChevronDown",
-                  }}
-                  title="Expand/Collapse"
-                  ariaLabel="Expand/Collapse"
-                  className={styles.chevronIcon}
-                />
+                {/* General Section */}
+                <div className={styles.sectionContainer}>
+                  <div
+                    className={styles.header}
+                    onClick={() => this._onToggleSection(`generalSection`)}
+                  >
+                    <Text className={styles.sectionText}>General Section</Text>
+                    <IconButton
+                      iconProps={{
+                        iconName: expandSections.generalSection
+                          ? "ChevronUp"
+                          : "ChevronDown",
+                      }}
+                      title="Expand/Collapse"
+                      ariaLabel="Expand/Collapse"
+                      className={styles.chevronIcon}
+                    />
+                  </div>
+                  {expandSections.generalSection && (
+                    <>
+                      {this._renderTable(this.state.eCommitteData[0].tableData)}
+                    </>
+                  )}
+                </div>
+                {/* Reviewers Section */}
+                <div className={styles.sectionContainer}>
+                  <div
+                    className={styles.header}
+                    onClick={() => this._onToggleSection(`reviewersSection`)}
+                  >
+                    <Text className={styles.sectionText}>
+                      Reviewers Section
+                    </Text>
+                    <IconButton
+                      iconProps={{
+                        iconName: expandSections.generalSection
+                          ? "ChevronUp"
+                          : "ChevronDown",
+                      }}
+                      title="Expand/Collapse"
+                      ariaLabel="Expand/Collapse"
+                      className={styles.chevronIcon}
+                    />
+                  </div>
+                  {expandSections.reviewersSection && (
+                    <div
+                    //   style={{ overflowX: "scroll" }}
+                    >
+                      <DraggableTable
+                        data={this.state.peoplePickerData}
+                        reOrderData={this.reOrderData}
+                        removeDataFromGrid={this.removeDataFromGrid}
+                        type="Reviewer"
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* Approvers  Section */}
+                <div className={styles.sectionContainer}>
+                  <div
+                    className={styles.header}
+                    onClick={() => this._onToggleSection(`approversSection`)}
+                  >
+                    <Text className={styles.sectionText}>
+                      Approvers Section
+                    </Text>
+                    <IconButton
+                      iconProps={{
+                        iconName: expandSections.generalSection
+                          ? "ChevronUp"
+                          : "ChevronDown",
+                      }}
+                      title="Expand/Collapse"
+                      ariaLabel="Expand/Collapse"
+                      className={styles.chevronIcon}
+                    />
+                  </div>
+                  {expandSections.approversSection && (
+                    <div
+                    //   style={{ overflowX: "scroll" }}
+                    >
+                      <DraggableTable
+                        data={this.state.peoplePickerApproverData}
+                        reOrderData={this.reOrderData}
+                        removeDataFromGrid={this.removeDataFromGrid}
+                        type="Approver"
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* Comments Log */}
+                <div className={styles.sectionContainer}>
+                  <div
+                    className={styles.header}
+                    onClick={() => this._onToggleSection(`commentsLog`)}
+                  >
+                    <Text className={styles.sectionText}>Comments Log</Text>
+                    <IconButton
+                      iconProps={{
+                        iconName: expandSections.commentsLog
+                          ? "ChevronUp"
+                          : "ChevronDown",
+                      }}
+                      title="Expand/Collapse"
+                      ariaLabel="Expand/Collapse"
+                      className={styles.chevronIcon}
+                    />
+                  </div>
+                  {expandSections.commentsLog && (
+                    <div
+                    //   style={{ overflowX: "scroll" }}
+                    >
+                      <CommentsLogTable
+                        data={this.state.peoplePickerApproverData}
+                        type="Approver"
+                        fieldData={[
+                          "Page#",
+                          "Doc Reference",
+                          "Comments",
+                          "Comment By",
+                        ]}
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* Workflow Log */}
+                <div className={styles.sectionContainer}>
+                  <div
+                    className={styles.header}
+                    onClick={() => this._onToggleSection(`workflowLog`)}
+                  >
+                    <Text className={styles.sectionText}>Workflow Log</Text>
+                    <IconButton
+                      iconProps={{
+                        iconName: expandSections.workflowLog
+                          ? "ChevronUp"
+                          : "ChevronDown",
+                      }}
+                      title="Expand/Collapse"
+                      ariaLabel="Expand/Collapse"
+                      className={styles.chevronIcon}
+                    />
+                  </div>
+                  {expandSections.workflowLog && (
+                    <div
+                    //   style={{ overflowX: "scroll" }}
+                    >
+                      <WorkFlowLogsTable
+                        data={this.state.auditTrail}
+                        type="Approver"
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* File Attachments*/}
+                <div className={styles.sectionContainer}>
+                  <div
+                    className={styles.header}
+                    onClick={() => this._onToggleSection(`fileAttachments`)}
+                  >
+                    <Text className={styles.sectionText}>File Attachments</Text>
+                    <IconButton
+                      iconProps={{
+                        iconName: expandSections.fileAttachments
+                          ? "ChevronUp"
+                          : "ChevronDown",
+                      }}
+                      title="Expand/Collapse"
+                      ariaLabel="Expand/Collapse"
+                      className={styles.chevronIcon}
+                    />
+                  </div>
+                  {expandSections.fileAttachments && (
+                    <div
+                    //   style={{ overflowX: "scroll" }}
+                    >
+                      {/* Note Files */}
+                      <h4>
+                        Main Note Link:
+                        <a href={this.state.noteTofiles[0].fileUrl} download>
+                          {" "}
+                          {this.state.noteTofiles[0].name}
+                        </a>
+                      </h4>
+                      {/* Support Documents */}
+                      <h4>Support Documents :</h4>
+                      <FileAttatchmentTable
+                        data={this.state.supportingDocumentfiles}
+                      />
+                      {/* Word Documents */}
+                      <h4>Word Documents :</h4>
+                      <FileAttatchmentTable
+                        data={this.state.wordDocumentfiles}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-              {expandSections.reviewersSection && <div
-              //   style={{ overflowX: "scroll" }}
-              >
-               
-                <DraggableTable
-                  data={this.state.peoplePickerData}
-                  reOrderData={this.reOrderData}
-                  removeDataFromGrid={this.removeDataFromGrid}
-                  type="Reviewer"
-                  
-                />
-              </div>}
-              
-            </div>
-            {/* Approvers  Section */}
-            <div className={styles.sectionContainer}>
               <div
-                className={styles.header}
-                onClick={() => this._onToggleSection(`approversSection`)}
+                style={{
+                  height: "100vh",
+                  width: "60%",
+                   border: "1px solid blue"
+                }}
               >
-                <Text className={styles.sectionText}>Approvers Section</Text>
-                <IconButton
-                  iconProps={{
-                    iconName: expandSections.generalSection
-                      ? "ChevronUp"
-                      : "ChevronDown",
-                  }}
-                  title="Expand/Collapse"
-                  ariaLabel="Expand/Collapse"
-                  className={styles.chevronIcon}
-                />
+                {this.state.pdfLink && this._renderPDFView()}
               </div>
-              {expandSections.approversSection &&<div
-              //   style={{ overflowX: "scroll" }}
-              >
-                <DraggableTable
-                  data={this.state.peoplePickerApproverData}
-                  reOrderData={this.reOrderData}
-                  removeDataFromGrid={this.removeDataFromGrid}
-                  type="Approver"
-                />
-              </div> }
-              
             </div>
-            {/* Comments Log */}
-            <div className={styles.sectionContainer}>
-              <div
-                className={styles.header}
-                onClick={() => this._onToggleSection(`commentsLog`)}
-              >
-                <Text className={styles.sectionText}>Comments Log</Text>
-                <IconButton
-                  iconProps={{
-                    iconName: expandSections.commentsLog
-                      ? "ChevronUp"
-                      : "ChevronDown",
-                  }}
-                  title="Expand/Collapse"
-                  ariaLabel="Expand/Collapse"
-                  className={styles.chevronIcon}
-                />
-              </div>
-              {expandSections.commentsLog &&<div
-              //   style={{ overflowX: "scroll" }}
-              >
-                <CommentsLogTable
-                  data={this.state.peoplePickerApproverData}
-                  type="Approver"
-                  fieldData={["Page#","Doc Reference","Comments","Comment By"]}
-                />
-              </div> }
-              
-            </div>
-            {/* Workflow Log */}
-            <div className={styles.sectionContainer}>
-              <div
-                className={styles.header}
-                onClick={() => this._onToggleSection(`workflowLog`)}
-              >
-                <Text className={styles.sectionText}>Workflow Log</Text>
-                <IconButton
-                  iconProps={{
-                    iconName: expandSections.workflowLog
-                      ? "ChevronUp"
-                      : "ChevronDown",
-                  }}
-                  title="Expand/Collapse"
-                  ariaLabel="Expand/Collapse"
-                  className={styles.chevronIcon}
-                />
-              </div>
-              {expandSections.workflowLog &&<div
-              //   style={{ overflowX: "scroll" }}
-              >
-                
-                <WorkFlowLogsTable
-                  data={this.state.peoplePickerApproverData}
-                  type="Approver"
-                />
-              </div> }
-              
-            </div>
-            {/* File Attachments*/}
-            <div className={styles.sectionContainer}>
-              <div
-                className={styles.header}
-                onClick={() => this._onToggleSection(`fileAttachments`)}
-              >
-                <Text className={styles.sectionText}>File Attachments</Text>
-                <IconButton
-                  iconProps={{
-                    iconName: expandSections.fileAttachments
-                      ? "ChevronUp"
-                      : "ChevronDown",
-                  }}
-                  title="Expand/Collapse"
-                  ariaLabel="Expand/Collapse"
-                  className={styles.chevronIcon}
-                />
-              </div>
-              {expandSections.fileAttachments &&<div
-              //   style={{ overflowX: "scroll" }}
-              >
-                 <FileAttatchmentTable
-                  data={this.state.peoplePickerApproverData}
-                  type="Approver"
-                  fieldData={["Page#","Doc Reference","Comments","Comment By"]}
-                />
-              </div> }
-              
-            </div>
-          </div>
-          <div
-            style={{ height: "100vh", width: "60%", border: "1px solid blue" }}
-          >
-            {this.state.pdfLink && this._renderPDFView()}
-          </div>
-        </div>
-        <div style={{alignSelf:'center',margin: "10px 0px",gap:"10px"}}>
-            <PrimaryButton>
-                Call Back
-            </PrimaryButton>
-            <DefaultButton
+            <div
+              style={{ alignSelf: "center", margin: "10px 0px", gap: "10px" }}
+            >
+              <PrimaryButton>Call Back</PrimaryButton>
+              <DefaultButton
                 // type="button"
                 // className={`${styles.commonBtn2} ${styles.commonBtn}`}
                 iconProps={{ iconName: "Cancel" }}
               >
                 Exit
               </DefaultButton>
-        </div>
-
+            </div>
+          </Stack>
+        )}
       </Stack>
     );
   }

@@ -36,6 +36,8 @@ import ApproverOrReviewerDialog from "./ApproverOrReviewerDialog/approverOrRevie
 // import MultiComboBoxTable from "./comboBoxTable/comboBoxTable";
 // import AlertComponent from "./alter/alter";
 import DraggableTable from "./draggableGridKendo/draggableGridKendo";
+
+import { format } from 'date-fns';
 import "@progress/kendo-theme-default/dist/all.css";
 import "@pnp/sp/site-users/web";
 
@@ -469,6 +471,16 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     const tenantUrl = window.location.protocol + "//" + window.location.host;
     console.log(tenantUrl);
 
+ 
+
+    const formatDateTime = (date: string | number | Date) => {
+      const formattedDate = format(new Date(date), 'dd-MMM-yyyy');
+      const formattedTime = format(new Date(), 'hh:mm a');
+      return `${formattedDate} ${formattedTime}`;
+    };
+    
+    const result = formatDateTime(data.TimeCreated);
+
     const filesObj = {
       name: data.Name,
       content: data,
@@ -480,9 +492,13 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       isSelected: false,
       size: parseInt(data.Length),
       type: `application/${data.Name.split(".")[1]}`,
+      modifiedBy:data.Author.Title,
+      createData: result,
     };
+    console.log(filesObj)
     return filesObj;
   };
+
 
   private _getItemDocumentsData = async () => {
     try {
@@ -490,9 +506,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
       console.log(`${this._folderName}/Pdf`);
       const folderItemsPdf = await this.props.sp.web
-        .getFolderByServerRelativePath(`${this._folderName}/Pdf`)
-        .files()
-        .then((res) => res);
+      .getFolderByServerRelativePath(`${this._folderName}/Pdf`)
+      .files.select('*')
+      .expand('Author',"Editor")().then(res=>res)
       console.log(folderItemsPdf);
       console.log(folderItemsPdf[0]);
       // this.setState({noteTofiles:[folderItem]})
@@ -510,9 +526,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
       );
       console.log(`${this._folderName}/WordDocument`);
       const folderItemsWordDocument = await this.props.sp.web
-        .getFolderByServerRelativePath(`${this._folderName}/WordDocument`)
-        .files()
-        .then((res) => res);
+      .getFolderByServerRelativePath(`${this._folderName}/WordDocument`)
+      .files.select('*')
+      .expand('Author',"Editor")().then(res=>res)
       console.log(folderItemsWordDocument);
       console.log(folderItemsWordDocument[0]);
 
@@ -530,9 +546,9 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
 
       console.log(`${this._folderName}/SupportingDocument`);
       const SupportingDocument = await this.props.sp.web
-        .getFolderByServerRelativePath(`${this._folderName}/SupportingDocument`)
-        .files()
-        .then((res) => res);
+      .getFolderByServerRelativePath(`${this._folderName}/SupportingDocument`)
+      .files.select('*')
+      .expand('Author',"Editor")().then(res=>res)
       console.log(SupportingDocument);
       console.log(SupportingDocument[0]);
 
