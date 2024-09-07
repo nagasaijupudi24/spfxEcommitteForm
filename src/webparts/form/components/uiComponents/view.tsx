@@ -11,16 +11,22 @@ import {
   DefaultButton,
 } from "@fluentui/react";
 import styles from "../Form.module.scss";
-import DraggableTable from "./draggableGridKendo/draggableGridKendo";
+// import DraggableTable from "./draggableGridKendo/draggableGridKendo";
+import ApproverAndReviewerTableInViewForm from "./simpleTable/reviewerAndApproverTableInViewForm";
 import CommentsLogTable from "./simpleTable/commentsTable";
 import WorkFlowLogsTable from "./simpleTable/workFlowLogsTable";
 import FileAttatchmentTable from "./simpleTable/fileAttatchmentsTable";
-
+// import PDFView from "../pdfVeiwer/pdfVeiwer";
+// import PDFViews from "../pdfVeiwer/pdfreact";
 //spinner related
+// import WebViewer from "../comPdfKit/comPdfKit";
 
 import { Spinner } from "@fluentui/react/lib/Spinner";
+// import AdobePdfWebPart from "../../../adobePdf/AdobePdfWebPart";
+import AdobePdfViewer from "../adobe/adobepdf";
 
 import { format } from "date-fns";
+import PdfViewer from "../pdfVeiwer/pdfreact";
 
 export interface IFileDetails {
   name?: string;
@@ -269,7 +275,7 @@ export default class ViewForm extends React.Component<
     const approverData = approverfilterData.map((each: any) => ({
       text: each.approverEmailName,
       srNo: each.approverEmailName,
-      designation: each.designation,
+      optionalText: each.designation,
       id: each.id,
       approverType: 2,
     }));
@@ -379,7 +385,7 @@ export default class ViewForm extends React.Component<
         "Approver"
       ),
       auditTrail: JSON.parse(item.AuditTrail),
-      isLoading:false
+      isLoading: false,
     });
   };
 
@@ -416,6 +422,13 @@ export default class ViewForm extends React.Component<
   private _getItemDocumentsData = async () => {
     try {
       console.log("------------------Pdf-----------------------------------");
+      // //   const SupportingDocuments = await this.props.sp.web
+      // //     .getFolderByServerRelativePath(`EnoteDocuments/AD1-2024-25-415/SupportingDocuments`)
+      // //     .files.select("*")
+      // //     .expand("Author", "Editor")()
+      // //     .then((res) => res);
+
+      // //     console.log(SupportingDocuments)   //testing based on other author name (other than current user)
 
       console.log(`${this._folderName}/Pdf`);
       const folderItemsPdf = await this.props.sp.web
@@ -486,7 +499,7 @@ export default class ViewForm extends React.Component<
       expandSections: {
         [section]: !prevState.expandSections[section],
         ...Object.keys(prevState.expandSections)
-          .filter(key => key !== section)
+          .filter((key) => key !== section)
           .reduce((acc, key) => ({ ...acc, [key]: false }), {}),
       },
     }));
@@ -495,26 +508,28 @@ export default class ViewForm extends React.Component<
   private _renderTable = (tableData: any[]): JSX.Element => {
     console.log(tableData);
     return (
-      <table className={styles.table}>
-        <tbody>
-          {tableData.map((row, index) => {
-            console.log("-------------------------");
-            console.log(row.column1);
-            console.log(row.column2 !== null);
-            console.log("-------------------------");
-            return (
-              row.column2 !== undefined && (
-                <tr key={index}>
-                  <td>
-                    <strong>{row.column1}</strong>
-                  </td>
-                  <td>{row.column2}</td>
-                </tr>
-              )
-            );
-          })}
-        </tbody>
-      </table>
+      <div style={{ overflow: "auto" }}>
+        <table className={styles.table}>
+          <tbody>
+            {tableData.map((row, index) => {
+              // console.log("-------------------------");
+              // console.log(row.column1);
+              // console.log(row.column2 !== null);
+              // console.log("-------------------------");
+              return (
+                row.column2 !== undefined && (
+                  <tr key={index}>
+                    <td>
+                      <strong>{row.column1}</strong>
+                    </td>
+                    <td>{row.column2}</td>
+                  </tr>
+                )
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     );
   };
 
@@ -529,6 +544,7 @@ export default class ViewForm extends React.Component<
           style={{ border: "none" }}
           title="PDF Viewer"
         />
+        
       </div>
     );
   };
@@ -658,7 +674,7 @@ export default class ViewForm extends React.Component<
                     <div
                     //   style={{ overflowX: "scroll" }}
                     >
-                      <DraggableTable
+                      <ApproverAndReviewerTableInViewForm
                         data={this.state.peoplePickerData}
                         reOrderData={this.reOrderData}
                         removeDataFromGrid={this.removeDataFromGrid}
@@ -691,7 +707,7 @@ export default class ViewForm extends React.Component<
                     <div
                     //   style={{ overflowX: "scroll" }}
                     >
-                      <DraggableTable
+                      <ApproverAndReviewerTableInViewForm
                         data={this.state.peoplePickerApproverData}
                         reOrderData={this.reOrderData}
                         removeDataFromGrid={this.removeDataFromGrid}
@@ -812,7 +828,7 @@ export default class ViewForm extends React.Component<
                 style={{
                   height: "100vh",
                   width: "60%",
-                   border: "1px solid blue"
+                  border: "1px solid blue",
                 }}
               >
                 {this.state.pdfLink && this._renderPDFView()}
@@ -823,15 +839,22 @@ export default class ViewForm extends React.Component<
             >
               <PrimaryButton>Call Back</PrimaryButton>
               <DefaultButton
-                // type="button"
-                // className={`${styles.commonBtn2} ${styles.commonBtn}`}
+                type="button"
+                className={`${styles.commonBtn2} ${styles.addBtn}`}
+                style={{ marginTop: "6px" }}
                 iconProps={{ iconName: "Cancel" }}
               >
                 Exit
               </DefaultButton>
             </div>
+
           </Stack>
         )}
+        {/* <PDFView pdfLink={this.state.pdfLink}/> //working but next page is not working */}
+        {/* <PDFViews pdfLink={this.state.pdfLink}/> */}
+        <PdfViewer pdfUrl={this.state.pdfLink}/>
+        {/* <AdobePdfWebPart/> */}
+        <AdobePdfViewer clientId={"825473e9e1184e459736428fd30f8b99"} fileUrl={this.state.pdfLink} height={800} defaultViewMode={"FIT_WIDTH"}/>
       </Stack>
     );
   }

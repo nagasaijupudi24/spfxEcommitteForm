@@ -1,93 +1,129 @@
-// import * as React from 'react';
-// import * as pdfjsLib from 'pdfjs-dist';
-// import 'pdfjs-dist/web/pdf_viewer.css';
-// // import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
-// // Set up the worker source
-// pdfjsLib.GlobalWorkerOptions.workerSrc = '/workers/pdf.worker.min.js'; 
-// interface IPdfViewerProps {
-//   pdfUrl: string;
-// }
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import React, { useState, useEffect, useRef } from 'react';
+import { getDocument, GlobalWorkerOptions, PDFDocumentProxy } from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 
-// const PdfViewer: React.FC<IPdfViewerProps> = ({ pdfUrl }) => {
-//   const viewerRef = React.useRef<HTMLDivElement | null>(null);
-//   const [numPages, setNumPages] = React.useState<number>(0);
-//   const [pageNum, setPageNum] = React.useState<number>(1);
+// Set the worker source for pdfjs-dist
+GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-//   React.useEffect(() => {
-//     if (viewerRef.current) {
-//       const container = viewerRef.current;
-//       const scale = 1.5;
+interface PDFViewProps {
+  pdfLink: string;
+}
 
-//       const renderPage = (pdf: any, pageNum: number) => {
-//         pdf.getPage(pageNum).then((page: any) => {
-//           const viewport = page.getViewport({ scale });
-//           const canvas = document.createElement('canvas');
-//           const context = canvas.getContext('2d');
-//           if (context) {
-//             canvas.height = viewport.height;
-//             canvas.width = viewport.width;
+const PDFView: React.FC<PDFViewProps> = ({ pdfLink }) => {
+  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [scale, setScale] = useState(1.0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-//             container.innerHTML = ''; // Clear previous content
-//             container.appendChild(canvas);
+  // Fetch the PDF document when the pdfLink changes
+  useEffect(() => {
+    const fetchPDF = async () => {
+      try {
+        const loadingTask = getDocument(pdfLink);
+        const pdf = await loadingTask.promise;
+        console.log('PDF loaded:', pdf);
+        console.log('Number of pages:', pdf.numPages);
+        setPdfDoc(pdf);
+        setNumPages(pdf.numPages);
+        setPageNumber(1); // Reset to the first page
+      } catch (error) {
+        console.error('Error fetching PDF:', error);
+      }
+    };
 
-//             const renderContext = {
-//               canvasContext: context,
-//               viewport,
-//             };
-//             page.render(renderContext).promise.then(() => {
-//               console.log(`Page ${pageNum} rendered successfully`);
-//             }).catch((error: any) => {
-//               console.error('Error rendering page:', error);
-//             });
-//           } else {
-//             console.error('Canvas context is null');
-//           }
-//         }).catch((error: any) => {
-//           console.error('Error getting page:', error);
-//         });
-//       };
+    fetchPDF();
+  }, [pdfLink]);
 
-//       const loadPdf = async () => {
-//         try {
-//           console.log('Loading PDF from URL:', pdfUrl);
-//           const loadingTask = pdfjsLib.getDocument(pdfUrl);
-//           const pdf = await loadingTask.promise;
-//           setNumPages(pdf.numPages);
-//           renderPage(pdf, pageNum);
-//         } catch (error) {
-//           console.error('Error loading PDF:', error);
-//         }
-//       };
+  // Render the current page whenever pageNumber, pdfDoc, or scale changes
+  useEffect(() => {
+    const renderPage = async (pageNum: number) => {
+      if (pdfDoc && canvasRef.current) {
+        try {
+          const page = await pdfDoc.getPage(pageNum);
+          console.log('Rendering page:', pageNum);
+          const viewport = page.getViewport({ scale });
+          const canvas = canvasRef.current;
+          const context = canvas.getContext('2d');
 
-//       loadPdf().catch((error) => {
-//         console.error('Error in loadPdf function:', error);
-//       });
-//     }
-//   }, [pdfUrl, pageNum]);
+          if (context) {
+            // Set the canvas dimensions based on the page viewport
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
 
-//   return (
-//     <div>
-//       <h1>PDF Viewer</h1>
-//       <div ref={viewerRef} className="pdfViewer"></div>
-//       <div className="controls">
-//         <button
-//           disabled={pageNum <= 1}
-//           onClick={() => setPageNum(pageNum - 1)}
-//         >
-//           Previous
-//         </button>
-//         <button
-//           disabled={pageNum >= numPages}
-//           onClick={() => setPageNum(pageNum + 1)}
-//         >
-//           Next
-//         </button>
-//         <p>
-//           Page {pageNum} of {numPages}
-//         </p>
-//       </div>
-//     </div>
-//   );
-// };
+            const renderContext = {
+              canvasContext: context,
+              viewport,
+            };
 
-// export default PdfViewer;
+            // Render the page into the canvas
+            await page.render(renderContext).promise;
+          }
+        } catch (error) {
+          console.error('Error rendering page:', error);
+        }
+      }
+    };
+
+    renderPage(pageNumber);
+  }, [pdfDoc, pageNumber, scale]);
+
+  // Zoom in by increasing the scale
+  const zoomIn = () => setScale((prevScale) => Math.min(prevScale + 0.1, 2.0));
+
+  // Zoom out by decreasing the scale
+  const zoomOut = () => setScale((prevScale) => Math.max(prevScale - 0.1, 0.5));
+
+  // Go to the previous page if not on the first page
+  const goToPreviousPage = () => {
+    if (pageNumber > 1) {
+      setPageNumber((prevPage) => prevPage - 1);
+    }
+  };
+
+  // Go to the next page if not on the last page
+  const goToNextPage = () => {
+    if (numPages && pageNumber < numPages) {
+      setPageNumber((prevPage) => prevPage + 1);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Toolbar for zoom and navigation */}
+      <div style={{ padding: '10px', display: 'flex', justifyContent: 'space-between', background: '#f4f4f4' }}>
+        <div>
+          <button onClick={zoomOut}>-</button>
+          <button onClick={zoomIn}>+</button>
+        </div>
+        <div>
+          <button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
+            Previous
+          </button>
+          <span>
+            Page {pageNumber} of {numPages || 0}
+          </span>
+          <button onClick={goToNextPage} disabled={pageNumber >= (numPages || 1)}>
+            Next
+          </button>
+        </div>
+      </div>
+
+      {/* PDF Canvas for rendering the page */}
+      <div
+        style={{
+          flexGrow: 1,
+          overflow: 'auto',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <canvas ref={canvasRef} style={{ border: '1px solid #ccc' }} />
+      </div>
+    </div>
+  );
+};
+
+export default PDFView;

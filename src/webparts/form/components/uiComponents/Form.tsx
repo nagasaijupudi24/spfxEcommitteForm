@@ -454,7 +454,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     const approverData = approverfilterData.map((each: any) => ({
       text: each.approverEmailName,
       srNo: each.approverEmailName,
-      designation: each.designation,
+      optionalText: each.designation,
       id: each.id,
       approverType: 2,
     }));

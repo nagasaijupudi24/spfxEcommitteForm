@@ -12,6 +12,7 @@
     "test": "gulp test"
   },
   "dependencies": {
+    "@compdfkit_pdf_sdk/webviewer": "^2.2.2",
     "@fluentui/react": "^8.120.3",
     "@microsoft/sp-component-base": "1.19.0",
     "@microsoft/sp-core-library": "1.19.0",
@@ -42,7 +43,7 @@
     "bootstrap-icons": "^1.11.3",
     "date-fns": "^3.6.0",
     "fluentui-editable-grid": "^1.12.1",
-    "pdfjs-dist": "^3.0.279",
+    "pdfjs-dist": "^3.11.174",
     "react": "17.0.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "17.0.1",
@@ -56,6 +57,7 @@
     "@microsoft/sp-build-web": "1.20.1",
     "@microsoft/sp-module-interfaces": "1.20.1",
     "@rushstack/eslint-config": "2.5.1",
+    "@types/pdfjs-dist": "^2.10.378",
     "@types/react": "17.0.45",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "17.0.17",

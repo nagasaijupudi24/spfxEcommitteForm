@@ -25,6 +25,13 @@ export interface IFormWebPartProps {
   libraryId:any;
 }
 
+export {};
+declare global {
+  interface Window {
+      AdobeDC: any;
+  }
+}
+
 
 export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps> {
 
