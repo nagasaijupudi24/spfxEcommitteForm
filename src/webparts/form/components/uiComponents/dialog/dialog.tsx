@@ -84,9 +84,17 @@ const MyDialog: React.FC<MyDialogProps> = ({
      
     </Stack>
     <ul>
-      {undefinedData.map((each) => (
-        <li key={each}>{each}</li>
-      ))}
+      {undefinedData.map((each) =>{
+        console.log(each)
+        if (each!== "supportingDocumentfiles") {
+          return (
+        
+            <li key={each}>{each}</li>
+          )
+
+        }
+        
+      } )}
     </ul>
     <DialogFooter>
       <PrimaryButton text="OK" onClick={handleDialogBox} styles={buttonStyles}/>

@@ -1527,7 +1527,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.amountFeildValue &&
           this.state.searchTextFeildValue &&
           this.state.noteTofiles.length > 0 &&
-          this.state.supportingDocumentfiles.length > 0
+          this.state.wordDocumentfiles.length > 0
           // this.state.wordDocumentfiles.length>0 &&
           // this.state.peoplePickerData.length > 0&&
           // this.state.peoplePickerApproverData.length > 0
@@ -1582,7 +1582,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningPurposeField:false,
             isWarningSearchText: false,
             isWarningNoteToFiles: false,
-            isWarningSupportingDocumentFiles: false,
+            isWarningWordDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
           console.log(
@@ -1600,7 +1600,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningPurposeField:true,
             isWarningSearchText: true,
             isWarningNoteToFiles: true,
-            isWarningSupportingDocumentFiles: true,
+            isWarningWordDocumentFiles: true,
             isWarningPeoplePicker: true,
             isDialogHidden: false,
           });
@@ -1617,6 +1617,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               puroposeFeildValue:this.state.puroposeFeildValue,
               searchTextFeildValue: this.state.searchTextFeildValue,
               noteTofiles: this.state.noteTofiles,
+              wordDocumentfiles:this.state.wordDocumentfiles,
               supportingDocumentfiles: this.state.supportingDocumentfiles,
               peoplePickerData: this.state.peoplePickerData,
             },
@@ -1837,10 +1838,12 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
         console.log("final else");
         this.setState({ status: "Submitted", statusNumber: "1000" });
         // eslint-disable-next-line no-constant-condition
-        if (this.state.natureOfNoteFeildValue === "Approval" || "Sanction") {
+        if ((this.state.natureOfNoteFeildValue === "Approval" || "Sanction") || this.state.noteTypeFeildValue === "Finanical") {
           this.setState({
             isWarningNatureOfApporvalOrSanction: true,
             isWarningPurposeField: true,
+            isWarningAmountField:true,
+            isWarningTypeOfFinancialNote:true
           });
         }
         if (
@@ -1850,7 +1853,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.noteTypeFeildValue &&
           this.state.searchTextFeildValue &&
           this.state.noteTofiles.length > 0 &&
-          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.wordDocumentfiles.length > 0 &&
           this.state.peoplePickerData.length > 0
         ) {
           console.log("else entered");
@@ -3083,6 +3086,20 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                   Note PDF<span className={styles.warning}>*</span>
                 </p>
                 {this.state.isWarningNoteToFiles ? (
+                  this.state.noteTofiles.length > 0 ?
+                  <div style={{ width: "100%", margin: "0px" }}>
+                    <UploadFileComponent
+                      typeOfDoc="notePdF"
+                      onChange={this.handleNoteToFileChange}
+                      accept=".pdf"
+                      multiple={false}
+                      maxFileSizeMB={10}
+                      maxTotalSizeMB={10}
+                      data={this.state.noteTofiles}
+                      // value={this.state.noteTofiles}
+                    />
+                  </div>:
+                  
                   <div
                     style={{
                       width: "100%",
@@ -3101,6 +3118,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                       // value={this.state.noteTofiles}
                     />
                   </div>
+
                 ) : (
                   <div style={{ width: "100%", margin: "0px" }}>
                     <UploadFileComponent
@@ -3133,6 +3151,19 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
                     Word Document <span className={styles.warning}>*</span>
                   </p>
                   {this.state.isWarningWordDocumentFiles ? (
+                    this.state.wordDocumentfiles.length > 0?
+                    <div style={{ width: "100%", margin: "0px" }}>
+                      <UploadFileComponent
+                        typeOfDoc="Word Document"
+                        onChange={this.handleWordDocumentFileChange}
+                        accept=".doc,.docx"
+                        multiple={false}
+                        maxFileSizeMB={10}
+                        maxTotalSizeMB={10}
+                        data={this.state.wordDocumentfiles}
+                        // value={this.state.wordDocumentfiles}
+                      />
+                    </div>:
                     <div
                       style={{
                         width: "100%",
