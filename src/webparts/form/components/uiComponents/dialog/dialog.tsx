@@ -50,9 +50,12 @@ const MyDialog: React.FC<MyDialogProps> = ({
 
   const undefinedData = Object.keys(data).filter((each: string) => {
     // console.log(each)
+
     if (data[each] === "") {
       // console.log(each)
       return each;
+    }else if (data[each].length === 0){
+      return each
     }
   });
   // console.log(emptyArray)
