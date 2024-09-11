@@ -17,6 +17,7 @@ import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs"; // Import webs functionality
 import "@pnp/sp/lists"; // Import lists functionality
 import "@pnp/sp/items"; // Import items functionality
+import { AllRequest } from './components/uiComponents/allRequest';
 
 export interface IFormWebPartProps {
   FormType: string;
@@ -69,6 +70,23 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
     else if (this.properties.FormType === "View") {
       element = React.createElement(
         ViewForm,
+        {
+          description: this.properties.description,
+          isDarkTheme: this._isDarkTheme,
+          environmentMessage: this._environmentMessage,
+          hasTeamsContext: !!this.context.sdks.microsoftTeams,
+          userDisplayName: this.context.pageContext.user.displayName,
+          sp: this.sp, // Pass the configured sp object
+          context: this.context, // Pass the WebPartContext
+          listId:this.properties.listId,
+          libraryId:this.properties.libraryId
+        }
+      );
+     
+    }
+    else if (this.properties.FormType === "allRequest") {
+      element = React.createElement(
+        AllRequest,
         {
           description: this.properties.description,
           isDarkTheme: this._isDarkTheme,
@@ -204,7 +222,8 @@ export default class FormWebPart extends BaseClientSideWebPart<IFormWebPartProps
                   options: [
                     { key: 'New', text: 'New' },
                     { key: 'View', text: 'View' },
-                    { key: 'Edit', text: 'Edit' }
+                    { key: 'Edit', text: 'Edit' },
+                    { key: 'allRequest', text: 'All Request' }
 
                   ]
                 }),

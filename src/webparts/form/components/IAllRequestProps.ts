@@ -3,7 +3,7 @@ import { SPFI } from "@pnp/sp";
 
 
 
-export interface IViewFormProps {
+export interface IAllRequestProps {
     description: string;
     isDarkTheme: boolean;
     environmentMessage: string;

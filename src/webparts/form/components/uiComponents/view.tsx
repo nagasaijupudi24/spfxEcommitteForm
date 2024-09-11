@@ -128,6 +128,7 @@ export default class ViewForm extends React.Component<
   IViewFormProps,
   IViewFormState
 > {
+  // private _userName: string = _getUserDetails();
   private _itemId: number = Number(getIdFromUrl());
   private _formType: string = getFromType();
   private _absUrl: any = this.props.context.pageContext.web.serverRelativeUrl;
@@ -204,9 +205,16 @@ export default class ViewForm extends React.Component<
     };
     console.log(this._itemId);
     console.log(this._formType);
+    console.log(this.props.context.pageContext.user)
     this._getItemData(this._itemId, this._folderName);
     this._getItemDocumentsData();
   }
+
+
+  
+
+
+
 
   public _folderNameGenerate(id: any): any {
     const currentyear = new Date().getFullYear();
@@ -299,7 +307,7 @@ export default class ViewForm extends React.Component<
   private _getItemData = async (id: any, folderPath: any) => {
     const item: any = await this.props.sp.web.lists
       .getByTitle(this.props.listId)
-      .items.getById(id)();
+      .items.getById(id).select(`*,Author/Title,Author/EMail`).expand("Author")().then((res) => res);
     console.log(`${id} ------Details`, item);
     console.log(folderPath);
     // const folderItem =  await this.props.sp.web.getFolderByServerRelativePath(`${folderPath}/Pdf`)
@@ -534,16 +542,18 @@ export default class ViewForm extends React.Component<
   };
 
   private _renderPDFView = (): JSX.Element => {
-    const { pdfLink } = this.state;
+    // const { pdfLink } = this.state;
     return (
       <div className={styles.pdfViewer}>
-        <iframe
+        {/* <iframe
           src={pdfLink}
           width="100%"
           height="100%"
           style={{ border: "none" }}
           title="PDF Viewer"
-        />
+        /> */}
+              <AdobePdfViewer clientId={"e32773e52b624acba0e9bd777c8dd310"} fileUrl={this.state.pdfLink} height={800} defaultViewMode={"FIT_PAGE"}/>
+
         
       </div>
     );
@@ -828,7 +838,7 @@ export default class ViewForm extends React.Component<
                 style={{
                   height: "100vh",
                   width: "60%",
-                  border: "1px solid blue",
+                  // border: "1px solid blue",
                 }}
               >
                 {this.state.pdfLink && this._renderPDFView()}
@@ -836,8 +846,9 @@ export default class ViewForm extends React.Component<
             </div>
             <div
               style={{ alignSelf: "center", margin: "10px 0px", gap: "10px" }}
-            >
-              <PrimaryButton>Call Back</PrimaryButton>
+            > 
+
+              <PrimaryButton onClick={()=>this.setState({status:"Call Back"})}>Call Back</PrimaryButton>
               <DefaultButton
                 type="button"
                 className={`${styles.commonBtn2} ${styles.addBtn}`}
@@ -853,8 +864,9 @@ export default class ViewForm extends React.Component<
         {/* <PDFView pdfLink={this.state.pdfLink}/> //working but next page is not working */}
         {/* <PDFViews pdfLink={this.state.pdfLink}/> */}
         <PdfViewer pdfUrl={this.state.pdfLink}/>
+         {/* //working code throught canvas  */}
         {/* <AdobePdfWebPart/> */}
-        <AdobePdfViewer clientId={"825473e9e1184e459736428fd30f8b99"} fileUrl={this.state.pdfLink} height={800} defaultViewMode={"FIT_WIDTH"}/>
+        {/* <AdobePdfViewer clientId={"825473e9e1184eL459736428fd30f8b99"} fileUrl={this.state.pdfLink} height={800} defaultViewMode={"FIT_WIDTH"}/> */}
       </Stack>
     );
   }

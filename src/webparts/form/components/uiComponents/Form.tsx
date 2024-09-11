@@ -1152,7 +1152,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // const value = event.target.value ?? ''; // Handle undefined values
     // console.log(value);
     // this.setState({ subjectFeildValue: value });
-    const value: string | number | readonly string[] = event.target.value ?? "";
+    const value:any = event.target.value ?? "";
     console.log(value, "----------handleSearchText");
     this.setState({ searchTextFeildValue: value });
   };
@@ -1161,7 +1161,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
     // const value = event.target.value ?? ''; // Handle undefined values
     // console.log(value);
     // this.setState({ subjectFeildValue: value });
-    const value: string | number | readonly string[] = event.target.value ?? "";
+    const value: any = event.target.value ?? "";
     console.log(value, "----------handleSearchText");
     this.setState({ isWarningSearchText: false, searchTextFeildValue: value });
   };
@@ -1637,7 +1637,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.noteTypeFeildValue &&
           this.state.searchTextFeildValue &&
           this.state.noteTofiles.length > 0 &&
-          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.wordDocumentfiles.length > 0 &&
           this.state.peoplePickerData.length > 0
         ) {
           this.setState({ status: "Submitted", statusNumber: "1000" });
@@ -1685,7 +1685,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSearchText: false,
 
             isWarningNoteToFiles: false,
-            isWarningSupportingDocumentFiles: false,
+            isWarningWordDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
           console.log(
@@ -1702,7 +1702,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSearchText: true,
 
             isWarningNoteToFiles: true,
-            isWarningSupportingDocumentFiles: true,
+            isWarningWordDocumentFiles: true,
             isWarningPeoplePicker: true,
             isDialogHidden: false,
           });
@@ -1718,6 +1718,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               searchTextFeildValue: this.state.searchTextFeildValue,
 
               noteTofiles: this.state.noteTofiles,
+              wordDocumentfiles:this.state.wordDocumentfiles,
               supportingDocumentfiles: this.state.supportingDocumentfiles,
               peoplePickerData: this.state.peoplePickerData,
             },
@@ -1740,7 +1741,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
           this.state.searchTextFeildValue &&
           this.state.puroposeFeildValue &&
           this.state.noteTofiles.length > 0 &&
-          this.state.supportingDocumentfiles.length > 0 &&
+          this.state.wordDocumentfiles.length > 0 &&
           this.state.peoplePickerData.length > 0
         ) {
           this.setState({ status: "Submitted", statusNumber: "1000" });
@@ -1792,7 +1793,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSearchText: false,
             isWarningPurposeField: false,
             isWarningNoteToFiles: false,
-            isWarningSupportingDocumentFiles: false,
+            isWarningWordDocumentFiles: false,
             isWarningPeoplePicker: false,
           });
           console.log(
@@ -1811,7 +1812,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
             isWarningSearchText: true,
             isWarningPurposeField: true,
             isWarningNoteToFiles: true,
-            isWarningSupportingDocumentFiles: true,
+            isWarningWordDocumentFiles: true,
             isWarningPeoplePicker: true,
             isDialogHidden: false,
           });
@@ -1829,6 +1830,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               searchTextFeildValue: this.state.searchTextFeildValue,
               puroposeFeildValue: this.state.puroposeFeildValue,
               noteTofiles: this.state.noteTofiles,
+              wordDocumentfiles:this.state.wordDocumentfiles,
               supportingDocumentfiles: this.state.supportingDocumentfiles,
               peoplePickerData: this.state.peoplePickerData,
             },
@@ -1937,6 +1939,7 @@ export default class Form extends React.Component<IFormProps, IMainFormState> {
               searchTextFeildValue: this.state.searchTextFeildValue,
 
               noteTofiles: this.state.noteTofiles,
+              wordDocumentfiles:this.state.wordDocumentfiles,
               supportingDocumentfiles: this.state.supportingDocumentfiles,
               peoplePickerData: this.state.peoplePickerData,
             },
